@@ -62,7 +62,10 @@ the property yourself before writing anything:
 1. **Slogan** (first public line, required every time). Playful,
    Austin-flavored, matched to the unit's standout feature (yard, view,
    pool, garage, downtown, trails). No emoji. Never reuse a slogan across
-   ads in the same batch.
+   ads in the same batch, and never reuse the wording of the rest of the ad
+   body either — every ad in a batch should read as genuinely distinct, not
+   a find-and-replace of the same template. Facebook's spam detection
+   suppresses near-duplicate posts, so sameness costs reach.
 
 2. **Special line** (only if there is an actual confirmed special). Accent
    emoji + the hyped special, and always note the special is on top of base
@@ -129,3 +132,22 @@ anywhere else in the ad.
 If the price, unit number, or a specific special isn't public or hasn't been
 confirmed, do not guess or invent it. Stop and ask the user for the missing
 detail before producing the ad.
+
+## Marketplace reach tips (mention alongside the ad, not part of it)
+
+These aren't part of the ad text itself — surface them as a quick aside when
+handing over a finished ad, since they're what actually drives organic reach
+on Marketplace:
+
+- Lead with photos in this order: exterior/curb appeal, kitchen, living
+  room, primary bedroom, bathroom, then the standout feature. Aim for 8-12
+  photos, natural daylight.
+- Best posting windows: weekday evenings (6-8pm) and Sunday afternoon.
+- Reply to comments fast — early engagement is what gets a listing shown
+  to more people.
+- File it under the correct Marketplace category and filters (bedrooms,
+  price, pet-friendly) — a mis-filed listing gets suppressed in search
+  regardless of copy quality.
+- Never mass-post identical copy across many groups/listings on a
+  schedule — that's against Marketplace's Commerce Policies and risks
+  suppression or a ban, on top of being outside this skill's non-goal above.
