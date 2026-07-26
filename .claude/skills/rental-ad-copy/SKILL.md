@@ -1,6 +1,6 @@
 ---
 name: rental-ad-copy
-description: Use when Sophia Reddehase (One Place Locators) asks to write, draft, or revise ad copy for a rental listing/unit — e.g. "write a rental ad for this unit," "make a Facebook post for [property]," "listing copy for unit ___." Generates the ad text only, following her locked voice/format/privacy rules. Does not post anywhere or automate Facebook.
+description: Use when Sophia Reddehase (One Place Locators) asks to write, draft, or revise ad copy for a rental listing/unit — e.g. "write a rental ad for this unit," "make a Facebook post for [property]," "listing copy for unit ___," or just names a property and wants an ad. Looks up the property's official listing page on the web when only a property name is given, then generates the ad text following her locked voice/format/privacy rules. Does not post anywhere or automate Facebook.
 ---
 
 # Rental Ad-Copy Spec (Sophia Reddehase, One Place Locators)
@@ -32,6 +32,31 @@ ad text. The public body must not include the property name, cross streets,
 or identifying landmarks. General area/neighborhood flavor is fine (e.g.
 "South Austin," "near the greenbelt").
 
+## Given just a property name
+
+When Sophia gives only a property name (no pasted listing details), look up
+the property yourself before writing anything:
+
+1. Web search for the property's **official** leasing website (its own
+   domain, or its management company's portal page for that property —
+   e.g. Greystar, RPM Living). Prefer the official page over third-party
+   aggregators (Zillow, Apartments.com, ApartmentList, etc.).
+2. From that official page, identify: the management company (this decides
+   whether the TMLP rule below applies), ZIP/area, standout feature,
+   bed/bath mix, current amenities, and — if shown — current unit
+   availability, pricing, and any specials.
+3. Many property sites don't show live unit numbers or exact pricing
+   publicly (they gate it behind an inquiry form). If the unit number,
+   price, or TMLP isn't actually visible on the official page, that counts
+   as unconfirmed — do not carry over a number from an aggregator site or
+   an older cached page as if it were current. Stop and tell Sophia what
+   you found and what's missing, and ask her to confirm or supply it.
+4. Use the property's full name/address only to search and to disambiguate
+   — never in the public ad text (see Privacy rule above).
+5. If the search turns up nothing usable (no official page, ambiguous
+   property name, multiple similarly-named properties), say so and ask
+   Sophia to point you to the property or paste the details instead.
+
 ## Structure, in order
 
 1. **Slogan** (first public line, required every time). Playful,
@@ -56,10 +81,18 @@ or identifying landmarks. General area/neighborhood flavor is fine (e.g.
 6. **Unit details**: standout feature first, then bed/bath, one sentence.
    No square footage.
 
-7. **Pricing**: "Unit ___, starting at $___. Special: [details] (special is
-   on top of base rent)". For Greystar/RPM properties, lead with TMLP over
-   base rent. Never guess a price or unit number — if it isn't public or
-   confirmed, stop and ask before writing the ad.
+7. **Pricing**:
+   - Default (non-Greystar): "Unit ___, starting at $___. Special: [details]
+     (special is on top of base rent)".
+   - **Greystar properties**: Total Monthly Leasing Price (TMLP) is
+     mandatory and goes on its own line above the base rent line:
+     "Total Monthly Leasing Price: $___
+     Unit ___, base rent $___. Special: [details] (special is on top of
+     base rent)"
+     TMLP is always the number that's emphasized first; base rent is
+     supporting detail underneath it, never the lead figure.
+   - Never guess a price, TMLP, or unit number — if it isn't public or
+     confirmed, stop and ask before writing the ad.
 
 8. **Amenities**: accent emoji header, max 3 bullets. Prioritize, in this
    order of preference: pool, gym, dog park, garage, EV charging, rooftop,
