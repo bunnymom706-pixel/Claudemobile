@@ -26,38 +26,51 @@ OUT = os.path.join(HERE, "out")
 
 DPI = 300
 TRIM_W_IN, TRIM_H_IN = 3.5, 2.0
-BLEED_IN = 0.125
+BLEED = 37.5                                                   # 0.125 in
 
-TRIM_W, TRIM_H = int(TRIM_W_IN * DPI), int(TRIM_H_IN * DPI)   # 1050 x 600
-BLEED = int(BLEED_IN * DPI)                                    # 37 (see below)
-BLEED = 37.5
+TRIM_W, TRIM_H = int(TRIM_W_IN * DPI), int(TRIM_H_IN * DPI)    # 1050 x 600
 FULL_W, FULL_H = TRIM_W + 2 * BLEED, TRIM_H + 2 * BLEED        # 1125 x 675
 
 # Origin of the trim box inside the full (bleed) artboard.
 TX, TY = BLEED, BLEED
 
-MARGIN = 60                       # content inset from the trim edge (0.2 in)
+MARGIN = 72                       # content inset from the trim edge (0.24 in)
 L = TX + MARGIN                   # left content edge
 R = TX + TRIM_W - MARGIN          # right content edge
 T = TY + MARGIN                   # top content edge
 B = TY + TRIM_H - MARGIN          # bottom content edge
 
-# Brand colours sampled from the original artwork.
-NAVY = "#10377B"
-GREEN = "#3EB489"
-PINK = "#FF206E"
-WHITE = "#FFFFFF"
-INK = "#1B2A4A"                   # softened navy for body copy
+FRAME_INSET = 26                  # hairline border, inset from the trim edge
 
-FONT_DIR = "/usr/share/fonts/truetype/montserrat"
-FACES = {
-    800: ("Montserrat-ExtraBold.ttf", "Montserrat", 800),
-    700: ("Montserrat-Bold.ttf", "Montserrat", 700),
-    600: ("Montserrat-SemiBold.ttf", "Montserrat", 600),
-    500: ("Montserrat-Medium.ttf", "Montserrat", 500),
+# Deep navy field with a warm metallic accent. The logo keeps its own brand
+# colours; they only ever appear inside the white bubble, so the two navies
+# never touch.
+FIELD = "#0B2447"                 # card navy
+GOLD = "#C0A063"
+GOLD_SOFT = "#8C7440"             # gold that still reads on ivory
+IVORY = "#F4F1EA"
+WHITE = "#FFFFFF"
+MIST = "#C7D0E0"                  # muted cool white for secondary copy
+
+BRAND_NAVY = "#10377B"
+BRAND_GREEN = "#3EB489"
+BRAND_PINK = "#FF206E"
+
+FONTS = {
+    "didot": ("/usr/share/fonts/opentype/didot/GFSDidot.otf", "GFS Didot", 400),
+    "light": ("/usr/share/fonts/truetype/montserrat/Montserrat-Light.ttf",
+              "Montserrat", 300),
+    "regular": ("/usr/share/fonts/truetype/montserrat/Montserrat-Regular.ttf",
+                "Montserrat", 400),
+    "medium": ("/usr/share/fonts/truetype/montserrat/Montserrat-Medium.ttf",
+               "Montserrat", 500),
+    "semibold": ("/usr/share/fonts/truetype/montserrat/Montserrat-SemiBold.ttf",
+                 "Montserrat", 600),
+    "extrabold": ("/usr/share/fonts/truetype/montserrat/Montserrat-ExtraBold.ttf",
+                  "Montserrat", 800),
 }
 
-# ---------------------------------------------------------------- contact data
+# ---------------------------------------------------------------- content
 
 NAME = "SOPHIA REDDEHASE"
 TITLE = "LICENSED REAL ESTATE AGENT"
@@ -71,8 +84,8 @@ QR_URL = (
     "formperma/TteAdf2BIOBAbltye4fWBEU_dN4R9tfbnfhSfEs-l5M"
     "?Lead_Owner_Email=sophia%40oneplacelocators.com"
 )
-QR_CAPTION = "SCAN TO GET STARTED"
-CTA_LINES = ("Let's find your", "next place.")
+QR_EYEBROW = "SCAN ME TO GET STARTED"
+QR_LINE = "I'll be in touch ASAP"
 
 # Printed QR modules below ~0.4 mm stop surviving ink spread on uncoated stock.
 # At 175 characters this payload needs 53 modules, so the code has to be about
@@ -82,46 +95,43 @@ QR_MIN_MODULE_MM = 0.40
 
 # ---------------------------------------------------------------- text metrics
 
-
-def _face(weight):
-    return os.path.join(FONT_DIR, FACES[weight][0])
-
-
 # PIL only accepts integer pixel sizes, so every metric is measured once at a
 # large probe size and scaled linearly. Measuring at the real size would quantise
 # badly for small type.
 _PROBE = 512
 
 
-def text_width(s, size, weight, tracking=0.0):
+def _face(font):
+    return ImageFont.truetype(FONTS[font][0], _PROBE)
+
+
+def text_width(s, size, font, tracking=0.0):
     """Advance width of `s` at `size` px, including per-gap tracking."""
-    font = ImageFont.truetype(_face(weight), _PROBE)
-    w = font.getlength(s) * size / _PROBE
+    w = _face(font).getlength(s) * size / _PROBE
     return w + tracking * max(len(s) - 1, 0)
 
 
-def tracking_to_fit(s, size, weight, target):
+def tracking_to_fit(s, size, font, target):
     """Letter-spacing that makes `s` render exactly `target` px wide."""
     gaps = max(len(s) - 1, 0)
     if not gaps:
         return 0.0
-    return (target - text_width(s, size, weight)) / gaps
+    return (target - text_width(s, size, font)) / gaps
 
 
-def cap_height(size, weight):
-    font = ImageFont.truetype(_face(weight), _PROBE)
-    bbox = font.getbbox("H")
+def cap_height(size, font):
+    bbox = _face(font).getbbox("H")
     return (bbox[3] - bbox[1]) * size / _PROBE
 
 
-def size_for_cap(cap, weight):
+def size_for_cap(cap, font):
     """Font size whose cap height is `cap` px."""
-    return cap * _PROBE / cap_height(_PROBE, weight)
+    return cap * _PROBE / cap_height(_PROBE, font)
 
 
-def size_to_fit(s, weight, target):
+def size_to_fit(s, font, target):
     """Font size at which `s` naturally renders `target` px wide."""
-    return target * _PROBE / ImageFont.truetype(_face(weight), _PROBE).getlength(s)
+    return target * _PROBE / _face(font).getlength(s)
 
 
 def esc(s):
@@ -136,13 +146,18 @@ def embedded_png(filename):
         return "data:image/png;base64," + base64.b64encode(fh.read()).decode()
 
 
-def text(s, x, y, size, weight, fill, tracking=0.0, anchor="start"):
+def text(s, x, y, size, font, fill, tracking=0.0, anchor="start"):
+    family, weight = FONTS[font][1], FONTS[font][2]
     ls = f' letter-spacing="{tracking:.3f}"' if tracking else ""
     return (
-        f'<text x="{x:.2f}" y="{y:.2f}" font-family="Montserrat" '
-        f'font-weight="{FACES[weight][2]}" font-size="{size:.2f}" fill="{fill}" '
+        f'<text x="{x:.2f}" y="{y:.2f}" font-family="{family}" '
+        f'font-weight="{weight}" font-size="{size:.2f}" fill="{fill}" '
         f'text-anchor="{anchor}"{ls} xml:space="preserve">{esc(s)}</text>'
     )
+
+
+def rule(x, y, w, colour, h=1.4):
+    return f'<rect x="{x:.2f}" y="{y:.2f}" width="{w:.2f}" height="{h}" fill="{colour}"/>'
 
 
 # ---------------------------------------------------------------- logo mark
@@ -189,15 +204,15 @@ def _starburst(cx=402, cy=385, outer=110, inner=50, points=8):
 def draw_mark(x, y, height, reversed_=False):
     """Logo mark with its top-left at (x, y), scaled to `height` px tall."""
     s = height / MARK_H
-    bubble_fill = WHITE if reversed_ else NAVY
-    house_stroke = NAVY if reversed_ else WHITE
+    bubble_fill = WHITE if reversed_ else BRAND_NAVY
+    house_stroke = BRAND_NAVY if reversed_ else WHITE
     return (
         f'<g transform="translate({x:.2f},{y:.2f}) scale({s:.5f})">'
         f'<path d="{_BUBBLE}" fill="{bubble_fill}"/>'
         f'<path d="{_HOUSE}" fill="none" stroke="{house_stroke}" '
         f'stroke-width="{_STROKE}" stroke-linecap="round" stroke-linejoin="round"/>'
-        f'<rect x="384" y="380" width="37" height="124" fill="{PINK}"/>'
-        f'<path d="{_starburst()}" fill="{PINK}"/>'
+        f'<rect x="384" y="380" width="37" height="124" fill="{BRAND_PINK}"/>'
+        f'<path d="{_starburst()}" fill="{BRAND_PINK}"/>'
         f"</g>"
     )
 
@@ -211,26 +226,73 @@ def draw_lockup(x, y, mark_h, reversed_=False):
     # the longer line at its natural fit, then track the shorter one out to
     # match, so neither line ends up crushed.
     word_w = mark_h * 1.93
-    size = size_to_fit("ONE PLACE", 800, word_w)
-    cap = cap_height(size, 800)
+    size = size_to_fit("ONE PLACE", "extrabold", word_w)
+    cap = cap_height(size, "extrabold")
     line_gap = mark_h * 0.056
 
     top = y + (mark_h - (2 * cap + line_gap)) / 2
     wx = x + mark_w + gap
-    top_fill = WHITE if reversed_ else NAVY
+    top_fill = WHITE if reversed_ else BRAND_NAVY
 
     parts = [draw_mark(x, y, mark_h, reversed_)]
-    for i, (word, fill) in enumerate((("ONE PLACE", top_fill), ("LOCATORS", GREEN))):
-        tr = tracking_to_fit(word, size, 800, word_w)
+    for i, (word, fill) in enumerate((("ONE PLACE", top_fill),
+                                      ("LOCATORS", BRAND_GREEN))):
+        tr = tracking_to_fit(word, size, "extrabold", word_w)
         baseline = top + cap + i * (cap + line_gap)
-        parts.append(text(word, wx, baseline, size, 800, fill, tracking=tr))
+        parts.append(text(word, wx, baseline, size, "extrabold", fill, tracking=tr))
     return "".join(parts), mark_w + gap + word_w
+
+
+# ---------------------------------------------------------------- ornaments
+
+
+def frame(colour, width=1.5):
+    """Hairline border, inset from the trim edge."""
+    x = TX + FRAME_INSET
+    y = TY + FRAME_INSET
+    return (
+        f'<rect x="{x}" y="{y}" width="{TRIM_W - 2 * FRAME_INSET}" '
+        f'height="{TRIM_H - 2 * FRAME_INSET}" fill="none" stroke="{colour}" '
+        f'stroke-width="{width}"/>'
+    )
+
+
+def smiley(cx, cy, r, colour, width=2.6):
+    """Small line-drawn smile, sized to survive at card scale."""
+    e = r * 0.34
+    return (
+        f'<g stroke="{colour}" fill="none" stroke-width="{width}" '
+        f'stroke-linecap="round">'
+        f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}"/>'
+        f'<path d="M {cx - r * 0.46:.2f} {cy + r * 0.12:.2f} '
+        f'Q {cx:.2f} {cy + r * 0.62:.2f} {cx + r * 0.46:.2f} {cy + r * 0.12:.2f}"/>'
+        f"</g>"
+        f'<circle cx="{cx - e:.2f}" cy="{cy - r * 0.26:.2f}" r="{width * 0.62:.2f}" '
+        f'fill="{colour}"/>'
+        f'<circle cx="{cx + e:.2f}" cy="{cy - r * 0.26:.2f}" r="{width * 0.62:.2f}" '
+        f'fill="{colour}"/>'
+    )
+
+
+def contact_row(y, colour, accent):
+    """Phone / email / site on one fine-tracked line, separated by dots."""
+    size = size_for_cap(15, "light")
+    tracking = 1.1
+    gap = 20
+    parts, x = [], L
+    for i, value in enumerate((PHONE, EMAIL, SITE)):
+        if i:
+            parts.append(text("·", x, y, size, "light", accent))
+            x += text_width("·", size, "light") + gap
+        parts.append(text(value, x, y, size, "light", colour, tracking=tracking))
+        x += text_width(value, size, "light", tracking) + gap
+    return "".join(parts), x - gap
 
 
 # ---------------------------------------------------------------- QR
 
 
-def qr_svg(x, y, size, fg=NAVY):
+def qr_svg(x, y, size, fg):
     import qrcode
     from qrcode.constants import ERROR_CORRECT_M
 
@@ -241,8 +303,8 @@ def qr_svg(x, y, size, fg=NAVY):
     n = len(m)
     u = size / n
 
-    # Emit one rect per horizontal run rather than per module: fewer, larger
-    # shapes print cleaner and keep the PDF small.
+    # One rect per horizontal run rather than per module: fewer, larger shapes
+    # print cleaner and keep the PDF small.
     rects = []
     for r, row in enumerate(m):
         c = 0
@@ -260,150 +322,90 @@ def qr_svg(x, y, size, fg=NAVY):
     return f'<g fill="{fg}" shape-rendering="crispEdges">' + "".join(rects) + "</g>", n
 
 
-# ---------------------------------------------------------------- icons
-
-
-def icon(kind, cx, cy, r, color):
-    """Small line glyph centred on (cx, cy) inside a circle of radius r."""
-    sw = r * 0.17
-    g = f'<g stroke="{color}" fill="none" stroke-width="{sw:.2f}" ' \
-        f'stroke-linecap="round" stroke-linejoin="round">'
-    k = r * 0.52
-    if kind == "phone":
-        g += (
-            f'<path d="M {cx - k * 0.75} {cy - k} '
-            f'q {-k * 0.28} {k * 0.55} {k * 0.36} {k * 1.12} '
-            f'q {k * 0.92} {k * 0.92} {k * 1.5} {k * 0.55} '
-            f'l {k * 0.34} {k * 0.5} '
-            f'q {-k * 0.75} {k * 0.72} {-k * 1.75} {-k * 0.1} '
-            f'q {-k * 1.15} {-k * 0.95} {-k * 1.3} {-k * 1.75} '
-            f'q {-k * 0.06} {-k * 0.5} {k * 0.62} {-k * 0.82} z"/>'
-        )
-    elif kind == "mail":
-        g += (
-            f'<rect x="{cx - k}" y="{cy - k * 0.72}" width="{2 * k}" '
-            f'height="{1.44 * k}" rx="{k * 0.2}"/>'
-            f'<path d="M {cx - k} {cy - k * 0.55} L {cx} {cy + k * 0.18} '
-            f'L {cx + k} {cy - k * 0.55}"/>'
-        )
-    elif kind == "globe":
-        g += (
-            f'<circle cx="{cx}" cy="{cy}" r="{k}"/>'
-            f'<path d="M {cx - k} {cy} L {cx + k} {cy}"/>'
-            f'<ellipse cx="{cx}" cy="{cy}" rx="{k * 0.45}" ry="{k}"/>'
-        )
-    return g + "</g>"
-
-
 # ---------------------------------------------------------------- card faces
 
 
 def front():
-    p = [f'<rect x="0" y="0" width="{FULL_W}" height="{FULL_H}" fill="{WHITE}"/>']
+    p = [f'<rect x="0" y="0" width="{FULL_W}" height="{FULL_H}" fill="{FIELD}"/>',
+         frame(GOLD, 1.5)]
 
-    # Header: logo lockup left, headshot right.
-    mark_h = 86
-    lockup, _ = draw_lockup(L, T + 2, mark_h)
+    # Portrait, right, on the card's vertical centreline.
+    d = 258
+    cx, cy = R - d / 2, FULL_H / 2 - 18
+    p.append(
+        f'<image xlink:href="{embedded_png("portrait.png")}" '
+        f'x="{cx - d / 2:.2f}" y="{cy - d / 2:.2f}" width="{d}" height="{d}"/>'
+    )
+    p.append(
+        f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{d / 2 + 7:.2f}" fill="none" '
+        f'stroke="{GOLD}" stroke-width="1.8"/>'
+    )
+
+    # Logo, unchanged in size from the previous version.
+    lockup, _ = draw_lockup(L, T, 86, reversed_=True)
     p.append(lockup)
 
-    photo_d = 186
-    photo_cx = R - photo_d / 2
-    photo_cy = T + mark_h / 2 + 2
-    p.append(
-        f'<image xlink:href="{embedded_png("headshot.png")}" '
-        f'x="{photo_cx - photo_d / 2:.2f}" y="{photo_cy - photo_d / 2:.2f}" '
-        f'width="{photo_d}" height="{photo_d}"/>'
-    )
-    p.append(
-        f'<circle cx="{photo_cx:.2f}" cy="{photo_cy:.2f}" r="{photo_d / 2 + 5:.2f}" '
-        f'fill="none" stroke="{GREEN}" stroke-width="3.5"/>'
-    )
+    # Name in a high-contrast didone - the one element doing the heavy lifting.
+    col_w = cx - d / 2 - 54 - L
+    name_size = size_for_cap(44, "didot")
+    name_tr = 3.0
+    while text_width(NAME, name_size, "didot", name_tr) > col_w:
+        name_size *= 0.98
+    p.append(text(NAME, L, 352, name_size, "didot", WHITE, tracking=name_tr))
 
-    rule_y = T + 150
-    p.append(
-        f'<rect x="{L}" y="{rule_y}" width="{R - L}" height="2.5" fill="#DCE3EE"/>'
-    )
+    title_size = size_for_cap(13, "light")
+    p.append(text(TITLE, L, 398, title_size, "light", GOLD, tracking=5.2))
 
-    # Name + title.
-    name_cap = 46
-    name_size = size_for_cap(name_cap, 800)
-    name_base = rule_y + 78
-    p.append(text(NAME, L, name_base, name_size, 800, NAVY, tracking=-0.6))
-
-    title_cap = 17
-    title_size = size_for_cap(title_cap, 700)
-    p.append(
-        text(TITLE, L, name_base + 46, title_size, 700, GREEN, tracking=3.4)
-    )
-
-    # Contact stack, bottom-left.
-    rows = [("phone", PHONE), ("mail", EMAIL), ("globe", SITE)]
-    body_cap = 21
-    body_size = size_for_cap(body_cap, 500)
-    pitch = 52
-    first = B - pitch * 2
-    for i, (kind, value) in enumerate(rows):
-        cy = first + i * pitch
-        p.append(icon(kind, L + 15, cy - body_cap * 0.38, 17, GREEN))
-        p.append(text(value, L + 48, cy, body_size, 500, INK))
-
-    # Footer stripe, bled off three edges, to anchor the composition. The colour
-    # break lines up with the left edge of the portrait above it.
-    visible = 26                      # height that survives the trim
-    bar_y = TY + TRIM_H - visible
-    split = photo_cx - photo_d / 2
-    p.append(
-        f'<rect x="0" y="{bar_y}" width="{FULL_W}" height="{FULL_H - bar_y}" '
-        f'fill="{GREEN}"/>'
-        f'<rect x="{split:.1f}" y="{bar_y}" width="{FULL_W - split:.1f}" '
-        f'height="{FULL_H - bar_y}" fill="{NAVY}"/>'
-    )
+    # Contact details as one fine line along the foot, over a hairline.
+    p.append(rule(L, B - 52, R - L, "#25406A", 1.2))
+    row, _ = contact_row(B - 6, MIST, GOLD)
+    p.append(row)
     return "".join(p)
 
 
 def back(show_license=False):
-    p = [f'<rect x="0" y="0" width="{FULL_W}" height="{FULL_H}" fill="{NAVY}"/>']
+    p = [f'<rect x="0" y="0" width="{FULL_W}" height="{FULL_H}" fill="{IVORY}"/>',
+         frame(GOLD_SOFT, 1.3)]
 
-    # QR on a white panel, right-hand side. The panel padding is set from the
-    # module pitch so the mandatory quiet zone is always satisfied.
+    # QR, right. Panel padding is derived from the module pitch so the quiet
+    # zone is always satisfied.
     qr_size = 285
-    _, modules = qr_svg(0, 0, qr_size)
-    module = qr_size / modules
-    if module * 25.4 / DPI < QR_MIN_MODULE_MM:
+    _, modules = qr_svg(0, 0, qr_size, BRAND_NAVY)
+    module_mm = (qr_size / modules) * 25.4 / DPI
+    if module_mm < QR_MIN_MODULE_MM:
         raise SystemExit(
-            f"QR module is {module * 25.4 / DPI:.3f} mm, below the "
-            f"{QR_MIN_MODULE_MM} mm print floor - enlarge the code."
+            f"QR module is {module_mm:.3f} mm, below the {QR_MIN_MODULE_MM} mm "
+            f"print floor - enlarge the code."
         )
-    pad = max(4 * module, 34)
-    panel = qr_size + 2 * pad
-    px = R - panel
-    py = (FULL_H - panel) / 2
-    p.append(
-        f'<rect x="{px:.2f}" y="{py:.2f}" width="{panel:.2f}" height="{panel:.2f}" '
-        f'rx="26" fill="{WHITE}"/>'
-    )
-    qr, _ = qr_svg(px + pad, py + pad, qr_size)
+    qx = R - qr_size
+    qy = (FULL_H - qr_size) / 2
+    qr, _ = qr_svg(qx, qy, qr_size, FIELD)
     p.append(qr)
 
-    # Call to action, left-hand side, optically centred against the QR panel.
-    cx = L
-    top = py + 12
-    lockup, _ = draw_lockup(cx, top, 68, reversed_=True)
+    # Invitation, left.
+    lockup, _ = draw_lockup(L, T + 4, 86)
     p.append(lockup)
 
-    eyebrow_size = size_for_cap(13, 700)
-    p.append(text(QR_CAPTION, cx, top + 154, eyebrow_size, 700, GREEN, tracking=3.0))
+    # Invitation block, centred against the QR panel beside it.
+    p.append(rule(L, 286, 76, GOLD_SOFT, 1.6))
 
-    head_size = size_for_cap(34, 800)
-    for i, line in enumerate(CTA_LINES):
-        p.append(text(line, cx, top + 220 + i * 52, head_size, 800, WHITE, tracking=-0.4))
+    eyebrow_size = size_for_cap(13, "medium")
+    p.append(text(QR_EYEBROW, L, 352, eyebrow_size, "medium", GOLD_SOFT, tracking=3.6))
 
-    site_size = size_for_cap(15, 600)
-    p.append(text(SITE, cx, top + 356, site_size, 600, "#8FA6CE", tracking=1.4))
+    line_size = size_for_cap(26, "didot")
+    p.append(text(QR_LINE, L, 414, line_size, "didot", FIELD, tracking=1.2))
+    p.append(
+        smiley(L + text_width(QR_LINE, line_size, "didot", 1.2) + 30, 404, 15,
+               GOLD_SOFT, 2.6)
+    )
+
+    # Website anchors the foot so the column is not top-heavy.
+    site_size = size_for_cap(14, "light")
+    p.append(text(SITE, L, B - 26, site_size, "light", "#6B7688", tracking=2.4))
 
     if show_license:
-        lic_size = size_for_cap(11, 500)
-        p.append(text(LICENSE, cx, B + 6, lic_size, 500, "#7C93BE", tracking=0.3))
+        lic_size = size_for_cap(11, "light")
+        p.append(text(LICENSE, L, B + 12, lic_size, "light", "#9AA3B0", tracking=0.3))
     return "".join(p)
 
 
@@ -430,7 +432,7 @@ def wrap(body, guides=False):
     )
 
 
-def render(name, svg_text, png_scale=1.0):
+def render(name, svg_text):
     svg_path = os.path.join(OUT, f"{name}.svg")
     with open(svg_path, "w") as fh:
         fh.write(svg_text)
@@ -440,11 +442,20 @@ def render(name, svg_text, png_scale=1.0):
         check=True,
     )
     subprocess.run(
-        ["rsvg-convert", "-f", "png", "-w", str(int(FULL_W * png_scale)),
+        ["rsvg-convert", "-f", "png", "-w", str(int(FULL_W)),
          "-o", os.path.join(OUT, f"{name}.png"), svg_path],
         check=True,
     )
-    return svg_path
+
+
+def combined_pdf(name, pages):
+    """Merge single-page PDFs into the front-then-back file printers ask for."""
+    import pypdfium2 as pdfium
+
+    doc = pdfium.PdfDocument.new()
+    for page in pages:
+        doc.import_pages(pdfium.PdfDocument(os.path.join(OUT, f"{page}.pdf")))
+    doc.save(os.path.join(OUT, f"{name}.pdf"))
 
 
 def preview():
@@ -458,10 +469,10 @@ def preview():
         im.save(os.path.join(OUT, f"{name}-trimmed.png"))
         faces.append(im)
 
-    pad, gap, radius = 70, 56, 26
-    w = pad * 2 + TRIM_W
-    h = pad * 2 + TRIM_H * 2 + gap
-    sheet = Image.new("RGB", (w, h), "#EEF1F6")
+    pad, gap, radius = 76, 60, 24
+    sheet = Image.new(
+        "RGB", (pad * 2 + TRIM_W, pad * 2 + TRIM_H * 2 + gap), "#DFE3EA"
+    )
     mask = Image.new("L", (TRIM_W * 4, TRIM_H * 4), 0)
     ImageDraw.Draw(mask).rounded_rectangle(
         (0, 0, TRIM_W * 4 - 1, TRIM_H * 4 - 1), radius=radius * 4, fill=255
@@ -469,21 +480,9 @@ def preview():
     mask = mask.resize((TRIM_W, TRIM_H), Image.LANCZOS)
     for i, face in enumerate(faces):
         y = pad + i * (TRIM_H + gap)
-        shadow = Image.new("RGB", (TRIM_W, TRIM_H), "#C9D2E0")
-        sheet.paste(shadow, (pad, y + 7), mask)
+        sheet.paste(Image.new("RGB", (TRIM_W, TRIM_H), "#B9C0CC"), (pad, y + 8), mask)
         sheet.paste(face, (pad, y), mask)
     sheet.save(os.path.join(OUT, "preview.png"))
-
-
-def combined_pdf(name, pages):
-    """Merge single-page PDFs into the front-then-back file printers ask for."""
-    import pypdfium2 as pdfium
-
-    doc = pdfium.PdfDocument.new()
-    for page in pages:
-        src = pdfium.PdfDocument(os.path.join(OUT, f"{page}.pdf"))
-        doc.import_pages(src)
-    doc.save(os.path.join(OUT, f"{name}.pdf"))
 
 
 def main():
