@@ -1,0 +1,1899 @@
+<title>Collapse — Sophia's Quantum Locator Lab</title>
+
+<style>
+/* ============================================================
+   TOKENS — palette is emission spectra: sodium-D amber (589nm),
+   hydrogen-alpha magenta (656nm), hydrogen-beta cyan (486nm).
+   ============================================================ */
+:root {
+  --ground:        #F3F4F8;
+  --ground-2:      #FFFFFF;
+  --ground-3:      #E9EBF2;
+  --line:          #D3D7E3;
+  --line-soft:     #E4E7F0;
+  --ink:           #171A23;
+  --ink-2:         #4A5061;
+  --ink-3:         #767D91;
+
+  --amber:         #B0781F;   /* sodium-D: money, earned            */
+  --amber-bright:  #E5A93C;
+  --amber-wash:    #F7EEDC;
+  --magenta:       #C22660;   /* H-alpha: probability, the wave     */
+  --magenta-wash:  #FBE7EF;
+  --cyan:          #1C7E99;   /* H-beta: activity, motion           */
+  --cyan-wash:     #E1F1F6;
+
+  --good:          #1F7A52;
+  --warn:          #A8710F;
+  --crit:          #C0392E;
+  --good-wash:     #E2F2EA;
+  --warn-wash:     #F8EEDA;
+  --crit-wash:     #FAE7E4;
+
+  --shadow:        0 1px 2px rgba(23,26,35,.05), 0 8px 24px -12px rgba(23,26,35,.14);
+  --radius:        10px;
+  --radius-sm:     6px;
+
+  --ui:    Futura, "Avenir Next", Avenir, "Century Gothic", "Trebuchet MS", system-ui, sans-serif;
+  --read:  "Hoefler Text", "Iowan Old Style", Palatino, Georgia, serif;
+  --data:  ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --wrap: 580px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:      #0D1017;
+    --ground-2:    #151924;
+    --ground-3:    #1D222F;
+    --line:        #2A303F;
+    --line-soft:   #212734;
+    --ink:         #E7E9F1;
+    --ink-2:       #A6ADBF;
+    --ink-3:       #737B8E;
+
+    --amber:       #E5A93C;
+    --amber-bright:#F2C367;
+    --amber-wash:  #2A2113;
+    --magenta:     #F0568C;
+    --magenta-wash:#2C1420;
+    --cyan:        #4FBFDE;
+    --cyan-wash:   #10262E;
+
+    --good:        #4FC08A;
+    --warn:        #E0AC4A;
+    --crit:        #EE7368;
+    --good-wash:   #10241B;
+    --warn-wash:   #291F0F;
+    --crit-wash:   #2A1512;
+
+    --shadow:      0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+
+:root[data-theme="light"] {
+  --ground:#F3F4F8; --ground-2:#FFFFFF; --ground-3:#E9EBF2;
+  --line:#D3D7E3; --line-soft:#E4E7F0;
+  --ink:#171A23; --ink-2:#4A5061; --ink-3:#767D91;
+  --amber:#B0781F; --amber-bright:#E5A93C; --amber-wash:#F7EEDC;
+  --magenta:#C22660; --magenta-wash:#FBE7EF;
+  --cyan:#1C7E99; --cyan-wash:#E1F1F6;
+  --good:#1F7A52; --warn:#A8710F; --crit:#C0392E;
+  --good-wash:#E2F2EA; --warn-wash:#F8EEDA; --crit-wash:#FAE7E4;
+  --shadow:0 1px 2px rgba(23,26,35,.05), 0 8px 24px -12px rgba(23,26,35,.14);
+}
+:root[data-theme="dark"] {
+  --ground:#0D1017; --ground-2:#151924; --ground-3:#1D222F;
+  --line:#2A303F; --line-soft:#212734;
+  --ink:#E7E9F1; --ink-2:#A6ADBF; --ink-3:#737B8E;
+  --amber:#E5A93C; --amber-bright:#F2C367; --amber-wash:#2A2113;
+  --magenta:#F0568C; --magenta-wash:#2C1420;
+  --cyan:#4FBFDE; --cyan-wash:#10262E;
+  --good:#4FC08A; --warn:#E0AC4A; --crit:#EE7368;
+  --good-wash:#10241B; --warn-wash:#291F0F; --crit-wash:#2A1512;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 16px calc(96px + env(safe-area-inset-bottom));
+}
+
+button { font-family: inherit; font-size: inherit; color: inherit; cursor: pointer; }
+
+:focus-visible {
+  outline: 2px solid var(--magenta);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.mono { font-family: var(--data); font-variant-numeric: tabular-nums; }
+
+.eyebrow {
+  font-family: var(--data);
+  font-size: 10.5px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0 14px;
+}
+.topbar h1 {
+  font-family: var(--ui);
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1;
+  margin: 5px 0 0;
+}
+.topbar h1 em {
+  font-style: normal;
+  color: var(--magenta);
+}
+.themetoggle {
+  flex: none;
+  background: var(--ground-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  width: 34px; height: 34px;
+  font-size: 14px;
+  line-height: 1;
+  display: grid; place-items: center;
+  color: var(--ink-2);
+}
+
+/* ============================================================
+   INSTRUMENT PANEL — the persistent curve
+   ============================================================ */
+.scope {
+  background: var(--ground-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.scope-canvas-wrap {
+  position: relative;
+  padding: 12px 12px 4px;
+}
+#curve { display: block; width: 100%; height: 132px; }
+
+.scope-readout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line-soft);
+}
+.ro { padding: 9px 12px 11px; }
+.ro + .ro { border-left: 1px solid var(--line-soft); }
+.ro-label {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+  margin-bottom: 3px;
+}
+.ro-value {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -.02em;
+}
+.ro-odds .ro-value { color: var(--magenta); }
+.ro-cash .ro-value { color: var(--amber); }
+.ro-act  .ro-value { color: var(--cyan); }
+.ro-sub {
+  font-family: var(--data);
+  font-size: 10px;
+  color: var(--ink-3);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   VIEWS + CARDS
+   ============================================================ */
+.view { display: none; padding-top: 20px; }
+.view.is-on { display: block; }
+
+.viewhead { margin-bottom: 14px; }
+.viewhead h2 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  margin: 3px 0 0;
+}
+.viewhead p {
+  font-family: var(--read);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 6px 0 0;
+}
+
+.card {
+  background: var(--ground-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.card-pad { padding: 14px 15px; }
+
+/* ============================================================
+   LESSONS
+   ============================================================ */
+.lesson-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 15px;
+  width: 100%;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+.lesson-n {
+  flex: none;
+  font-family: var(--data);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  width: 26px; height: 26px;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: var(--magenta-wash);
+  color: var(--magenta);
+  margin-top: 1px;
+}
+.lesson.is-done .lesson-n { background: var(--good-wash); color: var(--good); }
+.lesson-titles { flex: 1; min-width: 0; }
+.lesson-titles .term {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+}
+.lesson-titles .name {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.012em;
+  display: block;
+  margin-top: 2px;
+  text-wrap: balance;
+}
+.chev {
+  flex: none;
+  color: var(--ink-3);
+  font-family: var(--data);
+  font-size: 12px;
+  margin-top: 4px;
+  transition: transform .18s ease;
+}
+.lesson.is-open .chev { transform: rotate(90deg); }
+
+.lesson-body { display: none; padding: 0 15px 15px; }
+.lesson.is-open .lesson-body { display: block; }
+
+.strat { margin-top: 12px; }
+.strat:first-child { margin-top: 4px; }
+.strat-tag {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+.strat-physics .strat-tag { background: var(--cyan-wash);    color: var(--cyan); }
+.strat-honest  .strat-tag { background: var(--ground-3);     color: var(--ink-2); }
+.strat-work    .strat-tag { background: var(--amber-wash);   color: var(--amber); }
+.strat p {
+  font-family: var(--read);
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--ink);
+  margin: 0;
+}
+.strat-honest p { color: var(--ink-2); }
+
+.doit {
+  margin-top: 14px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--magenta-wash);
+  border-left: 2px solid var(--magenta);
+}
+.doit .strat-tag { background: none; color: var(--magenta); padding: 0; margin-bottom: 3px; }
+.doit p {
+  font-family: var(--ui);
+  font-size: 14.5px;
+  line-height: 1.5;
+  font-weight: 500;
+  margin: 0;
+}
+
+.markbtn {
+  margin-top: 13px;
+  width: 100%;
+  padding: 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ground);
+  font-family: var(--data);
+  font-size: 11px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.lesson.is-done .markbtn {
+  background: var(--good-wash);
+  border-color: transparent;
+  color: var(--good);
+}
+
+/* ============================================================
+   MATH ENGINE
+   ============================================================ */
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line-soft);
+}
+.field { background: var(--ground-2); padding: 10px 13px 11px; }
+.field label {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+  line-height: 1.35;
+  min-height: 25px;
+}
+.field-input { display: flex; align-items: baseline; gap: 2px; }
+.field-input .pre,
+.field-input .suf {
+  font-family: var(--data);
+  font-size: 13px;
+  color: var(--ink-3);
+  flex: none;
+}
+.field input {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 1px 0;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0;
+  -moz-appearance: textfield;
+}
+.field input:focus { outline: none; border-bottom-color: var(--magenta); }
+.field input::-webkit-outer-spin-button,
+.field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.bigresult {
+  padding: 15px;
+  background: var(--amber-wash);
+  border-bottom: 1px solid var(--line-soft);
+}
+.bigresult .ro-label { color: var(--amber); }
+.bigresult .amt {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: 1;
+  color: var(--ink);
+}
+.bigresult .note {
+  font-family: var(--read);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 7px 0 0;
+}
+
+.reqs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line-soft); }
+.req { background: var(--ground-2); padding: 11px 13px 12px; }
+.req .n {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -.03em;
+  line-height: 1;
+  display: block;
+}
+.req .u {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+  margin-top: 4px;
+}
+.req .per {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--cyan);
+  display: block;
+  margin-top: 3px;
+}
+
+.lev { display: flex; flex-direction: column; gap: 1px; background: var(--line-soft); }
+.lev-row {
+  background: var(--ground-2);
+  padding: 10px 13px 11px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+.lev-row .what { font-size: 14px; font-weight: 500; }
+.lev-row .gain {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--good);
+  white-space: nowrap;
+}
+.lev-move {
+  grid-column: 1 / -1;
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  letter-spacing: .02em;
+  color: var(--ink-3);
+}
+.lev-bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ground-3);
+  overflow: hidden;
+}
+.lev-bar span { display: block; height: 100%; background: var(--good); border-radius: 2px; }
+
+.flag {
+  display: flex;
+  gap: 9px;
+  padding: 12px 13px;
+  font-family: var(--read);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.flag-warn { background: var(--warn-wash); color: var(--ink); }
+.flag-crit { background: var(--crit-wash); color: var(--ink); }
+.flag .mk { font-family: var(--data); font-weight: 600; flex: none; }
+.flag-warn .mk { color: var(--warn); }
+.flag-crit .mk { color: var(--crit); }
+.flag b { font-weight: 600; }
+
+/* ============================================================
+   TODAY
+   ============================================================ */
+.streak {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 15px;
+}
+.streak .big {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -.03em;
+  line-height: 1;
+  color: var(--cyan);
+}
+.streak .r { text-align: right; }
+
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--ground-2);
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  text-align: left;
+}
+.task:first-of-type { border-top: 0; }
+.box {
+  flex: none;
+  width: 21px; height: 21px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line);
+  display: grid; place-items: center;
+  font-family: var(--data);
+  font-size: 12px;
+  font-weight: 700;
+  color: transparent;
+  margin-top: 1px;
+  transition: background-color .14s ease, border-color .14s ease;
+}
+.task.is-done .box { background: var(--cyan); border-color: var(--cyan); color: var(--ground-2); }
+.task-txt { flex: 1; min-width: 0; }
+.task-txt .t { font-size: 15px; font-weight: 500; display: block; letter-spacing: -.008em; }
+.task.is-done .task-txt .t { color: var(--ink-3); text-decoration: line-through; }
+.task-txt .d {
+  font-family: var(--read);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: block;
+  margin-top: 2px;
+}
+.task-target {
+  flex: none;
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cyan);
+  margin-top: 1px;
+}
+.task.is-done .task-target { color: var(--ink-3); }
+
+/* ============================================================
+   PIPELINE
+   ============================================================ */
+.addrow { display: grid; grid-template-columns: 1fr 92px auto; gap: 8px; padding: 12px 13px; }
+.addrow input {
+  font-family: var(--ui);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 9px;
+  min-width: 0;
+}
+.addrow input.num { font-family: var(--data); font-variant-numeric: tabular-nums; }
+.addrow input:focus { outline: none; border-color: var(--magenta); }
+.addrow button {
+  background: var(--magenta);
+  color: #fff;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: 600;
+}
+:root[data-theme="dark"] .addrow button,
+:root:not([data-theme]) .addrow button { color: var(--ground); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .addrow button { color: #fff; }
+}
+
+.lead { padding: 12px 13px; border-top: 1px solid var(--line-soft); }
+.lead-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.lead-name { font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; }
+.lead-val {
+  font-family: var(--data);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--amber);
+  flex: none;
+}
+.lead-meta {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 3px;
+}
+.stages { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+.stagebtn {
+  font-family: var(--data);
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 4px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-3);
+}
+.stagebtn.is-at {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--ground-2);
+  font-weight: 600;
+}
+.stagebtn.is-past { background: var(--cyan-wash); border-color: transparent; color: var(--cyan); }
+.lead-actions { display: flex; gap: 8px; margin-top: 9px; align-items: center; }
+.gcbtn {
+  font-family: var(--data);
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-2);
+}
+.gcbtn.is-on { background: var(--good-wash); border-color: transparent; color: var(--good); font-weight: 600; }
+.killbtn {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  font-family: var(--data);
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 5px 2px;
+}
+.lead-alert {
+  margin-top: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--crit-wash);
+  font-family: var(--read);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.lead-alert b { font-weight: 600; color: var(--crit); }
+
+.empty {
+  padding: 26px 16px;
+  text-align: center;
+  font-family: var(--read);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+/* ============================================================
+   DRILLS
+   ============================================================ */
+.q-prog {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.q-prog .mono { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
+.q-prog .score { font-size: 13px; font-weight: 600; color: var(--good); }
+
+.q-body { padding: 15px; }
+.q-tag {
+  font-family: var(--data);
+  font-size: 9.5px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.q-text {
+  font-family: var(--read);
+  font-size: 17px;
+  line-height: 1.5;
+  margin: 7px 0 0;
+  text-wrap: balance;
+}
+.opts { display: flex; flex-direction: column; gap: 7px; margin-top: 14px; }
+.opt {
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ground);
+  font-size: 14.5px;
+  line-height: 1.45;
+  display: flex;
+  gap: 9px;
+}
+.opt .k {
+  flex: none;
+  font-family: var(--data);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.opt.is-right { border-color: transparent; background: var(--good-wash); }
+.opt.is-right .k { color: var(--good); }
+.opt.is-wrong { border-color: transparent; background: var(--crit-wash); }
+.opt.is-wrong .k { color: var(--crit); }
+.opt[disabled] { cursor: default; }
+
+.why {
+  margin-top: 13px;
+  padding: 12px 13px;
+  border-radius: var(--radius-sm);
+  background: var(--ground-3);
+  border-left: 2px solid var(--cyan);
+}
+.why .strat-tag { background: none; color: var(--cyan); padding: 0; }
+.why p {
+  font-family: var(--read);
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin: 3px 0 0;
+  color: var(--ink);
+}
+.nextbtn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  background: var(--ink);
+  color: var(--ground-2);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   TAB BAR
+   ============================================================ */
+.tabbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+}
+.tab {
+  background: none;
+  border: 0;
+  padding: 7px 2px 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--ink-3);
+}
+.tab .glyph { font-family: var(--data); font-size: 15px; line-height: 1; }
+.tab .lbl {
+  font-family: var(--data);
+  font-size: 9px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.tab.is-on { color: var(--magenta); background: var(--magenta-wash); }
+
+footer {
+  padding: 8px 2px 0;
+  font-family: var(--data);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+@media (max-width: 360px) {
+  .fields, .reqs { grid-template-columns: 1fr; }
+  .addrow { grid-template-columns: 1fr 80px; }
+  .addrow button { grid-column: 1 / -1; }
+}
+</style>
+
+<div class="app">
+
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">One Place Locators &middot; Austin Metro</p>
+      <h1>Collapse<em>.</em></h1>
+    </div>
+    <button class="themetoggle" id="themebtn" aria-label="Switch light or dark">◐</button>
+  </div>
+
+  <!-- ===== INSTRUMENT PANEL ===== -->
+  <div class="scope">
+    <div class="scope-canvas-wrap">
+      <canvas id="curve" aria-label="Probability distribution of this week's commission, shifting toward your goal as you complete actions"></canvas>
+    </div>
+    <div class="scope-readout">
+      <div class="ro ro-odds">
+        <span class="ro-label">Odds of goal</span>
+        <span class="ro-value" id="ro-odds">—</span>
+        <span class="ro-sub" id="ro-odds-sub">at today's pace</span>
+      </div>
+      <div class="ro ro-cash">
+        <span class="ro-label">Earned / wk</span>
+        <span class="ro-value" id="ro-cash">—</span>
+        <span class="ro-sub" id="ro-cash-sub">modeled</span>
+      </div>
+      <div class="ro ro-act">
+        <span class="ro-label">Today</span>
+        <span class="ro-value" id="ro-act">—</span>
+        <span class="ro-sub" id="ro-act-sub">actions done</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LEARN ===== -->
+  <section class="view" data-view="learn">
+    <div class="viewhead">
+      <p class="eyebrow">Module one</p>
+      <h2>THE MODEL</h2>
+      <p>Eight ideas from real physics, each stated accurately, then translated into something you can actually do on a Tuesday in Austin. The physics is the metaphor. The locator practice is the money.</p>
+    </div>
+    <div id="lessons"></div>
+    <div class="card">
+      <div class="flag flag-warn">
+        <span class="mk">!</span>
+        <span>Straight talk, because it protects you: nothing on this screen is a claim that thought moves matter. Physics gives you a <b>better decision model</b> than hustle-talk does, and that is worth a lot. The commissions still come from ads posted, calls answered, and guest cards registered.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MATH ===== -->
+  <section class="view" data-view="math">
+    <div class="viewhead">
+      <p class="eyebrow">Module two</p>
+      <h2>THE $5K ENGINE</h2>
+      <p>Your goal divided by your real numbers. Change any input and every target below moves. These defaults are Austin-market starting points, not gospel: overwrite them with what your last twenty leases actually did.</p>
+    </div>
+
+    <div class="card">
+      <div class="fields" id="fields"></div>
+    </div>
+
+    <div class="card">
+      <div class="bigresult">
+        <span class="ro-label">Net to you, per lease</span>
+        <div class="amt" id="per-lease">—</div>
+        <p class="note" id="per-lease-note"></p>
+      </div>
+      <div class="reqs" id="reqs"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-pad" style="padding-bottom:8px">
+        <p class="eyebrow">Where the leverage is</p>
+        <p class="note" style="font-family:var(--read);font-size:13.5px;line-height:1.5;color:var(--ink-2);margin:5px 0 0">
+          One realistic two-week push per lever, ranked by what it adds to a week at the same ad volume. Anything already near its ceiling falls to the bottom on its own. Work the top row and ignore the rest.
+        </p>
+      </div>
+      <div class="lev" id="levers"></div>
+    </div>
+
+    <div class="card" id="cashlag"></div>
+  </section>
+
+  <!-- ===== TODAY ===== -->
+  <section class="view" data-view="today">
+    <div class="viewhead">
+      <p class="eyebrow">Module three</p>
+      <h2>TODAY'S COLLAPSE</h2>
+      <p>The engine's weekly targets, divided into one day. This is the whole job. Check things off and watch the curve at the top narrow onto your goal.</p>
+    </div>
+    <div class="card">
+      <div class="streak">
+        <div>
+          <span class="ro-label">Day streak</span>
+          <div class="big" id="streak-n">0</div>
+        </div>
+        <div class="r">
+          <span class="ro-label">Possible weeks still open</span>
+          <div class="big" id="branches" style="color:var(--magenta)">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="tasks"></div>
+    <div class="card">
+      <div class="flag flag-warn">
+        <span class="mk">→</span>
+        <span id="today-coach"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PIPELINE ===== -->
+  <section class="view" data-view="pipeline">
+    <div class="viewhead">
+      <p class="eyebrow">Module four</p>
+      <h2>THE PIPELINE</h2>
+      <p>Every live lead and what it is actually worth to you, weighted by how far along it is. The app watches for the one mistake that voids a commission.</p>
+    </div>
+    <div class="card">
+      <div class="bigresult" style="background:var(--cyan-wash)">
+        <span class="ro-label" style="color:var(--cyan)">Weighted pipeline value</span>
+        <div class="amt" id="pipe-total">$0</div>
+        <p class="note" id="pipe-note">Add a lead to start tracking.</p>
+      </div>
+      <div class="addrow">
+        <input type="text" id="lead-name" placeholder="Lead name" autocomplete="off" aria-label="Lead name">
+        <input type="number" id="lead-rent" class="num" placeholder="Budget" inputmode="numeric" aria-label="Monthly budget">
+        <button id="lead-add">Add</button>
+      </div>
+    </div>
+    <div class="card" id="leads"></div>
+  </section>
+
+  <!-- ===== DRILLS ===== -->
+  <section class="view" data-view="drills">
+    <div class="viewhead">
+      <p class="eyebrow">Module five</p>
+      <h2>DRILLS</h2>
+      <p>Thirteen questions that mix the model with the mechanics of getting paid in Texas. Wrong answers are the useful ones, so read every explanation.</p>
+    </div>
+    <div class="card">
+      <div class="q-prog">
+        <span class="mono" id="q-count">—</span>
+        <span class="score" id="q-score">0 correct</span>
+      </div>
+      <div class="q-body" id="q-body"></div>
+    </div>
+  </section>
+
+  <footer>
+    Built for Sophia Reddehase &middot; TX License #831516<br>
+    Everything you type stays on this device. Nothing is sent anywhere.
+  </footer>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab" data-go="learn"><span class="glyph">ψ</span><span class="lbl">Model</span></button>
+  <button class="tab" data-go="math"><span class="glyph">Σ</span><span class="lbl">Engine</span></button>
+  <button class="tab" data-go="today"><span class="glyph">◎</span><span class="lbl">Today</span></button>
+  <button class="tab" data-go="pipeline"><span class="glyph">≡</span><span class="lbl">Pipeline</span></button>
+  <button class="tab" data-go="drills"><span class="glyph">?</span><span class="lbl">Drills</span></button>
+</nav>
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONTENT — lessons
+   ============================================================ */
+const LESSONS = [
+  {
+    term: "Superposition",
+    name: "The week hasn't happened yet",
+    physics: "Before measurement, a quantum system holds several possible states at once, each with an amplitude. Not one hidden answer we haven't looked at, but a genuine blend that only resolves into a single value when measured.",
+    honest: "Your week is not literally in superposition. But your information about it is: on Monday at 6am, a $900 week and a $5,000 week are both still consistent with everything that exists. Nothing has ruled either one out yet.",
+    work: "The week resolves through your calendar, not your mood. Twenty-eight ads and forty answered messages make the $5,000 branch reachable. Four ads delete it before Wednesday, and no amount of intention puts it back.",
+    doit: "Write down the exact week you're aiming at as three numbers: leases, net dollars, tours booked. A feeling can't collapse. A number can."
+  },
+  {
+    term: "Measurement",
+    name: "What you measure is what moves",
+    physics: "Measuring a quantum system forces it to take a definite value and disturbs it in the process. Worth knowing: 'observer' in physics means any interaction with a measuring apparatus. A thermometer counts. A conscious mind is not required.",
+    honest: "So the observer effect does not mean your attention rewrites reality. What it does mean, in your business, is real and boring: the number you write down every day is the number that improves. Untracked activity drifts down and you never notice.",
+    work: "Track two things daily and nothing else: leads contacted, and tours actually set. Not 'felt productive.' Not impressions. Those two numbers predict your deposits six weeks out better than anything else you could log.",
+    doit: "Log today's two numbers before you close your laptop, even on a zero day. Especially on a zero day."
+  },
+  {
+    term: "Probability distribution",
+    name: "You don't control outcomes, you control the curve",
+    physics: "Quantum mechanics doesn't predict single results, it predicts distributions. Run the same experiment 10,000 times and the shape emerges: a mean, and a spread around it. The individual hit is unpredictable. The shape is precise.",
+    honest: "This is the whiteboard from the video, and it's the most useful thing on it. You cannot make a specific person sign a specific lease. That's the individual hit. You absolutely can move the mean and shrink the spread of your month.",
+    work: "One lease is luck. Forty real conversations a week is a distribution, and distributions are manageable. Volume shifts the mean right. Skill and follow-up shrink the variance, which is what turns a good month into a floor instead of a spike.",
+    doit: "Stop judging days. Judge the trailing seven-day average. That's the only number that's actually yours."
+  },
+  {
+    term: "Threshold frequency",
+    name: "Below the threshold, nothing happens at all",
+    physics: "The photoelectric effect: shine light below a certain frequency on a metal and no electrons come out. Not fewer. None. Turn the intensity way up and still none. Cross the threshold and electrons emit instantly. Einstein got the 1921 Nobel for this.",
+    honest: "This one transfers almost exactly, and it explains why your slow weeks feel so unfair. Effort below threshold does not produce reduced results. It produces nothing, which feels identical to doing nothing at all.",
+    work: "Marketplace has a volume threshold. Post four ads a week and you don't get 13% of a pipeline, you get silence, because the reach per ad is too small to surface a serious renter. Cross into the high twenties and leads arrive. Your engine tab calculates where your line is.",
+    doit: "Find your threshold and treat it as a floor, not a target. Never end a week beneath it. Under the line, the week is worth zero regardless of how tired you are."
+  },
+  {
+    term: "Interference",
+    name: "Follow-up either compounds or cancels",
+    physics: "Two waves meeting in phase add into something taller than either. Meeting out of phase, they flatten to nothing. Same energy, entirely different result. Only the timing changed.",
+    honest: "Contact frequency behaves the same way, and the mechanism is attention rather than amplitude. Identical messages, redistributed in time, produce wildly different reply rates.",
+    work: "Six messages in one afternoon read as desperate and cancel each other out. The same six spaced day 0, day 1, day 3, day 7, day 14, day 30 land in phase: each one arrives right as the renter's urgency ticks up. Most locators quit at message two, which is exactly where the compounding starts.",
+    doit: "Put the 0/1/3/7/14/30 cadence on every lead the day it comes in. Set the reminders when you're motivated, so you don't need motivation later."
+  },
+  {
+    term: "Entanglement",
+    name: "Correlated levers, and one honest correction",
+    physics: "Two entangled particles give correlated measurement results no matter the distance between them. What entanglement does not do is transmit anything. You cannot use it to send a signal or influence a distant outcome. That's the no-communication theorem, and it's not a loophole waiting to be found.",
+    honest: "This is the single most misused word in the manifestation space, so here it is plainly: entanglement does not let you affect a property manager across town by intending it. Anyone selling you that is selling you something.",
+    work: "The real version, and it's genuinely useful: your variables are correlated. Push average rent up and commission percentage tends to rise with it, because higher-end properties pay better. Push volume up and your split improves, because production earns negotiating room. Move one lever and its partner drifts your way for free. That's why the engine ranks levers instead of listing them.",
+    doit: "Pick the top lever in your engine tab. Work only that one for two weeks. Watch what moves alongside it."
+  },
+  {
+    term: "Decoherence",
+    name: "Noise destroys the useful state",
+    physics: "A quantum system holds its many-state character only in isolation. Let it interact with a noisy environment and the interference washes out almost instantly, leaving ordinary classical behavior. Decoherence, not observation, is why we don't see quantum effects at desk scale.",
+    honest: "Your working state is fragile in the same structural way. Not mystically, just practically: the state that writes twelve good ads in ninety minutes does not survive contact with six group chats.",
+    work: "Isolate the block that makes money. Ninety minutes, phone face down, notifications off, one property at a time, no scrolling for comps mid-ad. Then come out and answer everything at once. Batched noise is survivable. Continuous noise isn't.",
+    doit: "Put one 90-minute isolated posting block on tomorrow's calendar and defend it like a showing."
+  },
+  {
+    term: "Tunneling",
+    name: "The wall you get through by arriving at it repeatedly",
+    physics: "A particle facing a barrier it lacks the energy to climb still has a small, nonzero chance of appearing on the other side. Per attempt the probability is tiny. It climbs steeply with more attempts, and with any thinning of the barrier.",
+    honest: "Here the math genuinely carries over, because it's just the arithmetic of repeated small chances. A 3% chance per attempt is nearly nothing once and better than even odds across forty tries.",
+    work: "The $5,000 week is your barrier and you are not going to climb it with one heroic effort. Each ad, each cold reply, each property you ask for a better referral fee is one tunneling attempt. Two jobs, then: raise attempts, and thin the barrier. Better copy, faster replies, and 100%-commission properties all make the wall thinner.",
+    doit: "Count attempts this week, not wins. Attempts are the only input to the formula you control."
+  }
+];
+
+/* ============================================================
+   CONTENT — engine inputs
+   ============================================================ */
+const FIELDS = [
+  { k: "goal",    label: "Weekly net goal",        pre: "$", suf: "",  def: 5000, step: 100 },
+  { k: "rent",    label: "Avg lease rent",         pre: "$", suf: "",  def: 1550, step: 25  },
+  { k: "comm",    label: "Property fee, % of rent", pre: "", suf: "%", def: 85,   step: 5   },
+  { k: "split",   label: "Your split w/ broker",    pre: "", suf: "%", def: 80,   step: 5   },
+  { k: "leadTour",label: "Lead → tour rate",        pre: "", suf: "%", def: 22,   step: 1   },
+  { k: "tourLease",label:"Tour → lease rate",       pre: "", suf: "%", def: 35,   step: 1   },
+  { k: "leadsPerAd",label:"Leads per ad posted",    pre: "", suf: "",  def: 1.8,  step: 0.1 },
+  { k: "lossRate",label: "Fees lost / uncredited",  pre: "", suf: "%", def: 8,    step: 1   },
+  { k: "lagDays", label: "Days rent-to-paycheck",   pre: "", suf: "d", def: 45,   step: 5   },
+  { k: "workDays",label: "Work days per week",      pre: "", suf: "",  def: 6,    step: 1   }
+];
+
+/* ============================================================
+   CONTENT — pipeline stages with close probabilities
+   ============================================================ */
+const STAGES = [
+  { id: "new",     label: "New",     p: 0.04 },
+  { id: "talking", label: "Talking", p: 0.10 },
+  { id: "qual",    label: "Qual'd",  p: 0.20 },
+  { id: "toured",  label: "Toured",  p: 0.45 },
+  { id: "applied", label: "Applied", p: 0.80 },
+  { id: "leased",  label: "Leased",  p: 0.97 },
+  { id: "invoiced",label: "Invoiced",p: 0.99 },
+  { id: "paid",    label: "Paid",    p: 1.00 }
+];
+
+/* ============================================================
+   CONTENT — drills
+   ============================================================ */
+const QUIZ = [
+  {
+    tag: "Getting paid",
+    q: "A renter from one of your Marketplace ads tours a property and applies, but never listed you as their referral source. What happens to your fee?",
+    opts: [
+      "You almost certainly get nothing, because the referral has to be registered before they tour",
+      "You still get paid, since you can prove the lead came from your ad",
+      "You get a reduced fee, usually half",
+      "The property splits it with whoever they credited"
+    ],
+    a: 0,
+    why: "This is the number one way locator commissions evaporate, and it is entirely preventable. Properties pay on their documented referral source, and once someone else is on the guest card, retroactive credit is a favor rather than a right. Register the lead with the property in writing before they set foot on site, every single time."
+  },
+  {
+    tag: "Threshold",
+    q: "Your model says your Marketplace floor is 28 ads a week. You post 4. What does the threshold lesson predict?",
+    opts: [
+      "Close to zero leases, not roughly 14% of a normal week",
+      "About 14% of a normal week's leases",
+      "Normal leases, just arriving later",
+      "It depends entirely on ad quality, so volume doesn't matter"
+    ],
+    a: 0,
+    why: "Below threshold, output is not proportionally smaller, it is absent. Four ads don't generate enough reach for a serious renter to surface, so the week produces silence. This is why a light week feels so disproportionately punishing: you did 14% of the work and got 0% of the result."
+  },
+  {
+    tag: "Your ad spec",
+    q: "You're writing an ad for a Greystar property. Which price leads the copy?",
+    opts: [
+      "TMLP, the Total Monthly Leasing Price",
+      "Base rent, since it's the lowest number and pulls more clicks",
+      "Base rent plus a note that fees apply",
+      "The 12-month special rate"
+    ],
+    a: 0,
+    why: "Greystar and RPM Living lead with TMLP, per your locked copy spec. Base rent understates what the renter will actually owe, which burns your credibility on the tour and gets ads flagged. If you can't find TMLP from public sources, ask rather than estimating."
+  },
+  {
+    tag: "Meta compliance",
+    q: "The price in your ad body and the price in the Marketplace price field are different by $40. Why does that matter?",
+    opts: [
+      "Meta cross-checks the two and mismatches put your account at risk",
+      "It doesn't, only the body copy is read by renters",
+      "It only matters for listings posted to groups",
+      "It rounds automatically to whichever is lower"
+    ],
+    a: 0,
+    why: "Body price must equal the price field, exactly. Your account has been restricted before, and a flag costs you real leads for days. This is a thirty-second check that protects your entire lead channel, so do it before every save."
+  },
+  {
+    tag: "Cash flow",
+    q: "You earn $5,000 in commissions this week. When does that money realistically reach your account?",
+    opts: [
+      "Roughly 30 to 60 days after move-in, not this week",
+      "This week, once you invoice",
+      "At the end of the month",
+      "On signing, before move-in"
+    ],
+    a: 0,
+    why: "Earning and getting paid are separated by move-in plus the property's payment cycle. This is the single most dangerous thing nobody explains: you must sustain full activity for six or seven weeks before your deposits reach $5,000 per week, and quitting in week three because 'it isn't working' is quitting during the lag, not during a failure."
+  },
+  {
+    tag: "The model",
+    q: "In physics, what does 'observer' mean in the observer effect?",
+    opts: [
+      "Any interaction with a measuring apparatus, conscious or not",
+      "A conscious mind paying attention",
+      "The scientist's expectation about the result",
+      "Whoever reads the results afterward"
+    ],
+    a: 0,
+    why: "A thermometer is an observer. There is no requirement for a mind anywhere in the mathematics. Knowing this keeps you from being sold the expensive version of the idea, and the honest translation is still strong: the metric you write down daily is the metric that improves."
+  },
+  {
+    tag: "The model",
+    q: "Does quantum entanglement let you influence a distant outcome by intending it?",
+    opts: [
+      "No. Outcomes correlate, but nothing is transmitted",
+      "Yes, that's what non-locality means",
+      "Only for systems that were previously connected",
+      "Physics hasn't settled the question"
+    ],
+    a: 0,
+    why: "The no-communication theorem is settled and it is not a loophole waiting to be found: entangled particles show correlated results, and no signal or influence passes between them. The genuinely useful translation is that your business variables are correlated, so working your top lever pulls its neighbors along."
+  },
+  {
+    tag: "Follow-up",
+    q: "Which change lifts your lead-to-tour rate fastest?",
+    opts: [
+      "Replying within about five minutes of the inquiry",
+      "Sending a longer, more detailed first message",
+      "Attaching more photos up front",
+      "Following up once a week for a month"
+    ],
+    a: 0,
+    why: "Speed to first response beats nearly every other variable in rental lead conversion, because a renter messaging you is messaging four other listings in the same sitting. Whoever answers first frames the search. A short fast reply outperforms a polished slow one every time."
+  },
+  {
+    tag: "Interference",
+    q: "Six follow-up messages sent in one afternoon versus the same six spaced across a month. Which converts better and why?",
+    opts: [
+      "Spaced, because the touches land in phase with rising urgency",
+      "Same-day, because urgency is highest right after inquiry",
+      "Identical, since the message count is what matters",
+      "Same-day, because renters decide within 24 hours"
+    ],
+    a: 0,
+    why: "Bunched messages read as desperate and interfere destructively, flattening a lead that was otherwise alive. Spaced touches arrive as the renter's move date closes in and their urgency climbs, so each one adds instead of cancels. Same energy, opposite result, timing being the only difference."
+  },
+  {
+    tag: "Tunneling",
+    q: "Your per-attempt chance of landing a deal is small. What raises your odds of clearing the barrier?",
+    opts: [
+      "More attempts, and thinning the barrier with better copy and faster replies",
+      "Waiting for one high-quality attempt with better timing",
+      "Raising your commission ask on every property",
+      "Narrowing to only the properties you already know"
+    ],
+    a: 0,
+    why: "Repeated small probabilities compound: 3% per attempt is nothing once and better than a coin flip across forty tries. So you have two jobs, raise the attempt count and thin the wall. Sharper ad copy, five-minute replies, and pursuing 100%-fee properties all thin it."
+  },
+  {
+    tag: "Texas rules",
+    q: "As a licensed Texas locator, who pays you and how does the money reach you?",
+    opts: [
+      "The property pays a referral fee, routed through your sponsoring broker",
+      "The renter pays you a placement fee at signing",
+      "The property pays you directly as an independent contractor",
+      "TREC processes locator fees on the broker's behalf"
+    ],
+    a: 0,
+    why: "Compensation flows property to sponsoring broker to you, per your split. That routing is exactly why your split percentage sits in the engine as a lever, and why production volume is worth real money beyond the leases themselves: it earns you room to renegotiate that number."
+  },
+  {
+    tag: "Decoherence",
+    q: "You've blocked 90 minutes to write ads. What protects the block's value most?",
+    opts: [
+      "Phone face down, notifications off, one property at a time, replies batched after",
+      "Answering messages as they arrive so no lead goes cold",
+      "Working with the TV on so it feels less tedious",
+      "Splitting it into six 15-minute chunks between errands"
+    ],
+    a: 0,
+    why: "The state that writes twelve good ads in ninety minutes doesn't survive continuous interruption, and rebuilding focus costs far more than the interruption itself. Batched noise is survivable, continuous noise is not. Answer everything in one pass when the block ends."
+  },
+  {
+    tag: "Leverage",
+    q: "You want more net per lease without generating a single extra lead. Best move?",
+    opts: [
+      "Shift toward higher-rent properties paying 100% of one month",
+      "Post more ads on the properties you already work",
+      "Follow up more aggressively on existing leads",
+      "Lower your budget filter to talk to more renters"
+    ],
+    a: 0,
+    why: "Net per lease is rent times fee percentage times your split, so it moves without touching volume at all. A $2,100 lease at 100% pays roughly 60% more than a $1,550 lease at 85%, for the same amount of work. The other three options all add labor to get the same money."
+  }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const KEY = "collapse_v1";
+const todayStamp = () => new Date().toISOString().slice(0, 10);
+
+const DEFAULTS = {
+  view: "learn",
+  theme: null,
+  inputs: FIELDS.reduce((o, f) => (o[f.k] = f.def, o), {}),
+  done: [],
+  openLesson: null,
+  tasks: {},
+  taskDate: todayStamp(),
+  streak: 0,
+  lastFull: null,
+  leads: [],
+  qi: 0,
+  qScore: 0,
+  qPicked: null
+};
+
+let S;
+try {
+  S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || "{}"));
+  S.inputs = Object.assign({}, DEFAULTS.inputs, S.inputs || {});
+} catch (e) {
+  S = JSON.parse(JSON.stringify(DEFAULTS));
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+}
+
+/* roll the day over: a new day starts with a clean checklist.
+   The streak only breaks if a full day was missed entirely. */
+if (S.taskDate !== todayStamp()) {
+  const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+  if (S.lastFull !== yesterday && S.lastFull !== todayStamp()) S.streak = 0;
+  S.tasks = {};
+  S.taskDate = todayStamp();
+  save();
+}
+
+/* ============================================================
+   MATH
+   ============================================================ */
+const num = (v, d) => (isFinite(v) && v !== null && v !== "" ? +v : d);
+
+function model() {
+  const i = S.inputs;
+  const goal      = Math.max(1, num(i.goal, 5000));
+  const rent      = Math.max(1, num(i.rent, 1550));
+  const comm      = Math.max(0, num(i.comm, 85)) / 100;
+  const split     = Math.max(0, num(i.split, 80)) / 100;
+  const leadTour  = Math.min(1, Math.max(0.001, num(i.leadTour, 22) / 100));
+  const tourLease = Math.min(1, Math.max(0.001, num(i.tourLease, 35) / 100));
+  const perAd     = Math.max(0.01, num(i.leadsPerAd, 1.8));
+  const loss      = Math.min(0.95, Math.max(0, num(i.lossRate, 8) / 100));
+  const lag       = Math.max(0, num(i.lagDays, 45));
+  const days      = Math.min(7, Math.max(1, Math.round(num(i.workDays, 6))));
+
+  const gross    = rent * comm;
+  const perLease = gross * split * (1 - loss);
+
+  /* A zero fee or zero split means no lease can ever pay you, so the
+     targets are undefined rather than infinite. Flag it and floor the
+     divisor so nothing downstream renders Infinity. */
+  const viable   = perLease >= 1;
+  const divisor  = Math.max(1, perLease);
+
+  const leases   = goal / divisor;
+  const tours    = leases / tourLease;
+  const leads    = tours / leadTour;
+  const ads      = leads / perAd;
+
+  return {
+    goal, rent, comm, split, leadTour, tourLease, perAd, loss, lag, days,
+    gross, perLease, viable,
+    leasesWk: leases, toursWk: tours, leadsWk: leads, adsWk: ads,
+    leasesDay: leases / days, toursDay: tours / days,
+    leadsDay: leads / days, adsDay: ads / days,
+    annual: goal * 52,
+    rampWeeks: Math.ceil(lag / 7) + 2
+  };
+}
+
+/* today's task set, derived from the engine */
+function taskList() {
+  const m = model();
+  const t = n => (m.viable ? Math.ceil(n) : null);
+  return [
+    { k: "ads",    t: "Post fresh Marketplace ads",   d: "Vary the slogan and copy on every one. Duplicates get flagged.", n: t(m.adsDay) },
+    { k: "reply",  t: "Answer every new inquiry",     d: "Target under five minutes. Speed beats polish.",                 n: t(m.leadsDay) },
+    { k: "cadence",t: "Run the follow-up cadence",    d: "Day 0, 1, 3, 7, 14, 30. Work the reminders that came due.",      n: null },
+    { k: "tours",  t: "Set tours and register them",  d: "Guest card to the property in writing before they go.",           n: t(Math.max(1, m.toursDay)) },
+    { k: "block",  t: "Protect one 90-minute block",  d: "Phone down, one property at a time, replies batched after.",      n: null },
+    { k: "log",    t: "Log leads contacted + tours set", d: "Two numbers. Even on a zero day.",                             n: null }
+  ];
+}
+
+function completion() {
+  const list = taskList();
+  const done = list.filter(x => S.tasks[x.k]).length;
+  return { done, total: list.length, ratio: list.length ? done / list.length : 0 };
+}
+
+/* normal CDF via Abramowitz & Stegun erf approximation */
+function erf(x) {
+  const s = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+  const t = 1 / (1 + 0.3275911 * x);
+  const y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return s * y;
+}
+const phi = z => 0.5 * (1 + erf(z / Math.SQRT2));
+
+/* Curve shape constants, shared by the readout and the canvas so the
+   ghost outline and the live curve can never drift apart.
+   A perfect day lands the mean just past the goal, which puts the odds
+   near 70% rather than a flat coin flip: doing the work stacks the deck,
+   it does not remove the variance. */
+const CURVE = { baseFrac: 0.22, stretch: 1.08, sigmaHi: 0.52, sigmaLo: 0.16 };
+
+function distribution() {
+  const m = model();
+  const c = completion().ratio;
+  const base  = m.goal * CURVE.baseFrac;
+  const peak  = m.goal * CURVE.stretch;
+  const mean  = base + (peak - base) * c;
+  const sigma = m.goal * (CURVE.sigmaHi - (CURVE.sigmaHi - CURVE.sigmaLo) * c);
+  const oddsAtLeast = 1 - phi((m.goal - mean) / sigma);
+  return { m, c, mean, sigma, oddsAtLeast };
+}
+
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+const moneyK = n => (n >= 10000 ? "$" + (n / 1000).toFixed(0) + "k" : money(n));
+
+/* ============================================================
+   CURVE
+   ============================================================ */
+const cv = document.getElementById("curve");
+const cx = cv.getContext("2d");
+
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function drawCurve() {
+  const d = distribution();
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth, H = cv.clientHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx.clearRect(0, 0, W, H);
+
+  const padL = 4, padR = 4, padB = 18, padT = 6;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const xMax = d.m.goal * 1.75;
+  const toX = v => padL + (v / xMax) * plotW;
+
+  const tightestSigma = d.m.goal * CURVE.sigmaLo;
+  const peakMax = 1 / (tightestSigma * Math.sqrt(2 * Math.PI));
+  const g = (x, mean, sigma) => Math.exp(-((x - mean) ** 2) / (2 * sigma * sigma)) / (sigma * Math.sqrt(2 * Math.PI));
+  /* 0.84 leaves headroom so the GOAL label never overprints the apex,
+     which is exactly where the peak sits once the day is fully checked off. */
+  const toY = p => padT + plotH - (p / peakMax) * plotH * 0.84;
+
+  const inkSoft = css("--line-soft");
+  const ink3 = css("--ink-3");
+  const mag = css("--magenta");
+  const amb = css("--amber");
+
+  /* baseline */
+  cx.strokeStyle = inkSoft;
+  cx.lineWidth = 1;
+  cx.beginPath();
+  cx.moveTo(padL, padT + plotH + .5);
+  cx.lineTo(W - padR, padT + plotH + .5);
+  cx.stroke();
+
+  /* ghost: the untouched week */
+  const ghostMean = d.m.goal * CURVE.baseFrac, ghostSigma = d.m.goal * CURVE.sigmaHi;
+  cx.beginPath();
+  for (let px = 0; px <= plotW; px++) {
+    const v = (px / plotW) * xMax;
+    const y = toY(g(v, ghostMean, ghostSigma));
+    px === 0 ? cx.moveTo(padL + px, y) : cx.lineTo(padL + px, y);
+  }
+  cx.strokeStyle = ink3;
+  cx.globalAlpha = .32;
+  cx.setLineDash([3, 3]);
+  cx.lineWidth = 1;
+  cx.stroke();
+  cx.setLineDash([]);
+  cx.globalAlpha = 1;
+
+  /* live curve */
+  cx.beginPath();
+  cx.moveTo(padL, padT + plotH);
+  for (let px = 0; px <= plotW; px++) {
+    const v = (px / plotW) * xMax;
+    cx.lineTo(padL + px, toY(g(v, d.mean, d.sigma)));
+  }
+  cx.lineTo(padL + plotW, padT + plotH);
+  cx.closePath();
+  const grad = cx.createLinearGradient(0, padT, 0, padT + plotH);
+  grad.addColorStop(0, mag + "3D");
+  grad.addColorStop(1, mag + "05");
+  cx.fillStyle = grad;
+  cx.fill();
+
+  cx.beginPath();
+  for (let px = 0; px <= plotW; px++) {
+    const v = (px / plotW) * xMax;
+    const y = toY(g(v, d.mean, d.sigma));
+    px === 0 ? cx.moveTo(padL + px, y) : cx.lineTo(padL + px, y);
+  }
+  cx.strokeStyle = mag;
+  cx.lineWidth = 2;
+  cx.lineJoin = "round";
+  cx.stroke();
+
+  /* goal line */
+  const gx = toX(d.m.goal);
+  cx.beginPath();
+  cx.moveTo(gx, padT - 2);
+  cx.lineTo(gx, padT + plotH);
+  cx.strokeStyle = amb;
+  cx.lineWidth = 1.5;
+  cx.setLineDash([4, 3]);
+  cx.stroke();
+  cx.setLineDash([]);
+
+  /* labels */
+  cx.font = '600 9.5px ui-monospace, "SF Mono", Menlo, monospace';
+  cx.fillStyle = amb;
+  const lbl = "GOAL " + moneyK(d.m.goal);
+  const lw = cx.measureText(lbl).width;
+  cx.textAlign = gx + lw + 6 > W - padR ? "right" : "left";
+  cx.fillText(lbl, cx.textAlign === "left" ? gx + 4 : gx - 4, padT + 6);
+
+  /* Axis labels, collision-aware: the mean label slides along the axis as the
+     curve shifts, so the fixed end labels yield to it rather than overprint. */
+  cx.fillStyle = ink3;
+  cx.font = '9.5px ui-monospace, "SF Mono", Menlo, monospace';
+  const baseY = H - 5;
+  const meanLbl = moneyK(d.mean) + " likely";
+  const meanX = toX(d.mean);
+  const meanHalf = cx.measureText(meanLbl).width / 2;
+  const gap = 8;
+
+  cx.textAlign = "center";
+  cx.fillText(meanLbl, meanX, baseY);
+
+  cx.textAlign = "left";
+  if (meanX - meanHalf - gap > padL + cx.measureText("$0").width) cx.fillText("$0", padL, baseY);
+
+  cx.textAlign = "right";
+  if (meanX + meanHalf + gap < W - padR - cx.measureText(moneyK(xMax)).width) {
+    cx.fillText(moneyK(xMax), W - padR, baseY);
+  }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderScope() {
+  const d = distribution();
+  const comp = completion();
+  document.getElementById("ro-odds").textContent = Math.round(d.oddsAtLeast * 100) + "%";
+  document.getElementById("ro-odds-sub").textContent = comp.done ? "with today done" : "before you start";
+  document.getElementById("ro-cash").textContent = moneyK(d.mean);
+  document.getElementById("ro-cash-sub").textContent = "goal " + moneyK(d.m.goal);
+  document.getElementById("ro-act").textContent = comp.done + "/" + comp.total;
+  drawCurve();
+}
+
+function renderLessons() {
+  const host = document.getElementById("lessons");
+  host.innerHTML = "";
+  LESSONS.forEach((L, idx) => {
+    const done = S.done.includes(idx);
+    const open = S.openLesson === idx;
+    const el = document.createElement("div");
+    el.className = "card lesson" + (done ? " is-done" : "") + (open ? " is-open" : "");
+    el.innerHTML = `
+      <button class="lesson-head" aria-expanded="${open}">
+        <span class="lesson-n">${done ? "✓" : String(idx + 1).padStart(2, "0")}</span>
+        <span class="lesson-titles">
+          <span class="term">${L.term}</span>
+          <span class="name">${L.name}</span>
+        </span>
+        <span class="chev">▸</span>
+      </button>
+      <div class="lesson-body">
+        <div class="strat strat-physics"><span class="strat-tag">The physics</span><p>${L.physics}</p></div>
+        <div class="strat strat-honest"><span class="strat-tag">What it does not mean</span><p>${L.honest}</p></div>
+        <div class="strat strat-work"><span class="strat-tag">Your business</span><p>${L.work}</p></div>
+        <div class="doit"><span class="strat-tag">Do this</span><p>${L.doit}</p></div>
+        <button class="markbtn">${done ? "✓ Understood" : "Mark understood"}</button>
+      </div>`;
+    el.querySelector(".lesson-head").addEventListener("click", () => {
+      S.openLesson = open ? null : idx;
+      save(); renderLessons();
+    });
+    el.querySelector(".markbtn").addEventListener("click", () => {
+      S.done = done ? S.done.filter(x => x !== idx) : S.done.concat(idx);
+      save(); renderLessons();
+    });
+    host.appendChild(el);
+  });
+}
+
+function renderFields() {
+  const host = document.getElementById("fields");
+  if (host.childElementCount) return;
+  FIELDS.forEach(f => {
+    const el = document.createElement("div");
+    el.className = "field";
+    el.innerHTML = `
+      <label for="in-${f.k}">${f.label}</label>
+      <div class="field-input">
+        ${f.pre ? `<span class="pre">${f.pre}</span>` : ""}
+        <input id="in-${f.k}" type="number" inputmode="decimal" step="${f.step}" value="${S.inputs[f.k]}">
+        ${f.suf ? `<span class="suf">${f.suf}</span>` : ""}
+      </div>`;
+    const input = el.querySelector("input");
+    input.addEventListener("input", () => {
+      S.inputs[f.k] = input.value === "" ? f.def : +input.value;
+      save(); renderMath(); renderScope(); renderToday(); renderPipeline();
+    });
+    host.appendChild(el);
+  });
+}
+
+function renderMath() {
+  const m = model();
+
+  document.getElementById("per-lease").textContent = money(m.perLease);
+  document.getElementById("per-lease-note").textContent = m.viable
+    ? `${money(m.rent)} rent × ${Math.round(m.comm * 100)}% fee = ${money(m.gross)} gross, ` +
+      `× your ${Math.round(m.split * 100)}% split, less ${Math.round(m.loss * 100)}% you never collect. ` +
+      `Hitting ${money(m.goal)} a week is ${money(m.annual)} a year.`
+    : `At a ${Math.round(m.comm * 100)}% fee and a ${Math.round(m.split * 100)}% split, a lease pays you nothing, so there is no number of leases that reaches the goal. Put your real fee and split in above.`;
+
+  const reqs = m.viable ? [
+    { n: m.leasesWk.toFixed(1), u: "Leases / week",  per: m.leasesWk / m.days >= 1 ? (m.leasesWk / m.days).toFixed(1) + " a day" : "≈1 every " + (m.days / m.leasesWk).toFixed(1) + " days" },
+    { n: Math.ceil(m.toursWk),  u: "Tours / week",   per: Math.ceil(m.toursDay) + " a day" },
+    { n: Math.ceil(m.leadsWk),  u: "Leads / week",   per: Math.ceil(m.leadsDay) + " a day" },
+    { n: Math.ceil(m.adsWk),    u: "Ads / week",     per: Math.ceil(m.adsDay) + " a day" }
+  ] : [
+    { n: "—", u: "Leases / week", per: "set fee & split" },
+    { n: "—", u: "Tours / week",  per: "set fee & split" },
+    { n: "—", u: "Leads / week",  per: "set fee & split" },
+    { n: "—", u: "Ads / week",    per: "set fee & split" }
+  ];
+  document.getElementById("reqs").innerHTML = reqs.map(r =>
+    `<div class="req"><span class="n">${r.n}</span><span class="u">${r.u}</span><span class="per">${r.per}</span></div>`
+  ).join("");
+
+  /* Levers, ranked. A flat "+10% on everything" comparison is worthless here:
+     weekly revenue is a pure product of these factors, so a uniform 10% bump
+     on any one of them pays exactly the same. Instead each lever gets one
+     realistic two-week push, clamped to its actual headroom, so a rate already
+     near its ceiling correctly drops to the bottom of the list. */
+  const baseAds = m.adsWk;
+  const weeklyAt = o =>
+    (o.ads ?? baseAds) * (o.perAd ?? m.perAd) * (o.leadTour ?? m.leadTour) *
+    (o.tourLease ?? m.tourLease) * (o.rent ?? m.rent) * (o.comm ?? m.comm) *
+    (o.split ?? m.split) * (1 - (o.loss ?? m.loss));
+  const nowWk = weeklyAt({});
+  const pct = v => Math.round(v * 100) + "%";
+
+  const levers = [
+    { what: "Answer every inquiry inside 5 minutes",
+      move: `lead → tour  ${pct(m.leadTour)} → ${pct(Math.min(1, m.leadTour + 0.05))}`,
+      v: weeklyAt({ leadTour: Math.min(1, m.leadTour + 0.05) }) },
+    { what: "Work properties paying 100% of one month",
+      move: `fee  ${pct(m.comm)} → ${pct(Math.max(m.comm, 1))}`,
+      v: weeklyAt({ comm: Math.max(m.comm, 1) }) },
+    { what: "Shift the mix $200 higher in rent",
+      move: `avg rent  ${money(m.rent)} → ${money(m.rent + 200)}`,
+      v: weeklyAt({ rent: m.rent + 200 }) },
+    { what: "Add 6 more ads a week",
+      move: `ads  ${Math.ceil(baseAds)} → ${Math.ceil(baseAds + 6)}`,
+      v: weeklyAt({ ads: baseAds + 6 }) },
+    { what: "Tighten your tour game 5 points",
+      move: `tour → lease  ${pct(m.tourLease)} → ${pct(Math.min(1, m.tourLease + 0.05))}`,
+      v: weeklyAt({ tourLease: Math.min(1, m.tourLease + 0.05) }) },
+    { what: "Register every guest card, lose nothing",
+      move: `leakage  ${pct(m.loss)} → ${pct(Math.min(m.loss, 0.02))}`,
+      v: weeklyAt({ loss: Math.min(m.loss, 0.02) }) },
+    { what: "Renegotiate your split 5 points",
+      move: `split  ${pct(m.split)} → ${pct(Math.min(0.95, m.split + 0.05))}`,
+      v: weeklyAt({ split: Math.min(0.95, m.split + 0.05) }) }
+  ].map(l => ({ ...l, gain: Math.max(0, l.v - nowWk) })).sort((a, b) => b.gain - a.gain);
+
+  const top = Math.max(1, levers[0].gain);
+  document.getElementById("levers").innerHTML = levers.map(l => `
+    <div class="lev-row">
+      <span class="what">${l.what}</span>
+      <span class="gain">${l.gain < 1 ? "maxed" : "+" + money(l.gain) + "/wk"}</span>
+      <span class="lev-move">${l.move}</span>
+      <span class="lev-bar"><span style="width:${Math.max(1.5, (l.gain / top) * 100)}%"></span></span>
+    </div>`).join("");
+
+  document.getElementById("cashlag").innerHTML = `
+    <div class="flag flag-crit">
+      <span class="mk">$</span>
+      <span>The gap nobody warns you about. You get paid roughly <b>${Math.round(m.lag)} days after move-in</b>, so the week you <i>earn</i> ${money(m.goal)} and the week you <i>receive</i> ${money(m.goal)} are about <b>${m.rampWeeks} weeks apart</b>. Run full activity for ${m.rampWeeks} weeks before you judge whether this works. Most people quit inside the lag and call it failure.</span>
+    </div>
+    ${m.viable ? `<div class="flag flag-warn">
+      <span class="mk">!</span>
+      <span>Sanity check on the target: ${money(m.goal)} a week is <b>${money(m.annual)} a year</b> and needs <b>${m.leasesWk.toFixed(1)} leases every week</b>, about ${Math.round(m.leasesWk * 4.3)} a month. That is top-tier Austin production, not a beginner number. It is reachable, and it will not be reached by accident.</span>
+    </div>` : ""}`;
+}
+
+function renderToday() {
+  const list = taskList();
+  const comp = completion();
+  document.getElementById("streak-n").textContent = S.streak;
+  const open = Math.pow(2, comp.total - comp.done);
+  document.getElementById("branches").textContent = comp.done === comp.total ? "1" : open.toLocaleString("en-US");
+
+  document.getElementById("tasks").innerHTML = list.map(x => {
+    const done = !!S.tasks[x.k];
+    return `<button class="task${done ? " is-done" : ""}" data-task="${x.k}">
+      <span class="box">✓</span>
+      <span class="task-txt"><span class="t">${x.t}</span><span class="d">${x.d}</span></span>
+      ${x.n !== null ? `<span class="task-target">${x.n}</span>` : ""}
+    </button>`;
+  }).join("");
+
+  document.querySelectorAll("[data-task]").forEach(b => {
+    b.addEventListener("click", () => {
+      const k = b.dataset.task;
+      S.tasks[k] = !S.tasks[k];
+      const nowComp = completion();
+      if (nowComp.done === nowComp.total && S.lastFull !== todayStamp()) {
+        S.lastFull = todayStamp();
+        S.streak = (S.streak || 0) + 1;
+      }
+      save(); renderToday(); renderScope();
+    });
+  });
+
+  const m = model();
+  const coach = comp.done === comp.total
+    ? `Every branch but one is closed. This exact day, repeated ${m.days} times a week for ${m.rampWeeks} weeks, is a ${money(m.goal)} week. Nothing more clever is required.`
+    : comp.done === 0
+      ? `${open.toLocaleString("en-US")} versions of this week are still live. The first checkbox is what starts deleting the bad ones. Post the ads first, they have the longest lag.`
+      : `${comp.total - comp.done} left. The one that matters most is registering guest cards before tours, because that is where the fees you already earned go to die.`;
+  document.getElementById("today-coach").innerHTML = coach;
+}
+
+function renderPipeline() {
+  const m = model();
+  const host = document.getElementById("leads");
+
+  const valueOf = L => {
+    const rent = L.rent > 0 ? L.rent : m.rent;
+    return rent * m.comm * m.split * (1 - m.loss);
+  };
+  const stageOf = L => STAGES.findIndex(s => s.id === L.stage);
+  const weighted = S.leads.reduce((sum, L) => {
+    const si = Math.max(0, stageOf(L));
+    return sum + valueOf(L) * STAGES[si].p;
+  }, 0);
+
+  document.getElementById("pipe-total").textContent = money(weighted);
+  const closedCount = S.leads.filter(L => ["leased", "invoiced", "paid"].includes(L.stage)).length;
+  document.getElementById("pipe-note").textContent = S.leads.length
+    ? `${S.leads.length} live ${S.leads.length === 1 ? "lead" : "leads"}, ${closedCount} closed. Each one is valued at your current rates and weighted by how far it has actually moved, so this is what the pipeline is worth today, not what it would be worth if everything went perfectly.`
+    : "Add a lead to start tracking.";
+
+  if (!S.leads.length) {
+    host.innerHTML = `<div class="empty">No leads yet.<br>Add the next person who messages one of your ads.</div>`;
+    return;
+  }
+
+  host.innerHTML = S.leads.map((L, i) => {
+    const si = Math.max(0, stageOf(L));
+    const risky = si >= 3 && !L.gc;
+    return `<div class="lead">
+      <div class="lead-top">
+        <span class="lead-name">${escapeHtml(L.name)}</span>
+        <span class="lead-val">${money(valueOf(L) * STAGES[si].p)} <span style="color:var(--ink-3)">of ${money(valueOf(L))}</span></span>
+      </div>
+      <div class="lead-meta">${L.rent > 0 ? money(L.rent) + "/mo budget" : "budget not set, using your average"} · ${Math.round(STAGES[si].p * 100)}% likely · added ${L.added}</div>
+      <div class="stages">
+        ${STAGES.map((s, k) => `<button class="stagebtn ${k === si ? "is-at" : k < si ? "is-past" : ""}" data-lead="${i}" data-stage="${s.id}">${s.label}</button>`).join("")}
+      </div>
+      <div class="lead-actions">
+        <button class="gcbtn${L.gc ? " is-on" : ""}" data-gc="${i}">${L.gc ? "✓ Guest card registered" : "Guest card not sent"}</button>
+        <button class="killbtn" data-del="${i}">Remove</button>
+      </div>
+      ${risky ? `<div class="lead-alert"><b>Fee at risk.</b> This lead has toured with no guest card on file. Register the referral with the property in writing now and ask them to confirm receipt. After an application posts, credit is a favor rather than a right.</div>` : ""}
+    </div>`;
+  }).join("");
+
+  host.querySelectorAll("[data-stage]").forEach(b => b.addEventListener("click", () => {
+    S.leads[+b.dataset.lead].stage = b.dataset.stage;
+    save(); renderPipeline();
+  }));
+  host.querySelectorAll("[data-gc]").forEach(b => b.addEventListener("click", () => {
+    const L = S.leads[+b.dataset.gc];
+    L.gc = !L.gc;
+    save(); renderPipeline();
+  }));
+  host.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
+    S.leads.splice(+b.dataset.del, 1);
+    save(); renderPipeline();
+  }));
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function addLead() {
+  const nameEl = document.getElementById("lead-name");
+  const rentEl = document.getElementById("lead-rent");
+  const name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  S.leads.unshift({
+    name,
+    rent: rentEl.value ? +rentEl.value : 0,
+    stage: "new",
+    gc: false,
+    added: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  });
+  nameEl.value = ""; rentEl.value = "";
+  save(); renderPipeline();
+}
+document.getElementById("lead-add").addEventListener("click", addLead);
+document.getElementById("lead-name").addEventListener("keydown", e => { if (e.key === "Enter") addLead(); });
+document.getElementById("lead-rent").addEventListener("keydown", e => { if (e.key === "Enter") addLead(); });
+
+function renderDrills() {
+  const i = Math.min(S.qi, QUIZ.length - 1);
+  const done = S.qi >= QUIZ.length;
+  document.getElementById("q-count").textContent = done ? "Complete" : `Question ${i + 1} of ${QUIZ.length}`;
+  document.getElementById("q-score").textContent = `${S.qScore} correct`;
+  const host = document.getElementById("q-body");
+
+  if (done) {
+    const pct = Math.round((S.qScore / QUIZ.length) * 100);
+    host.innerHTML = `
+      <p class="q-tag">Result</p>
+      <p class="q-text">${S.qScore} of ${QUIZ.length} correct, ${pct}%.</p>
+      <div class="why"><span class="strat-tag">What to do with this</span><p>${
+        pct >= 85
+          ? "You know the mechanics. The bottleneck is not knowledge, it is daily volume, so go work the Today tab."
+          : "Run these again. The ones you missed are usually the ones that cost money quietly, especially guest card timing and the payment lag."
+      }</p></div>
+      <button class="nextbtn" id="q-restart">Run them again</button>`;
+    document.getElementById("q-restart").addEventListener("click", () => {
+      S.qi = 0; S.qScore = 0; S.qPicked = null; save(); renderDrills();
+    });
+    return;
+  }
+
+  const Q = QUIZ[i];
+  const picked = S.qPicked;
+  host.innerHTML = `
+    <p class="q-tag">${Q.tag}</p>
+    <p class="q-text">${Q.q}</p>
+    <div class="opts">
+      ${Q.opts.map((o, k) => {
+        let cls = "opt";
+        if (picked !== null) {
+          if (k === Q.a) cls += " is-right";
+          else if (k === picked) cls += " is-wrong";
+        }
+        return `<button class="${cls}" data-opt="${k}" ${picked !== null ? "disabled" : ""}>
+          <span class="k">${"ABCD"[k]}</span><span>${o}</span>
+        </button>`;
+      }).join("")}
+    </div>
+    ${picked !== null ? `
+      <div class="why"><span class="strat-tag">${picked === Q.a ? "Correct" : "Here's the cost"}</span><p>${Q.why}</p></div>
+      <button class="nextbtn" id="q-next">${i === QUIZ.length - 1 ? "See result" : "Next question"}</button>` : ""}`;
+
+  host.querySelectorAll("[data-opt]").forEach(b => b.addEventListener("click", () => {
+    S.qPicked = +b.dataset.opt;
+    if (S.qPicked === Q.a) S.qScore++;
+    save(); renderDrills();
+  }));
+  const nx = document.getElementById("q-next");
+  if (nx) nx.addEventListener("click", () => { S.qi++; S.qPicked = null; save(); renderDrills(); });
+}
+
+/* ============================================================
+   NAV + THEME
+   ============================================================ */
+function go(v) {
+  S.view = v; save();
+  document.querySelectorAll(".view").forEach(el => el.classList.toggle("is-on", el.dataset.view === v));
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("is-on", b.dataset.go === v));
+  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+}
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => go(b.dataset.go)));
+
+function applyTheme() {
+  if (S.theme) document.documentElement.setAttribute("data-theme", S.theme);
+  else document.documentElement.removeAttribute("data-theme");
+  requestAnimationFrame(drawCurve);
+}
+document.getElementById("themebtn").addEventListener("click", () => {
+  const isDark = S.theme
+    ? S.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  S.theme = isDark ? "light" : "dark";
+  save(); applyTheme();
+});
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!S.theme) drawCurve(); });
+window.addEventListener("resize", drawCurve);
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+applyTheme();
+renderLessons();
+renderFields();
+renderMath();
+renderToday();
+renderPipeline();
+renderDrills();
+renderScope();
+go(S.view || "learn");
+</script>
