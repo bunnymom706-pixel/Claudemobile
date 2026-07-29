@@ -1,0 +1,617 @@
+<title>Under Five | Sophia's Reply Library</title>
+
+<style>
+:root {
+  --ground:#F3F4F8; --ground-2:#FFFFFF; --ground-3:#E9EBF2;
+  --line:#D3D7E3; --line-soft:#E4E7F0;
+  --ink:#171A23; --ink-2:#4A5061; --ink-3:#767D91;
+  --amber:#B0781F; --amber-wash:#F7EEDC;
+  --magenta:#C22660; --magenta-wash:#FBE7EF;
+  --cyan:#1C7E99; --cyan-wash:#E1F1F6;
+  --good:#1F7A52; --good-wash:#E2F2EA;
+  --warn:#A8710F; --warn-wash:#F8EEDA;
+  --shadow:0 1px 2px rgba(23,26,35,.05), 0 8px 24px -12px rgba(23,26,35,.14);
+  --radius:10px; --radius-sm:6px;
+  --ui:Futura,"Avenir Next",Avenir,"Century Gothic","Trebuchet MS",system-ui,sans-serif;
+  --read:"Hoefler Text","Iowan Old Style",Palatino,Georgia,serif;
+  --data:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --wrap:580px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:#0D1017; --ground-2:#151924; --ground-3:#1D222F;
+    --line:#2A303F; --line-soft:#212734;
+    --ink:#E7E9F1; --ink-2:#A6ADBF; --ink-3:#737B8E;
+    --amber:#E5A93C; --amber-wash:#2A2113;
+    --magenta:#F0568C; --magenta-wash:#2C1420;
+    --cyan:#4FBFDE; --cyan-wash:#10262E;
+    --good:#4FC08A; --good-wash:#10241B;
+    --warn:#E0AC4A; --warn-wash:#291F0F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="light"]{--ground:#F3F4F8;--ground-2:#FFFFFF;--ground-3:#E9EBF2;--line:#D3D7E3;--line-soft:#E4E7F0;--ink:#171A23;--ink-2:#4A5061;--ink-3:#767D91;--amber:#B0781F;--amber-wash:#F7EEDC;--magenta:#C22660;--magenta-wash:#FBE7EF;--cyan:#1C7E99;--cyan-wash:#E1F1F6;--good:#1F7A52;--good-wash:#E2F2EA;--warn:#A8710F;--warn-wash:#F8EEDA;--shadow:0 1px 2px rgba(23,26,35,.05),0 8px 24px -12px rgba(23,26,35,.14);}
+:root[data-theme="dark"]{--ground:#0D1017;--ground-2:#151924;--ground-3:#1D222F;--line:#2A303F;--line-soft:#212734;--ink:#E7E9F1;--ink-2:#A6ADBF;--ink-3:#737B8E;--amber:#E5A93C;--amber-wash:#2A2113;--magenta:#F0568C;--magenta-wash:#2C1420;--cyan:#4FBFDE;--cyan-wash:#10262E;--good:#4FC08A;--good-wash:#10241B;--warn:#E0AC4A;--warn-wash:#291F0F;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.7);}
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--ui); font-size:16px; line-height:1.5;
+  -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;
+}
+.app { max-width:var(--wrap); margin:0 auto; padding:0 16px 40px; }
+button { font-family:inherit; font-size:inherit; color:inherit; cursor:pointer; }
+:focus-visible { outline:2px solid var(--magenta); outline-offset:2px; border-radius:4px; }
+
+.eyebrow {
+  font-family:var(--data); font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3); margin:0;
+}
+
+.topbar { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:20px 0 12px; }
+.topbar h1 { font-size:25px; font-weight:600; letter-spacing:-.02em; line-height:1; margin:5px 0 0; }
+.topbar h1 em { font-style:normal; color:var(--magenta); }
+.themetoggle {
+  flex:none; background:var(--ground-2); border:1px solid var(--line);
+  border-radius:999px; width:34px; height:34px; font-size:14px; line-height:1;
+  display:grid; place-items:center; color:var(--ink-2);
+}
+
+.stake {
+  background:var(--amber-wash); border-radius:var(--radius);
+  padding:12px 14px; display:flex; gap:10px; align-items:flex-start;
+  font-family:var(--read); font-size:14px; line-height:1.55;
+}
+.stake .n {
+  font-family:var(--data); font-variant-numeric:tabular-nums;
+  font-weight:600; color:var(--amber); flex:none;
+}
+
+.namebox {
+  margin-top:12px; background:var(--ground-2); border:1px solid var(--line);
+  border-radius:var(--radius); box-shadow:var(--shadow); padding:11px 14px 13px;
+}
+.namebox label {
+  font-family:var(--data); font-size:9.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:5px;
+}
+.namebox input {
+  font-family:var(--ui); font-size:18px; font-weight:500; color:var(--ink);
+  background:none; border:0; border-bottom:1px solid var(--line);
+  padding:2px 0; width:100%; border-radius:0;
+}
+.namebox input:focus { outline:none; border-bottom-color:var(--magenta); }
+.namebox .hint {
+  font-family:var(--read); font-size:13px; color:var(--ink-2);
+  margin:8px 0 0; line-height:1.5;
+}
+
+.chips {
+  position:sticky; top:0; z-index:10;
+  display:flex; gap:6px; overflow-x:auto; padding:12px 0 10px;
+  margin:8px -16px 0; padding-left:16px; padding-right:16px;
+  background:color-mix(in srgb, var(--ground) 92%, transparent);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar { display:none; }
+.chip {
+  flex:none; background:var(--ground-2); border:1px solid var(--line);
+  border-radius:999px; padding:7px 13px;
+  font-family:var(--data); font-size:11px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink-2); white-space:nowrap;
+}
+.chip.is-on { background:var(--magenta); border-color:var(--magenta); color:#fff; font-weight:600; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .chip.is-on { color:var(--ground); } }
+:root[data-theme="dark"] .chip.is-on { color:var(--ground); }
+
+.grouphead { padding:18px 2px 2px; }
+.grouphead h2 { font-size:13px; font-weight:600; margin:3px 0 0; }
+.grouphead p {
+  font-family:var(--read); font-size:14px; line-height:1.55;
+  color:var(--ink-2); margin:5px 0 0;
+}
+
+.card {
+  background:var(--ground-2); border:1px solid var(--line);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+  margin-top:10px; overflow:hidden;
+}
+.card-head {
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:10px; padding:12px 14px 0;
+}
+.card-title { font-size:15.5px; font-weight:600; letter-spacing:-.01em; }
+.card-when {
+  font-family:var(--data); font-size:10px; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--cyan); flex:none;
+}
+.card-note {
+  font-family:var(--read); font-size:13.5px; line-height:1.5;
+  color:var(--ink-2); padding:4px 14px 0; margin:0;
+}
+.body {
+  font-family:var(--read); font-size:15px; line-height:1.62;
+  padding:10px 14px 0; white-space:pre-wrap; color:var(--ink);
+}
+.body .ph { color:var(--magenta); font-weight:600; font-style:italic; }
+.subj {
+  font-family:var(--data); font-size:12px; line-height:1.5;
+  background:var(--ground-3); padding:9px 14px; margin:10px 0 0;
+  color:var(--ink-2); word-break:break-word;
+}
+.subj b { color:var(--ink); font-weight:600; }
+.copy {
+  margin:12px 0 0; width:100%; padding:12px;
+  border:0; border-top:1px solid var(--line-soft);
+  background:var(--ground-3);
+  font-family:var(--data); font-size:11.5px; letter-spacing:.09em;
+  text-transform:uppercase; font-weight:600; color:var(--ink-2);
+}
+.copy.is-done { background:var(--good-wash); color:var(--good); }
+
+.flag {
+  display:flex; gap:9px; padding:12px 13px; margin-top:10px;
+  border-radius:var(--radius);
+  font-family:var(--read); font-size:14px; line-height:1.55;
+}
+.flag-warn { background:var(--warn-wash); }
+.flag .mk { font-family:var(--data); font-weight:600; flex:none; color:var(--warn); }
+.flag b { font-weight:600; }
+
+.toast {
+  position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom));
+  transform:translate(-50%, 90px);
+  background:var(--ink); color:var(--ground-2);
+  font-family:var(--data); font-size:12px; letter-spacing:.06em;
+  text-transform:uppercase; font-weight:600;
+  padding:11px 18px; border-radius:999px; z-index:50;
+  transition:transform .22s cubic-bezier(.2,.9,.3,1);
+  pointer-events:none; box-shadow:var(--shadow);
+}
+.toast.is-up { transform:translate(-50%, 0); }
+
+footer {
+  padding:24px 2px 0; font-family:var(--data);
+  font-size:10px; line-height:1.6; color:var(--ink-3);
+}
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<div class="app">
+
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Speed is the lever</p>
+      <h1>Under Five<em>.</em></h1>
+    </div>
+    <button class="themetoggle" id="themebtn" aria-label="Switch light or dark">◐</button>
+  </div>
+
+  <div class="stake">
+    <span class="n">+$1,136/wk</span>
+    <span>Answering inside five minutes is the highest paying lever you have, worth more than extra ads or higher rents. The reason it gets missed is composition time. Everything here is already written, so tap, paste, send.</span>
+  </div>
+
+  <div class="namebox">
+    <label for="leadname">Lead's first name</label>
+    <input type="text" id="leadname" placeholder="Type it once" autocomplete="off" autocapitalize="words">
+    <p class="hint">Every template below fills in automatically, including what gets copied.</p>
+  </div>
+
+  <div class="chips" id="chips"></div>
+  <div id="list"></div>
+
+  <footer>
+    Sophia Reddehase | One Place Locators | License #831516<br>
+    No em dashes, no safety language, no contact info in listing bodies. Fee is always paid by the property.
+  </footer>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+"use strict";
+
+const T = [
+  /* ============ FIRST REPLY ============ */
+  {
+    cat: "First reply", title: "Asked about a specific ad", when: "under 5 min",
+    note: "Your default. Short on purpose, because speed beats polish and long replies read as canned.",
+    body: `Hi [name]! Yes, still available as of today. I'm Sophia, a licensed locator here in Austin, and my help is completely free to you since the property pays my fee, never you.
+
+What is your ideal move-in date, and how many bedrooms do you need?`
+  },
+  {
+    cat: "First reply", title: `"Is this still available?"`, when: "under 5 min",
+    note: "The most common opener on Marketplace. Answer, then immediately ask for the date.",
+    body: `Hi [name]! It is. Pricing and availability shift daily, so let me pull the current numbers for you.
+
+What is your target move-in date?`
+  },
+  {
+    cat: "First reply", title: "Vague or one word inquiry", when: "under 5 min",
+    note: "For a one word reply or a thumbs up. Establishes who you are and that it costs them nothing.",
+    body: `Hi [name]! Happy to help. I'm Sophia, a licensed Austin locator, and I am free to you because the property pays my fee.
+
+Tell me your move-in date, your monthly budget, and how many bedrooms, and I will get to work on it.`
+  },
+  {
+    cat: "First reply", title: "You are busy and cannot answer properly", when: "under 5 min",
+    note: "This one protects the window when you are mid tour or driving. Sending this in 20 seconds beats a perfect reply two hours later.",
+    body: `Hi [name]! Got your message. Yes, it is still available.
+
+I am finishing up with a client right now and will send you full details within the hour. What is your move-in date so I can start pulling options in the meantime?`
+  },
+  {
+    cat: "First reply", title: "Came in overnight", when: "first thing",
+    note: "Acknowledge the gap without apologizing for sleeping.",
+    body: `Good morning [name]! Thanks for reaching out last night.
+
+Yes, still available. I'm Sophia, a licensed locator here in Austin, and my service is free to you. What is your move-in date and bedroom count?`
+  },
+
+  /* ============ QUALIFY ============ */
+  {
+    cat: "Qualify", title: "The five that actually matter", when: "reply 2",
+    note: "Send as one message, not five. Getting all of this up front is what separates a lead from a name.",
+    body: `To get you real matches instead of guesses, five quick things:
+
+1. Move-in date
+2. Monthly budget
+3. Bedrooms and bathrooms
+4. Areas or the commute you need to be near
+5. Any pets, and roughly where your credit sits
+
+Once I have those I can tell you exactly what you will qualify for and what is actually available right now.`
+  },
+  {
+    cat: "Qualify", title: "Credit came back thin", when: "as needed",
+    note: "You have a 550+ guarantors program. Never let credit end the conversation.",
+    body: `Thanks for being straight with me [name], that helps a lot.
+
+Good news is we work with communities that accept 550 and up through a guarantors program, so this is very workable. Plenty of my clients land great places this way.
+
+Let me pull the options that fit your situation.`
+  },
+  {
+    cat: "Qualify", title: "Budget is under the market", when: "as needed",
+    note: "Reset expectations honestly without losing them. Honesty here saves you wasted tours.",
+    body: `Appreciate you sharing that [name]. Being upfront with you, that budget is tight for the area you mentioned right now.
+
+Two things I can do. I can look slightly outside that pocket where the same money goes further, or I can watch for specials in your target area, since concessions can bring the effective cost down a lot.
+
+Which would you rather I chase?`
+  },
+  {
+    cat: "Qualify", title: "Confirm before you tour", when: "before every tour",
+    note: "Say this out loud or in writing before they set foot on a property. It is the cheapest insurance you have.",
+    body: `One quick thing before you go [name]. I am sending the community your guest card now so you are registered under me.
+
+When you arrive, please make sure they have Sophia Reddehase with One Place Locators listed as your locator on your file. If anyone asks how you heard about them, that is the answer. It costs you nothing and it is how I get credited.`
+  },
+
+  /* ============ FOLLOW UP ============ */
+  {
+    cat: "Follow up", title: "Day 1", when: "next day",
+    note: "The cadence is 0, 1, 3, 7, 14, 30. Most locators quit at message two, which is exactly where the compounding starts.",
+    body: `Hi [name]! Following up on the options I sent over.
+
+Did any of them stand out, or should I adjust what I am looking for? Availability moves fast and I want to keep you ahead of it.`
+  },
+  {
+    cat: "Follow up", title: "Day 3", when: "+3 days",
+    note: "Lead with something new. A check in with no new information reads as pressure.",
+    body: `Hey [name]! A couple of new units opened up in your range today.
+
+Want me to send what is fresh?`
+  },
+  {
+    cat: "Follow up", title: "Day 7", when: "+1 week",
+    note: "Give them an easy exit. The ones who are done will tell you, which frees your attention for the ones who are not.",
+    body: `Hi [name]! Checking in on your search.
+
+Are you still looking, or did you land somewhere? If you are still out there, specials shifted this week and a few are worth a look.`
+  },
+  {
+    cat: "Follow up", title: "Day 14", when: "+2 weeks",
+    note: "Specials reset monthly, which gives you a genuine reason to reappear.",
+    body: `Hey [name]! Specials changed for the month and a few properties in your budget got noticeably better.
+
+Worth a fresh look if your search is still open.`
+  },
+  {
+    cat: "Follow up", title: "Day 30", when: "+1 month",
+    note: "Low pressure, keeps the door open. Plans slip constantly and this is how you catch them when they come back.",
+    body: `Hi [name]! I know timing shifts on these things.
+
+If your search is back on, I am here and it is still free to you. Just say the word and I will pick it right back up.`
+  },
+  {
+    cat: "Follow up", title: "Went quiet after a tour", when: "+2 days",
+    note: "A tour with no follow through usually means one specific hesitation. Ask for it directly.",
+    body: `Hi [name]! How did the tour sit with you once you had a night to think?
+
+If something felt off about it, tell me what it was and I will use that to find you a better fit. That feedback genuinely helps me narrow things down.`
+  },
+
+  /* ============ OBJECTIONS ============ */
+  {
+    cat: "Objections", title: `"Is this actually free?"`, when: "common",
+    note: "Answer it completely the first time. Any hedging here creates suspicion.",
+    body: `It really is [name]. I am paid a referral fee by the property when you sign, so there is no cost to you at any point.
+
+It also does not change your rent, your deposit, or your terms. You get the same pricing you would walking in on your own, except I do the searching for you.`
+  },
+  {
+    cat: "Objections", title: `"I'm already working with someone"`, when: "common",
+    note: "Leave gracefully and leave the door open. Locator relationships fall apart all the time.",
+    body: `Totally understand [name], and I hope they take great care of you.
+
+If anything changes or you want a second set of eyes on the market, reach out anytime. No hard feelings on my end at all.`
+  },
+  {
+    cat: "Objections", title: `"I already found a place"`, when: "common",
+    note: "Always ask for the referral. This is the cheapest lead source you have and almost nobody uses it.",
+    body: `That is great news [name], congratulations on the new place!
+
+One favor if you do not mind. If any friends or coworkers start looking, send them my way. It is free for them too and I would really appreciate it.`
+  },
+  {
+    cat: "Objections", title: `"Can you get me a better deal?"`, when: "common",
+    note: "Be honest about what you can and cannot move, then redirect to what you actually control.",
+    body: `Honest answer [name], I cannot negotiate rent down below what a property is offering.
+
+What I can do is know which communities are running real concessions right now, because those change weekly and they are where the actual savings live. That is usually worth more than haggling anyway.
+
+Let me show you where the money goes furthest for what you need.`
+  },
+  {
+    cat: "Objections", title: "Wants to just tour on their own", when: "common",
+    note: "The risk here is an unregistered tour, which kills your fee. Make registering feel like a service, which it is.",
+    body: `Absolutely [name], you can tour on your own schedule and plenty of my clients do.
+
+Just let me know which community before you go so I can register you and send your guest card ahead. That way they are expecting you, and sometimes I can get you information the public listings do not show.`
+  },
+
+  /* ============ PROPERTY EMAILS ============ */
+  {
+    cat: "Property emails", title: "Guest card, before the tour", when: "every lead",
+    note: "The single most important email you send. An unregistered tour is how a commission you already earned disappears.",
+    subject: "Guest Card Attached - C/O: Leasing Team | Client: [name] | Locator: Sophia Reddehase",
+    body: `Hi Leasing Team,
+
+I hope you are having a great day. I wanted to introduce my client, [name], who is currently searching for their new home. After reviewing several communities, your property is one they are excited to see.
+
+Client Name: [name]
+Client Phone Number:
+Client Email:
+
+Attached is our guest card for your records. Please confirm you have received it and that I am listed as the locator on their file.
+
+Could you also confirm your current locator commission and whether it is calculated on net effective or market rate?
+
+Thank you so much for your time and partnership. I appreciate all you do to take great care of my clients.
+
+Sophia Reddehase
+Licensed Real Estate Agent
+One Place Locators
+512-676-1215`
+  },
+  {
+    cat: "Property emails", title: "Commission terms, before you send anyone", when: "new property",
+    note: "Ask before the referral, not after. Getting terms in writing up front is how you avoid arguing about them later.",
+    subject: "Locator Commission Confirmation | Sophia Reddehase, One Place Locators",
+    body: `Hi Leasing Team,
+
+I hope your week is going well. I have clients actively searching in your area and would love to send them your way.
+
+Before I do, could you confirm your current locator terms:
+
+Commission percentage
+Whether it is calculated on net effective or market rate
+Any current specials and the lease term required
+Whether you accept send or escort
+
+Thank you! Looking forward to working together.
+
+Sophia Reddehase
+Licensed Real Estate Agent
+One Place Locators
+512-676-1215`
+  },
+  {
+    cat: "Property emails", title: "Lease verification, after they sign", when: "after signing",
+    note: "Verify before billing goes out. A number caught here is a number you do not chase for sixty days.",
+    subject: "We did it! [name] | Locator: Sophia Reddehase",
+    body: `Hi Leasing Team!
+
+Thank you again for taking great care of our client, [name].
+
+Before we send everything over to our billing team, I wanted to do a quick lease verification to make sure our records match yours.
+
+Here is what we currently have on file:
+
+Unit #:
+Move-in Date:
+Move-out Date:
+Price:
+Commission:
+Commission Basis:
+
+If everything looks good, just reply "Correct!". If any corrections are needed, reply here and I will get that updated right away.
+
+We appreciate you and your team so much!
+
+Sophia Reddehase
+512-676-1215`
+  },
+  {
+    cat: "Property emails", title: "Invoice follow up, unpaid", when: "+30 days",
+    note: "Warm but specific. Name the amount and the date, because vague nudges get filed and forgotten.",
+    subject: "Following up: [name] commission invoice",
+    body: `Hi Leasing Team,
+
+Hope you are doing well! Following up on the commission invoice for [name], which was sent over on [date] for [amount].
+
+Just checking that it was received and seeing where it sits in your payment process. If you need anything further from me to move it along, happy to send it right over.
+
+If it has already been processed, a quick confirmation for my records would be perfect.
+
+Thank you again for taking such good care of [name]!
+
+Sophia Reddehase
+512-676-1215`
+  },
+  {
+    cat: "Property emails", title: "Locator credit was never recorded", when: "urgent",
+    note: "Use this the moment you suspect you are not on the file. Every day you wait, this gets harder to fix.",
+    subject: "Locator credit confirmation needed | Client: [name] | Sophia Reddehase",
+    body: `Hi Leasing Team,
+
+I hope you are having a good week. I am following up on my client [name], who recently applied at your community.
+
+[name] mentioned there was no field on the application to enter a referral or locator name, so I want to make sure nothing fell through the cracks. Could you please confirm that I am credited as the locator on their file?
+
+If you need anything from me to get that documented, I can send it right away. I also have our original guest card email and can forward it for your records.
+
+If you would not mind confirming the following as well:
+
+Unit number
+Lease start date
+Monthly rent amount
+Whether commission is calculated on net effective or market rate
+The exact commission amount for this referral
+
+Thank you so much for your help with this.
+
+Sophia Reddehase
+Licensed Real Estate Agent
+One Place Locators
+512-676-1215`
+  }
+];
+
+const GROUPS = {
+  "First reply":     "The window that pays. Send something within five minutes even when you cannot send everything.",
+  "Qualify":         "Turn a name into a real lead. Ask once, ask completely.",
+  "Follow up":       "Day 0, 1, 3, 7, 14, 30. Spaced touches compound. Bunched ones cancel out.",
+  "Objections":      "The five you hear constantly, answered without hedging.",
+  "Property emails": "Where commissions are protected or lost. These are the highest dollar templates here."
+};
+
+const CATS = ["All", ...Object.keys(GROUPS)];
+let active = "All";
+let name = "";
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* Substitute the lead's name for display (highlighted) or for the clipboard (plain). */
+function fill(text, forDisplay) {
+  const v = name.trim();
+  if (!forDisplay) return text.replace(/\[name\]/g, v || "[name]");
+  return esc(text).replace(/\[name\]/g,
+    v ? `<span class="ph">${esc(v)}</span>` : `<span class="ph">[name]</span>`);
+}
+
+function renderChips() {
+  const host = document.getElementById("chips");
+  host.innerHTML = CATS.map(c =>
+    `<button class="chip${c === active ? " is-on" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  host.querySelectorAll("[data-cat]").forEach(b =>
+    b.addEventListener("click", () => { active = b.dataset.cat; renderChips(); renderList(); }));
+}
+
+function renderList() {
+  const host = document.getElementById("list");
+  const cats = active === "All" ? Object.keys(GROUPS) : [active];
+  let html = "";
+
+  for (const cat of cats) {
+    const items = T.filter(t => t.cat === cat);
+    if (!items.length) continue;
+    html += `<div class="grouphead"><p class="eyebrow">${esc(cat)}</p><p>${esc(GROUPS[cat])}</p></div>`;
+    if (cat === "Property emails") {
+      html += `<div class="flag flag-warn"><span class="mk">!</span><span>Register the referral <b>in writing, before the tour</b>. Once an application posts with someone else credited, getting paid becomes a favor rather than a right.</span></div>`;
+    }
+    items.forEach(t => {
+      const i = T.indexOf(t);
+      html += `<div class="card">
+        <div class="card-head">
+          <span class="card-title">${esc(t.title)}</span>
+          <span class="card-when">${esc(t.when)}</span>
+        </div>
+        <p class="card-note">${esc(t.note)}</p>
+        ${t.subject ? `<p class="subj"><b>Subject:</b> ${fill(t.subject, true)}</p>` : ""}
+        <div class="body">${fill(t.body, true)}</div>
+        <button class="copy" data-i="${i}">Copy${t.subject ? " subject + body" : ""}</button>
+      </div>`;
+    });
+  }
+  host.innerHTML = html;
+
+  host.querySelectorAll("[data-i]").forEach(b =>
+    b.addEventListener("click", () => doCopy(b, T[+b.dataset.i])));
+}
+
+function textOf(t) {
+  const body = fill(t.body, false);
+  return t.subject ? `Subject: ${fill(t.subject, false)}\n\n${body}` : body;
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("is-up");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("is-up"), 1600);
+}
+
+async function doCopy(btn, t) {
+  const text = textOf(t);
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    ok = true;
+  } catch (e) {
+    /* Fallback for older iOS Safari, which needs a real selection. */
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:absolute;left:-9999px;top:0";
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e2) { ok = false; }
+  }
+  if (ok) {
+    const label = btn.textContent;
+    btn.textContent = "✓ Copied, go paste it";
+    btn.classList.add("is-done");
+    toast("Copied");
+    setTimeout(() => { btn.textContent = label; btn.classList.remove("is-done"); }, 2000);
+  } else {
+    toast("Select and copy by hand");
+  }
+}
+
+document.getElementById("leadname").addEventListener("input", e => {
+  name = e.target.value;
+  renderList();
+});
+
+const themebtn = document.getElementById("themebtn");
+let theme = null;
+themebtn.addEventListener("click", () => {
+  const dark = theme ? theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  theme = dark ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", theme);
+});
+
+renderChips();
+renderList();
+</script>
