@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chain">
+<meta name="theme-color" content="#0c0e11">
+<style>
+  :root{
+    --bg:#0c0e11;
+    --card:#15181d;
+    --line:#252a32;
+    --text:#f2f4f7;
+    --dim:#8b94a3;
+    --on:#4ade80;
+    --on-dim:#1d3b2a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+  body{
+    font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    min-height:100vh;
+    padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:22px;
+    max-width:520px;margin:0 auto;
+  }
+  #habitName{
+    font-size:26px;font-weight:650;letter-spacing:-.02em;
+    background:none;border:none;color:var(--text);
+    padding:6px 0;width:100%;font-family:inherit;
+    min-height:44px;
+  }
+  #habitName:focus{outline:none;color:var(--on)}
+  .streak{display:flex;align-items:baseline;gap:10px}
+  #streak{font-size:64px;font-weight:700;line-height:1;letter-spacing:-.04em}
+  #streakLabel{color:var(--dim);font-size:15px}
+  #doneBtn{
+    width:100%;min-height:76px;border-radius:18px;
+    border:1px solid var(--line);background:var(--card);color:var(--text);
+    font:600 19px/1 inherit;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:transform .08s ease,background .15s ease,border-color .15s ease;
+  }
+  #doneBtn:active{transform:scale(.98)}
+  #doneBtn.on{background:var(--on);border-color:var(--on);color:#06210f}
+  #grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+  .cell{
+    aspect-ratio:1;border-radius:7px;
+    background:var(--card);border:1px solid var(--line);
+  }
+  .cell.on{background:var(--on);border-color:var(--on)}
+  .cell.today{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--dim)}
+  .cell.today.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--on)}
+  footer{margin-top:auto;padding-top:14px}
+  #backupToggle{
+    background:none;border:none;color:var(--dim);font:14px inherit;font-family:inherit;
+    padding:12px 0;min-height:44px;text-decoration:underline;text-underline-offset:3px;
+  }
+  #backup[hidden]{display:none}
+  #backup{display:flex;flex-direction:column;gap:10px;padding-top:6px}
+  #backupText{
+    width:100%;height:110px;border-radius:12px;padding:12px;
+    background:var(--card);border:1px solid var(--line);color:var(--dim);
+    font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:none;
+  }
+  #importBtn{
+    min-height:44px;border-radius:12px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);font:15px inherit;font-family:inherit;
+  }
+  #note{color:var(--dim);font-size:13px;min-height:18px}
+</style>
+</head>
+<body>
+
+<input id="habitName" value="My habit" autocomplete="off" spellcheck="false" aria-label="Habit name">
+
+<div class="streak">
+  <span id="streak">0</span>
+  <span id="streakLabel">day streak</span>
+</div>
+
+<button id="doneBtn" type="button">Done today</button>
+
+<div id="grid" aria-label="Last 35 days"></div>
+
+<footer>
+  <button id="backupToggle" type="button">Backup</button>
+  <div id="backup" hidden>
+    <textarea id="backupText" spellcheck="false" aria-label="Backup data"></textarea>
+    <button id="importBtn" type="button">Paste data here, then tap to restore</button>
+    <div id="note"></div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var KEY = 'chain.v1';
+  var DAYS = 35;
+  var memory = null; // fallback when localStorage is unavailable (some file:// contexts)
+
+  function ymd(d) {
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  function today() { return ymd(new Date()); }
+  function shift(days) {
+    var d = new Date();
+    d.setHours(12, 0, 0, 0); // avoid DST edges shifting the date
+    d.setDate(d.getDate() + days);
+    return ymd(d);
+  }
+
+  // Reads must survive a missing key, corrupt JSON, or an older shape.
+  function load() {
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+    if (raw == null && memory != null) raw = memory;
+    var data = null;
+    try { data = JSON.parse(raw); } catch (e) { data = null; }
+    if (!data || typeof data !== 'object') data = {};
+    return {
+      v: 1,
+      name: typeof data.name === 'string' && data.name.trim() ? data.name : 'My habit',
+      days: Array.isArray(data.days) ? data.days.filter(function (x) {
+        return typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
+      }) : []
+    };
+  }
+
+  function save(data) {
+    var raw = JSON.stringify(data);
+    memory = raw;
+    try { localStorage.setItem(KEY, raw); } catch (e) { /* memory fallback holds it */ }
+  }
+
+  function streakOf(days) {
+    var set = {};
+    days.forEach(function (d) { set[d] = true; });
+    // Today not being done yet shouldn't read as a broken streak until tomorrow.
+    var start = set[shift(0)] ? 0 : (set[shift(-1)] ? -1 : null);
+    if (start === null) return 0;
+    var n = 0;
+    while (set[shift(start - n)]) n++;
+    return n;
+  }
+
+  var state = load();
+
+  var nameEl = document.getElementById('habitName');
+  var streakEl = document.getElementById('streak');
+  var labelEl = document.getElementById('streakLabel');
+  var btn = document.getElementById('doneBtn');
+  var grid = document.getElementById('grid');
+  var backup = document.getElementById('backup');
+  var backupText = document.getElementById('backupText');
+  var note = document.getElementById('note');
+
+  var cells = [];
+  for (var i = DAYS - 1; i >= 0; i--) {
+    var c = document.createElement('div');
+    c.className = 'cell';
+    c.dataset.date = shift(-i);
+    if (i === 0) c.classList.add('today');
+    grid.appendChild(c);
+    cells.push(c);
+  }
+
+  function render() {
+    var set = {};
+    state.days.forEach(function (d) { set[d] = true; });
+    var doneToday = !!set[today()];
+
+    nameEl.value = state.name;
+    cells.forEach(function (c) { c.classList.toggle('on', !!set[c.dataset.date]); });
+    btn.classList.toggle('on', doneToday);
+    btn.textContent = doneToday ? 'Done ✓' : 'Done today';
+
+    var n = streakOf(state.days);
+    streakEl.textContent = n;
+    labelEl.textContent = n === 1 ? 'day streak' : 'day streak';
+    backupText.value = JSON.stringify(state);
+  }
+
+  btn.addEventListener('click', function () {
+    var t = today();
+    var i = state.days.indexOf(t);
+    if (i === -1) state.days.push(t); else state.days.splice(i, 1); // mis-taps are undoable
+    save(state);
+    render();
+  });
+
+  nameEl.addEventListener('change', function () {
+    state.name = nameEl.value.trim() || 'My habit';
+    save(state);
+    render();
+  });
+  nameEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') nameEl.blur();
+  });
+
+  document.getElementById('backupToggle').addEventListener('click', function () {
+    backup.hidden = !backup.hidden;
+    if (!backup.hidden) { note.textContent = ''; backupText.value = JSON.stringify(state); }
+  });
+
+  document.getElementById('importBtn').addEventListener('click', function () {
+    var incoming;
+    try { incoming = JSON.parse(backupText.value); } catch (e) { incoming = null; }
+    if (!incoming || !Array.isArray(incoming.days)) {
+      note.textContent = "That doesn't look like backup data.";
+      return;
+    }
+    save(incoming);
+    state = load();
+    render();
+    var n = state.days.length;
+    note.textContent = 'Restored ' + n + (n === 1 ? ' day.' : ' days.');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
