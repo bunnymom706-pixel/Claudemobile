@@ -109,6 +109,24 @@ def main():
         check("today is STILL marked after a reload (the chain survives)",
               "on" in (page.locator(cell).get_attribute("class") or ""))
 
+        # v2: the two-minute gateway must also keep the chain alive.
+        page.locator("#doneBtn").click()  # clear today back to empty
+        check("two-minute button is visible when today is empty",
+              page.locator("#liteBtn").is_visible())
+        page.locator("#liteBtn").click()
+        check("two-minute tap marks today as lite",
+              "lite" in (page.locator(cell).get_attribute("class") or ""))
+        check("two-minute tap keeps the streak alive",
+              (page.locator("#streak").inner_text().strip() or "0") != "0")
+        page.reload()
+        page.wait_for_selector("#doneBtn")
+        check("lite day survives a reload",
+              "lite" in (page.locator(cell).get_attribute("class") or ""))
+        page.locator("#doneBtn").click()
+        check("a full tap upgrades a lite day to full",
+              "on" in (page.locator(cell).get_attribute("class") or "")
+              and "lite" not in (page.locator(cell).get_attribute("class") or ""))
+
         # The backup text is her escape hatch if the phone ever loses the data.
         page.locator("#backupToggle").click()
         check("backup contains today's date",
@@ -122,10 +140,14 @@ def main():
               const d = new Date(); d.setHours(12,0,0,0);
               const ymd = x => x.toISOString().slice(0,10);
               const days = [];
-              for (const back of [0,1,2,3,4,5,7,8,9,11,12,13,14,15,18,19,20]) {
+              for (const back of [0,1,2,3,5,7,8,9,12,13,14,15,18,19,20]) {
                 const c = new Date(d); c.setDate(c.getDate() - back); days.push(ymd(c));
               }
-              localStorage.setItem('chain.v1', JSON.stringify({v:1, name:'Take my meds', days}));
+              const lite = [];
+              for (const back of [4,11]) {
+                const c = new Date(d); c.setDate(c.getDate() - back); lite.push(ymd(c));
+              }
+              localStorage.setItem('chain.v1', JSON.stringify({v:1, name:'Take my meds', days, lite}));
             }"""
         )
         page.reload()

@@ -47,12 +47,21 @@
   }
   #doneBtn:active{transform:scale(.98)}
   #doneBtn.on{background:var(--on);border-color:var(--on);color:#06210f}
+  #liteBtn{
+    width:100%;min-height:48px;border-radius:14px;
+    border:1px dashed var(--line);background:none;color:var(--dim);
+    font:500 15px/1 inherit;font-family:inherit;
+    transition:transform .08s ease,background .15s ease,border-color .15s ease;
+  }
+  #liteBtn:active{transform:scale(.98)}
+  #liteBtn.on{background:var(--on-dim);border:1px solid var(--on);color:var(--on)}
   #grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
   .cell{
     aspect-ratio:1;border-radius:7px;
     background:var(--card);border:1px solid var(--line);
   }
   .cell.on{background:var(--on);border-color:var(--on)}
+  .cell.lite{background:var(--on-dim);border-color:var(--on)}
   .cell.today{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--dim)}
   .cell.today.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--on)}
   footer{margin-top:auto;padding-top:14px}
@@ -84,6 +93,7 @@
 </div>
 
 <button id="doneBtn" type="button">Done today</button>
+<button id="liteBtn" type="button">Just 2 minutes</button>
 
 <div id="grid" aria-label="Last 35 days"></div>
 
@@ -123,12 +133,19 @@
     var data = null;
     try { data = JSON.parse(raw); } catch (e) { data = null; }
     if (!data || typeof data !== 'object') data = {};
+    function dates(list) {
+      return Array.isArray(list) ? list.filter(function (x) {
+        return typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
+      }) : [];
+    }
+    var days = dates(data.days);
+    // lite = days done via the two-minute version; v1 backups won't have it
+    var lite = dates(data.lite).filter(function (d) { return days.indexOf(d) === -1; });
     return {
       v: 1,
       name: typeof data.name === 'string' && data.name.trim() ? data.name : 'My habit',
-      days: Array.isArray(data.days) ? data.days.filter(function (x) {
-        return typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
-      }) : []
+      days: days,
+      lite: lite
     };
   }
 
@@ -140,7 +157,7 @@
 
   function streakOf(days) {
     var set = {};
-    days.forEach(function (d) { set[d] = true; });
+    days.forEach(function (d) { set[d] = true; }); // full and lite both keep the chain alive
     // Today not being done yet shouldn't read as a broken streak until tomorrow.
     var start = set[shift(0)] ? 0 : (set[shift(-1)] ? -1 : null);
     if (start === null) return 0;
@@ -155,6 +172,7 @@
   var streakEl = document.getElementById('streak');
   var labelEl = document.getElementById('streakLabel');
   var btn = document.getElementById('doneBtn');
+  var liteBtn = document.getElementById('liteBtn');
   var grid = document.getElementById('grid');
   var backup = document.getElementById('backup');
   var backupText = document.getElementById('backupText');
@@ -171,25 +189,46 @@
   }
 
   function render() {
-    var set = {};
-    state.days.forEach(function (d) { set[d] = true; });
-    var doneToday = !!set[today()];
+    var full = {}, lite = {};
+    state.days.forEach(function (d) { full[d] = true; });
+    state.lite.forEach(function (d) { lite[d] = true; });
+    var t = today();
 
     nameEl.value = state.name;
-    cells.forEach(function (c) { c.classList.toggle('on', !!set[c.dataset.date]); });
-    btn.classList.toggle('on', doneToday);
-    btn.textContent = doneToday ? 'Done ✓' : 'Done today';
+    cells.forEach(function (c) {
+      c.classList.toggle('on', !!full[c.dataset.date]);
+      c.classList.toggle('lite', !!lite[c.dataset.date]);
+    });
+    btn.classList.toggle('on', !!full[t]);
+    btn.textContent = full[t] ? 'Done ✓' : 'Done today';
+    liteBtn.classList.toggle('on', !!lite[t]);
+    liteBtn.textContent = lite[t] ? '2 minutes counts ✓' : 'Just 2 minutes';
+    liteBtn.hidden = !!full[t]; // full day done -- no smaller ask needed
 
-    var n = streakOf(state.days);
+    var n = streakOf(state.days.concat(state.lite));
     streakEl.textContent = n;
     labelEl.textContent = n === 1 ? 'day streak' : 'day streak';
     backupText.value = JSON.stringify(state);
   }
 
+  function remove(list, x) {
+    var i = list.indexOf(x);
+    if (i !== -1) list.splice(i, 1);
+    return i !== -1;
+  }
+
   btn.addEventListener('click', function () {
     var t = today();
-    var i = state.days.indexOf(t);
-    if (i === -1) state.days.push(t); else state.days.splice(i, 1); // mis-taps are undoable
+    var wasFull = remove(state.days, t); // mis-taps are undoable
+    remove(state.lite, t);               // a full tap upgrades a lite day
+    if (!wasFull) state.days.push(t);
+    save(state);
+    render();
+  });
+
+  liteBtn.addEventListener('click', function () {
+    var t = today();
+    if (!remove(state.lite, t)) state.lite.push(t);
     save(state);
     render();
   });
