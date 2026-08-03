@@ -1,0 +1,4 @@
+# Private context. Never commit. Holds numbers, goals, and personal detail
+# that should not be public while this repo is public.
+context.local.md
+*.local.md
