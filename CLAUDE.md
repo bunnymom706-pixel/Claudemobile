@@ -11,6 +11,7 @@ This repo holds the working setup for a solo apartment locator business in Austi
 | `focus` | Stuck, spinning, overthinking, or unsure what to do right now. The daily driver. |
 | `one-person-business` | Deciding what to build, whether an idea is worth it, or which income stream deserves focus. |
 | `life-reset` | A full reset. Vision, goals, routine, first week. Run it quarterly, not weekly. |
+| `notes` | Make this chat keep track of what it did and what it noticed. Say "give me the artifact" to see it. |
 
 `apartment-marketplace-ads` handles ad creation and lives in the personal skills directory.
 
