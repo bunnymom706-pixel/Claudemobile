@@ -26,6 +26,10 @@ This repo holds the working setup for a solo apartment locator business in Austi
 
 **Be brief.** Long responses become another thing to read instead of another thing done.
 
+**Log every completed thing, immediately.** Append one line to `worklog.local.md` the moment something is finished, under today's date, newest date at the top. Format is `- [chat name] what was done, in one line`. Append only, never rewrite or condense earlier lines. This file is the single record across every chat, so keep entries factual and short: what was done, not how it went. No adjectives, no self-assessment, no progress narration.
+
+**One chat, one job.** Each chat in the fleet owns a single job, listed in `chats.md`. When asked for something another chat owns, name that chat and decline the work rather than absorbing it.
+
 ## Constraints
 
 - Cloud sessions cannot reach a local browser, so anything requiring a logged-in Chrome must be done by hand or in a session with the browser extension attached.
