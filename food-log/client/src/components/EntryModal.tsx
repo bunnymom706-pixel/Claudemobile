@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Food, MealType } from "../types";
+import type { DbFood, Food, MealType } from "../types";
 import { MEAL_LABELS, MEAL_TYPES } from "../types";
 import { api } from "../api";
+import DatabaseSearch from "./DatabaseSearch";
 
 interface EntryModalProps {
   date: string;
@@ -11,12 +12,13 @@ interface EntryModalProps {
   onLogged: () => void;
 }
 
-type Mode = "search" | "custom";
+type Mode = "search" | "database" | "custom";
 
 export default function EntryModal({ date, initialMealType, foods, onClose, onLogged }: EntryModalProps) {
   const [mode, setMode] = useState<Mode>("search");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Food | null>(null);
+  const [dbSelected, setDbSelected] = useState<DbFood | null>(null);
   const [servings, setServings] = useState(1);
   const [mealType, setMealType] = useState<MealType>(initialMealType);
   const [saveAsFood, setSaveAsFood] = useState(true);
@@ -54,6 +56,37 @@ export default function EntryModal({ date, initialMealType, foods, onClose, onLo
     try {
       await api.logs.create({
         foodId: selected.id,
+        servings,
+        mealType,
+        loggedDate: date,
+      });
+      onLogged();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to log entry");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  /** Import a database hit into the food library, then log it. */
+  async function submitFromDatabase() {
+    if (!dbSelected) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const created = await api.foods.create({
+        name: dbSelected.name,
+        brand: dbSelected.brand,
+        servingLabel: dbSelected.servingLabel,
+        calories: dbSelected.calories,
+        protein: dbSelected.protein,
+        carbs: dbSelected.carbs,
+        fat: dbSelected.fat,
+        sugar: dbSelected.sugar,
+        fiber: dbSelected.fiber,
+      });
+      await api.logs.create({
+        foodId: created.id,
         servings,
         mealType,
         loggedDate: date,
@@ -136,7 +169,15 @@ export default function EntryModal({ date, initialMealType, foods, onClose, onLo
               mode === "search" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"
             }`}
           >
-            From library
+            My library
+          </button>
+          <button
+            onClick={() => setMode("database")}
+            className={`flex-1 rounded-md py-1.5 text-sm font-medium ${
+              mode === "database" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"
+            }`}
+          >
+            Food database
           </button>
           <button
             onClick={() => setMode("custom")}
@@ -144,7 +185,7 @@ export default function EntryModal({ date, initialMealType, foods, onClose, onLo
               mode === "custom" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"
             }`}
           >
-            Custom / new food
+            Custom
           </button>
         </div>
 
@@ -191,7 +232,9 @@ export default function EntryModal({ date, initialMealType, foods, onClose, onLo
                 </button>
               ))}
               {filtered.length === 0 && (
-                <p className="py-4 text-center text-sm text-slate-500">No matches. Try "Custom / new food".</p>
+                <p className="py-4 text-center text-sm text-slate-500">
+                  No matches. Try the food database tab.
+                </p>
               )}
             </div>
 
@@ -221,6 +264,38 @@ export default function EntryModal({ date, initialMealType, foods, onClose, onLo
               className="w-full rounded-md bg-amber-500 py-2 font-medium text-slate-950 disabled:opacity-40"
             >
               {submitting ? "Logging..." : "Log entry"}
+            </button>
+          </div>
+        ) : mode === "database" ? (
+          <div className="space-y-3">
+            <DatabaseSearch selected={dbSelected} onSelect={setDbSelected} />
+
+            {dbSelected && (
+              <div className="flex items-center gap-3 rounded-md bg-slate-800/50 p-3">
+                <label className="text-sm text-slate-300">Servings</label>
+                <input
+                  type="number"
+                  min={0.25}
+                  step={0.25}
+                  value={servings}
+                  onChange={(e) => setServings(Number(e.target.value))}
+                  className="w-20 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-sm"
+                />
+                <span className="ml-auto text-xs text-slate-400">
+                  = {Math.round(dbSelected.calories * servings)} kcal · P{" "}
+                  {Math.round(dbSelected.protein * servings)}g
+                </span>
+              </div>
+            )}
+
+            {error && <p className="text-sm text-red-400">{error}</p>}
+
+            <button
+              disabled={!dbSelected || submitting}
+              onClick={submitFromDatabase}
+              className="w-full rounded-md bg-amber-500 py-2 font-medium text-slate-950 disabled:opacity-40"
+            >
+              {submitting ? "Logging..." : "Save to library & log"}
             </button>
           </div>
         ) : (

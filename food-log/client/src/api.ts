@@ -1,4 +1,4 @@
-import type { DaySummary, Exercise, Food, Goals, LogEntry, MealType, Trends } from "./types";
+import type { DaySummary, DbFood, Exercise, Food, Goals, LogEntry, MealType, Trends } from "./types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -7,6 +7,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    if (typeof body.error === "string") throw new Error(body.error);
     throw new Error(body.error ? JSON.stringify(body.error) : `Request failed: ${res.status}`);
   }
   if (res.status === 204) return undefined as T;
@@ -51,6 +52,12 @@ export const api = {
     create: (input: { name: string; caloriesBurned: number; loggedDate: string }) =>
       request<Exercise>("/exercises", { method: "POST", body: JSON.stringify(input) }),
     remove: (id: string) => request<void>(`/exercises/${id}`, { method: "DELETE" }),
+  },
+  lookup: {
+    search: (q: string) =>
+      request<{ results: DbFood[] }>(`/lookup/search?q=${encodeURIComponent(q)}`).then((r) => r.results),
+    barcode: (code: string) =>
+      request<{ result: DbFood }>(`/lookup/barcode/${encodeURIComponent(code)}`).then((r) => r.result),
   },
   summary: (date: string) => request<DaySummary>(`/summary?date=${date}`),
   trends: (days: number) => request<Trends>(`/trends?days=${days}`),

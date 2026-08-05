@@ -42,6 +42,30 @@ export interface Exercise {
   loggedAt: string;
 }
 
+export type Basis = "label-serving" | "scaled-from-100g" | "per-100g";
+
+export interface DbFood {
+  source: "openfoodfacts" | "usda";
+  sourceId: string;
+  name: string;
+  brand?: string;
+  servingLabel: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  sugar?: number;
+  fiber?: number;
+  basis: Basis;
+  exact: boolean;
+}
+
+export const BASIS_LABELS: Record<Basis, string> = {
+  "label-serving": "Label serving — exact",
+  "scaled-from-100g": "Scaled from per-100g",
+  "per-100g": "Per 100 g — set servings accordingly",
+};
+
 export interface MealBucket extends Macros {
   entries: LogEntry[];
 }

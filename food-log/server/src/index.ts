@@ -4,6 +4,7 @@ import { foodsRouter } from "./routes/foods.js";
 import { logsRouter } from "./routes/logs.js";
 import { goalsRouter } from "./routes/goals.js";
 import { exercisesRouter } from "./routes/exercises.js";
+import { lookupRouter } from "./routes/lookup.js";
 import { summaryRouter, trendsRouter } from "./routes/summary.js";
 
 const app = express();
@@ -16,6 +17,7 @@ app.use("/api/foods", foodsRouter);
 app.use("/api/logs", logsRouter);
 app.use("/api/goals", goalsRouter);
 app.use("/api/exercises", exercisesRouter);
+app.use("/api/lookup", lookupRouter);
 app.use("/api/summary", summaryRouter);
 app.use("/api/trends", trendsRouter);
 
