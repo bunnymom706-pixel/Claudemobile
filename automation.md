@@ -2,7 +2,7 @@
 
 Why scheduled tasks fail, and what can actually run without someone at the desk.
 
-Fill in specifics later. This is the shape they have to fit.
+Fill in specifics later. This is the shape they have to fit. For the plain-language version, see `how-automation-works.md`.
 
 ## The session model
 
