@@ -2,3 +2,9 @@
 # that should not be public while this repo is public.
 context.local.md
 *.local.md
+
+# food-log app
+food-log/**/node_modules
+food-log/**/dist
+food-log/server/data/*.json
+food-log/**/*.tsbuildinfo
