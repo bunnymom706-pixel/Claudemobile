@@ -106,6 +106,7 @@ function defaultDb(): DbShape {
       updatedAt: now,
     },
     settings: { healthSyncMode: "reconcile" },
+    profile: null,
   };
 }
 
@@ -126,6 +127,7 @@ function load(): DbShape {
     if (!e.source) e.source = "manual";
   }
   if (!cache.settings) cache.settings = { healthSyncMode: "reconcile" };
+  if (cache.profile === undefined) cache.profile = null;
   return cache;
 }
 

@@ -61,10 +61,44 @@ export interface Settings {
   healthSyncMode: HealthSyncMode;
 }
 
+/** Excludes logged workouts — those are added back separately when logged. */
+export type ActivityLevel = "sedentary" | "light" | "moderate" | "very";
+
+export interface Profile {
+  sex: "female" | "male";
+  age: number;
+  heightCm: number;
+  currentWeightLbs: number;
+  goalWeightLbs: number;
+  activityLevel: ActivityLevel;
+  updatedAt: string;
+}
+
+export type PlanPaceId = "gentle" | "steady" | "aggressive" | "max";
+
+export interface PlanOption {
+  id: PlanPaceId;
+  label: string;
+  requestedLbsPerWeek: number;
+  /** What the pace works out to after the calorie floor is applied. */
+  actualLbsPerWeek: number;
+  dailyDeficit: number;
+  baseCalories: number;
+  weeksToGoal: number | null;
+  projectedDate: string | null;
+  proteinTarget: number;
+  fatTarget: number;
+  carbTarget: number;
+  belowFloor: boolean;
+  belowBmr: boolean;
+  note?: string;
+}
+
 export interface DbShape {
   foods: Food[];
   logs: LogEntry[];
   exercises: Exercise[];
   goals: Goals;
   settings: Settings;
+  profile: Profile | null;
 }

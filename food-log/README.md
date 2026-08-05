@@ -29,6 +29,8 @@ calories/protein/carbs/fat against daily goals, and see trends over time.
 - **Ad-hoc entries** — log something without saving it to the library, or
   save it to the library at the same time.
 - **Trends** — 7/14/30-day charts of calories and macros vs. goal line.
+- **Plan** — enter your stats and goal weight to get calorie options at
+  several rates of loss, with honest timelines. One tap sets your targets.
 - **Goals** — editable daily calorie/protein/carb/fat targets.
 
 The app seeds itself on first run with a starting log (2x Barebells banana
@@ -102,11 +104,55 @@ container rebuilds.
 | DELETE | `/api/exercises/:id` | delete an exercise entry |
 | POST | `/api/health/sync` | receive active energy pushed from a phone |
 | GET/PUT | `/api/settings` | read / set `healthSyncMode` |
+| GET/PUT | `/api/profile` | read / save your stats and goal weight |
+| GET | `/api/profile/plan` | calorie options for the saved profile |
+| POST | `/api/profile/plan/preview` | options for stats passed inline |
 | GET | `/api/status` | liveness check |
 | GET | `/api/lookup/search?q=` | search the nutrition databases |
 | GET | `/api/lookup/barcode/:code` | exact product by UPC |
 | GET | `/api/summary?date=` | totals, per-meal breakdown, burned + adjusted goal |
 | GET | `/api/trends?days=` | daily totals (incl. burned) for the last N days |
+
+## Setting a calorie target (the Plan tab)
+
+Enter your sex, age, height, current and goal weight, and baseline activity.
+The app estimates:
+
+- **Resting burn (BMR)** via Mifflin-St Jeor
+- **Maintenance (TDEE)** = BMR × an activity multiplier
+- **Base calories** = maintenance − a deficit, at four rates of loss
+
+**Base already contains the deficit.** That's why exercise calories get
+added on top without breaking anything: eat back everything you burn and
+the deficit stays exactly where you set it. It also means exercise alone
+won't speed up loss if you eat all of it back — bank part of it to go
+faster.
+
+### Pick your activity level excluding workouts
+
+The multipliers assume your baseline day *without* the exercise you log.
+Choosing "very active" because you train hard, and then also logging those
+workouts, counts the same burn twice and inflates your budget. When in
+doubt pick the lower level and let logged exercise do the rest.
+
+### The floor
+
+Targets are held at 1200 kcal (female) / 1500 (male) — below that it's hard
+to hit micronutrient needs without supervision. If a pace would require
+going under, the app clamps it and tells you the rate that actually
+results, rather than quietly promising a number it can't deliver.
+
+Smaller and less active means the floor binds sooner: an aggressive pace
+and the fastest pace can collapse to the same real-world rate. That's
+information, not a bug.
+
+### Not medical advice
+
+These are population-average formulas, accurate to roughly ±10% for any
+individual, and the "3500 kcal per pound" rule overstates loss over long
+stretches. Use the numbers as a starting point and adjust from what the
+scale actually does over a few weeks. For a large or fast loss, talk to a
+doctor or dietitian.
 
 ## Getting burned calories from your phone
 

@@ -51,6 +51,53 @@ export interface Settings {
   healthSyncMode: HealthSyncMode;
 }
 
+export type ActivityLevel = "sedentary" | "light" | "moderate" | "very";
+
+export interface Profile {
+  sex: "female" | "male";
+  age: number;
+  heightCm: number;
+  currentWeightLbs: number;
+  goalWeightLbs: number;
+  activityLevel: ActivityLevel;
+  updatedAt: string;
+}
+
+export interface PlanOption {
+  id: "gentle" | "steady" | "aggressive" | "max";
+  label: string;
+  requestedLbsPerWeek: number;
+  actualLbsPerWeek: number;
+  dailyDeficit: number;
+  baseCalories: number;
+  weeksToGoal: number | null;
+  projectedDate: string | null;
+  proteinTarget: number;
+  fatTarget: number;
+  carbTarget: number;
+  belowFloor: boolean;
+  belowBmr: boolean;
+  note?: string;
+}
+
+export interface Plan {
+  bmr: number;
+  tdee: number;
+  floor: number;
+  lbsToLose: number;
+  proteinTarget: number;
+  goalBmi: number;
+  goalWarning: string | null;
+  options: PlanOption[];
+}
+
+export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
+  sedentary: "Sedentary — desk job, little movement",
+  light: "Lightly active — on your feet some days",
+  moderate: "Moderately active — active job or daily walking",
+  very: "Very active — physical job",
+};
+
 export interface BurnBreakdown {
   burned: number;
   manual: number;

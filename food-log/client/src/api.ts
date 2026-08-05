@@ -7,6 +7,8 @@ import type {
   HealthSyncMode,
   LogEntry,
   MealType,
+  Plan,
+  Profile,
   Settings,
   Trends,
 } from "./types";
@@ -63,6 +65,14 @@ export const api = {
     create: (input: { name: string; caloriesBurned: number; loggedDate: string }) =>
       request<Exercise>("/exercises", { method: "POST", body: JSON.stringify(input) }),
     remove: (id: string) => request<void>(`/exercises/${id}`, { method: "DELETE" }),
+  },
+  profile: {
+    get: () => request<Profile | null>("/profile"),
+    update: (input: Omit<Profile, "updatedAt">) =>
+      request<Profile>("/profile", { method: "PUT", body: JSON.stringify(input) }),
+    plan: () => request<Plan>("/profile/plan"),
+    preview: (input: Omit<Profile, "updatedAt">) =>
+      request<Plan>("/profile/plan/preview", { method: "POST", body: JSON.stringify(input) }),
   },
   settings: {
     get: () => request<Settings>("/settings"),

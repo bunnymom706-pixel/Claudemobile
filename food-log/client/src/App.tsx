@@ -3,6 +3,7 @@ import NavBar from "./components/NavBar";
 import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
 import Trends from "./pages/Trends";
+import Plan from "./pages/Plan";
 import Settings from "./pages/Settings";
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/library" element={<Library />} />
         <Route path="/trends" element={<Trends />} />
+        <Route path="/plan" element={<Plan />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </div>
