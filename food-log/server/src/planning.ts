@@ -1,4 +1,11 @@
-import type { ActivityLevel, PlanOption, PlanPaceId, Profile } from "./types.js";
+import type {
+  ActivityLevel,
+  GoalType,
+  MacroSplitId,
+  PlanOption,
+  PlanPaceId,
+  Profile,
+} from "./types.js";
 
 /**
  * Calorie planning math.
@@ -30,12 +37,74 @@ export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
  */
 const CALORIE_FLOOR = { female: 1200, male: 1500 } as const;
 
-const PACES: Array<{ id: PlanPaceId; label: string; lbsPerWeek: number }> = [
-  { id: "gentle", label: "Gentle", lbsPerWeek: 0.5 },
-  { id: "steady", label: "Steady", lbsPerWeek: 1 },
-  { id: "aggressive", label: "Aggressive", lbsPerWeek: 1.5 },
-  { id: "max", label: "Fastest advisable", lbsPerWeek: 2 },
-];
+/** Positive lbsPerWeek means losing; negative means gaining. */
+const PACES_BY_GOAL: Record<GoalType, Array<{ id: PlanPaceId; label: string; lbsPerWeek: number }>> = {
+  lose: [
+    { id: "gentle", label: "Gentle", lbsPerWeek: 0.5 },
+    { id: "steady", label: "Steady", lbsPerWeek: 1 },
+    { id: "aggressive", label: "Aggressive", lbsPerWeek: 1.5 },
+    { id: "max", label: "Fastest advisable", lbsPerWeek: 2 },
+  ],
+  maintain: [{ id: "maintain", label: "Maintain", lbsPerWeek: 0 }],
+  gain: [
+    { id: "lean-gain", label: "Lean gain", lbsPerWeek: -0.25 },
+    { id: "steady-gain", label: "Steady gain", lbsPerWeek: -0.5 },
+  ],
+};
+
+interface MacroSplit {
+  label: string;
+  proteinPerLb: number;
+  /** Share of non-protein calories going to carbs. Ignored when carbCapG set. */
+  carbShare: number;
+  carbCapG?: number;
+}
+
+export const MACRO_SPLITS: Record<MacroSplitId, MacroSplit> = {
+  balanced: { label: "Balanced", proteinPerLb: 0.8, carbShare: 0.55 },
+  "high-protein": { label: "High protein", proteinPerLb: 1.0, carbShare: 0.5 },
+  "lower-carb": { label: "Lower carb", proteinPerLb: 1.0, carbShare: 0.25 },
+  keto: { label: "Keto", proteinPerLb: 0.85, carbShare: 0, carbCapG: 25 },
+};
+
+/** Below this, fat intake starts interfering with hormone and vitamin uptake. */
+const FAT_FLOOR_PER_LB = 0.3;
+
+function macrosFor(
+  calories: number,
+  goalWeightLbs: number,
+  splitId: MacroSplitId
+): { protein: number; carbs: number; fat: number; warning?: string } {
+  const split = MACRO_SPLITS[splitId];
+  const protein = Math.round(goalWeightLbs * split.proteinPerLb);
+  const remaining = calories - protein * 4;
+
+  if (remaining <= 0) {
+    return {
+      protein,
+      carbs: 0,
+      fat: 0,
+      warning: `${protein}g of protein alone accounts for this option's whole calorie budget. Pick a lower-protein split or a higher calorie target.`,
+    };
+  }
+
+  let carbs: number;
+  let fat: number;
+  if (split.carbCapG !== undefined) {
+    carbs = Math.min(split.carbCapG, Math.floor(remaining / 4));
+    fat = Math.round((remaining - carbs * 4) / 9);
+  } else {
+    carbs = Math.round((remaining * split.carbShare) / 4);
+    fat = Math.round((remaining * (1 - split.carbShare)) / 9);
+  }
+
+  const warning =
+    fat / goalWeightLbs < FAT_FLOOR_PER_LB
+      ? `Only ${fat}g of fat — on the low side. Fine briefly, worth raising if it drags on.`
+      : undefined;
+
+  return { protein, carbs: Math.max(0, carbs), fat: Math.max(0, fat), warning };
+}
 
 /** Mifflin-St Jeor, the most accurate of the common BMR predictors. */
 export function calcBmr(profile: Profile): number {
@@ -54,19 +123,12 @@ function addWeeks(weeks: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/**
- * Protein high enough to protect muscle while in a deficit: ~1g per pound of
- * goal weight. Under-eating protein in a deficit costs lean mass, which
- * lowers maintenance and makes the weight easier to regain.
- */
-function proteinTarget(profile: Profile): number {
-  return Math.round(profile.goalWeightLbs);
-}
-
 export interface Plan {
   bmr: number;
   tdee: number;
   floor: number;
+  goalType: GoalType;
+  macroSplit: MacroSplitId;
   lbsToLose: number;
   proteinTarget: number;
   goalBmi: number;
@@ -91,16 +153,19 @@ function goalWarningFor(goalBmi: number): string | null {
   return null;
 }
 
-export function buildPlan(profile: Profile): Plan {
+export function buildPlan(
+  profile: Profile,
+  goalType: GoalType = "lose",
+  splitId: MacroSplitId = "balanced"
+): Plan {
   const bmr = calcBmr(profile);
   const tdee = calcTdee(profile);
   const floor = CALORIE_FLOOR[profile.sex];
-  const lbsToLose = Math.max(0, profile.currentWeightLbs - profile.goalWeightLbs);
-  const protein = proteinTarget(profile);
+  const lbsToChange = Math.abs(profile.currentWeightLbs - profile.goalWeightLbs);
 
-  const options: PlanOption[] = PACES.map((pace) => {
-    const requestedDeficit = (pace.lbsPerWeek * KCAL_PER_LB) / 7;
-    const uncappedCalories = Math.round(tdee - requestedDeficit);
+  const options: PlanOption[] = PACES_BY_GOAL[goalType].map((pace) => {
+    const requestedChange = (pace.lbsPerWeek * KCAL_PER_LB) / 7;
+    const uncappedCalories = Math.round(tdee - requestedChange);
 
     // Clamping to the floor makes the pace slower than requested. Report the
     // rate that actually results rather than the one that was asked for.
@@ -109,7 +174,11 @@ export function buildPlan(profile: Profile): Plan {
     const actualDeficit = tdee - baseCalories;
     const actualLbsPerWeek = (actualDeficit * 7) / KCAL_PER_LB;
 
-    const weeksToGoal = actualLbsPerWeek > 0 ? lbsToLose / actualLbsPerWeek : Infinity;
+    // Only project a date when the plan actually moves toward the goal.
+    const movingTowardGoal =
+      (goalType === "lose" && actualLbsPerWeek > 0 && profile.goalWeightLbs < profile.currentWeightLbs) ||
+      (goalType === "gain" && actualLbsPerWeek < 0 && profile.goalWeightLbs > profile.currentWeightLbs);
+    const weeksToGoal = movingTowardGoal ? lbsToChange / Math.abs(actualLbsPerWeek) : null;
 
     let note: string | undefined;
     if (belowFloor) {
@@ -118,33 +187,30 @@ export function buildPlan(profile: Profile): Plan {
         `Held at ${floor}, which gives about ${actualLbsPerWeek.toFixed(1)} lb/week. ` +
         `Cutting food further isn't the lever — exercise is, and only if you bank ` +
         `part of it instead of eating it all back.`;
+    } else if (goalType === "maintain") {
+      note = "No deficit — this is roughly what holds your current weight.";
     } else if (baseCalories < bmr) {
       note = `Below your estimated resting burn (${bmr} kcal). Sustainable briefly, not for months.`;
     }
 
-    // Protein fixed to protect lean mass, fat at 25% of intake for hormone
-    // health, carbs take whatever is left.
-    const fatTarget = Math.round((baseCalories * 0.25) / 9);
-    const carbTarget = Math.max(
-      0,
-      Math.round((baseCalories - protein * 4 - fatTarget * 9) / 4)
-    );
+    const macros = macrosFor(baseCalories, profile.goalWeightLbs, splitId);
 
     return {
       id: pace.id,
       label: pace.label,
       requestedLbsPerWeek: pace.lbsPerWeek,
-      fatTarget,
-      carbTarget,
       actualLbsPerWeek: Math.round(actualLbsPerWeek * 100) / 100,
       dailyDeficit: Math.round(actualDeficit),
       baseCalories,
-      weeksToGoal: Number.isFinite(weeksToGoal) ? Math.ceil(weeksToGoal) : null,
-      projectedDate: Number.isFinite(weeksToGoal) ? addWeeks(weeksToGoal) : null,
-      proteinTarget: protein,
+      weeksToGoal: weeksToGoal === null ? null : Math.ceil(weeksToGoal),
+      projectedDate: weeksToGoal === null ? null : addWeeks(weeksToGoal),
+      proteinTarget: macros.protein,
+      carbTarget: macros.carbs,
+      fatTarget: macros.fat,
       belowFloor,
       belowBmr: baseCalories < bmr,
       note,
+      macroWarning: macros.warning,
     };
   });
 
@@ -154,8 +220,10 @@ export function buildPlan(profile: Profile): Plan {
     bmr,
     tdee,
     floor,
-    lbsToLose,
-    proteinTarget: protein,
+    goalType,
+    macroSplit: splitId,
+    lbsToLose: lbsToChange,
+    proteinTarget: options[0]?.proteinTarget ?? 0,
     goalBmi,
     goalWarning: goalWarningFor(goalBmi),
     options,

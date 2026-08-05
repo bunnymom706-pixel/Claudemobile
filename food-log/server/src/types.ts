@@ -74,7 +74,23 @@ export interface Profile {
   updatedAt: string;
 }
 
-export type PlanPaceId = "gentle" | "steady" | "aggressive" | "max";
+export type GoalType = "lose" | "maintain" | "gain";
+
+export type PlanPaceId =
+  | "gentle"
+  | "steady"
+  | "aggressive"
+  | "max"
+  | "maintain"
+  | "lean-gain"
+  | "steady-gain";
+
+/**
+ * Protein is anchored in grams per pound of goal weight rather than as a
+ * percentage of calories: a percentage silently under-delivers protein at
+ * low intakes, which is exactly when lean mass is most at risk.
+ */
+export type MacroSplitId = "balanced" | "high-protein" | "lower-carb" | "keto";
 
 export interface PlanOption {
   id: PlanPaceId;
@@ -92,6 +108,7 @@ export interface PlanOption {
   belowFloor: boolean;
   belowBmr: boolean;
   note?: string;
+  macroWarning?: string;
 }
 
 export interface DbShape {

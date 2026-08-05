@@ -2,6 +2,18 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db.js";
 import { buildPlan } from "../planning.js";
+import type { GoalType, MacroSplitId } from "../types.js";
+
+const goalTypes = ["lose", "maintain", "gain"] as const;
+const macroSplits = ["balanced", "high-protein", "lower-carb", "keto"] as const;
+
+function readGoalType(v: unknown): GoalType {
+  return goalTypes.includes(v as GoalType) ? (v as GoalType) : "lose";
+}
+
+function readSplit(v: unknown): MacroSplitId {
+  return macroSplits.includes(v as MacroSplitId) ? (v as MacroSplitId) : "balanced";
+}
 
 const profileInput = z.object({
   sex: z.enum(["female", "male"]),
@@ -37,7 +49,7 @@ profileRouter.get("/plan", (req, res) => {
     res.status(404).json({ error: "Set up your profile first" });
     return;
   }
-  res.json(buildPlan(profile));
+  res.json(buildPlan(profile, readGoalType(req.query.goalType), readSplit(req.query.macroSplit)));
 });
 
 profileRouter.post("/plan/preview", (req, res) => {
@@ -46,5 +58,12 @@ profileRouter.post("/plan/preview", (req, res) => {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
   }
-  res.json(buildPlan({ ...parsed.data, updatedAt: new Date().toISOString() }));
+  const body = req.body as { goalType?: unknown; macroSplit?: unknown };
+  res.json(
+    buildPlan(
+      { ...parsed.data, updatedAt: new Date().toISOString() },
+      readGoalType(body.goalType),
+      readSplit(body.macroSplit)
+    )
+  );
 });

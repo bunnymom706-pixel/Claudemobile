@@ -63,8 +63,24 @@ export interface Profile {
   updatedAt: string;
 }
 
+export type GoalType = "lose" | "maintain" | "gain";
+export type MacroSplitId = "balanced" | "high-protein" | "lower-carb" | "keto";
+
+export const GOAL_TYPE_LABELS: Record<GoalType, string> = {
+  lose: "Lose weight",
+  maintain: "Maintain",
+  gain: "Gain",
+};
+
+export const MACRO_SPLIT_LABELS: Record<MacroSplitId, string> = {
+  balanced: "Balanced",
+  "high-protein": "High protein",
+  "lower-carb": "Lower carb",
+  keto: "Keto",
+};
+
 export interface PlanOption {
-  id: "gentle" | "steady" | "aggressive" | "max";
+  id: string;
   label: string;
   requestedLbsPerWeek: number;
   actualLbsPerWeek: number;
@@ -78,12 +94,15 @@ export interface PlanOption {
   belowFloor: boolean;
   belowBmr: boolean;
   note?: string;
+  macroWarning?: string;
 }
 
 export interface Plan {
   bmr: number;
   tdee: number;
   floor: number;
+  goalType: GoalType;
+  macroSplit: MacroSplitId;
   lbsToLose: number;
   proteinTarget: number;
   goalBmi: number;

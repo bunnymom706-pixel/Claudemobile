@@ -1,9 +1,18 @@
-import { useEffect, useState } from "react";
-import type { ActivityLevel, Plan as PlanData, PlanOption, Profile } from "../types";
-import { ACTIVITY_LABELS } from "../types";
+import { useCallback, useEffect, useState } from "react";
+import type {
+  ActivityLevel,
+  GoalType,
+  MacroSplitId,
+  Plan as PlanData,
+  PlanOption,
+  Profile,
+} from "../types";
+import { ACTIVITY_LABELS, GOAL_TYPE_LABELS, MACRO_SPLIT_LABELS } from "../types";
 import { api } from "../api";
 
 const ACTIVITY_LEVELS: ActivityLevel[] = ["sedentary", "light", "moderate", "very"];
+const GOAL_TYPES: GoalType[] = ["lose", "maintain", "gain"];
+const MACRO_SPLITS: MacroSplitId[] = ["balanced", "high-protein", "lower-carb", "keto"];
 
 type Form = Omit<Profile, "updatedAt">;
 
@@ -73,12 +82,19 @@ function OptionCard({
           {option.note}
         </p>
       )}
+      {option.macroWarning && (
+        <p className="mt-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-300">
+          {option.macroWarning}
+        </p>
+      )}
     </div>
   );
 }
 
 export default function Plan() {
   const [form, setForm] = useState<Form>(DEFAULT_FORM);
+  const [goalType, setGoalType] = useState<GoalType>("lose");
+  const [macroSplit, setMacroSplit] = useState<MacroSplitId>("balanced");
   const [plan, setPlan] = useState<PlanData | null>(null);
   const [appliedId, setAppliedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -93,11 +109,11 @@ export default function Plan() {
     });
   }, []);
 
-  async function calculate() {
+  const calculate = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setPlan(await api.profile.preview(form));
+      setPlan(await api.profile.preview(form, goalType, macroSplit));
       await api.profile.update(form);
       setAppliedId(null);
     } catch (e) {
@@ -105,7 +121,14 @@ export default function Plan() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [form, goalType, macroSplit]);
+
+  // Once a plan is on screen, changing goal or split refreshes it in place
+  // rather than making you hit calculate again.
+  useEffect(() => {
+    if (plan) calculate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goalType, macroSplit]);
 
   async function applyOption(option: PlanOption) {
     await api.goals.update({
@@ -125,6 +148,23 @@ export default function Plan() {
     <div className="mx-auto max-w-2xl space-y-4 p-4">
       <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-900/50 p-4">
         <h2 className="font-semibold">Your details</h2>
+
+        <div>
+          <p className="mb-1 text-xs text-slate-400">Goal</p>
+          <div className="flex gap-1">
+            {GOAL_TYPES.map((g) => (
+              <button
+                key={g}
+                onClick={() => setGoalType(g)}
+                className={`flex-1 rounded-md py-1.5 text-xs font-medium ${
+                  goalType === g ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"
+                }`}
+              >
+                {GOAL_TYPE_LABELS[g]}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="text-xs text-slate-400">
@@ -220,13 +260,39 @@ export default function Plan() {
           <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4 text-sm">
             <p>
               Resting burn <span className="font-semibold">{plan.bmr}</span> kcal · maintenance{" "}
-              <span className="font-semibold">{plan.tdee}</span> kcal ·{" "}
-              <span className="font-semibold">{plan.lbsToLose}</span> lbs to lose
+              <span className="font-semibold">{plan.tdee}</span> kcal
+              {plan.goalType !== "maintain" && plan.lbsToLose > 0 && (
+                <>
+                  {" "}
+                  · <span className="font-semibold">{plan.lbsToLose}</span> lbs to{" "}
+                  {plan.goalType === "lose" ? "lose" : "gain"}
+                </>
+              )}
             </p>
             <p className="mt-1 text-xs text-slate-400">
               Anything you log as exercise gets added on top of the base below, so the deficit stays
               the same whether you work out or not.
             </p>
+          </div>
+
+          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+            <p className="mb-2 text-xs text-slate-400">
+              Macro split — <span className="text-slate-500">protein stays anchored to your goal
+              weight; the rest shifts between carbs and fat</span>
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {MACRO_SPLITS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setMacroSplit(s)}
+                  className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium ${
+                    macroSplit === s ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"
+                  }`}
+                >
+                  {MACRO_SPLIT_LABELS[s]}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-3">

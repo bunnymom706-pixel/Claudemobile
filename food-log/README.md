@@ -115,8 +115,8 @@ container rebuilds.
 
 ## Setting a calorie target (the Plan tab)
 
-Enter your sex, age, height, current and goal weight, and baseline activity.
-The app estimates:
+Pick a goal (**lose / maintain / gain**), enter your stats, and choose a
+macro split. The app estimates:
 
 - **Resting burn (BMR)** via Mifflin-St Jeor
 - **Maintenance (TDEE)** = BMR × an activity multiplier
@@ -127,6 +127,22 @@ added on top without breaking anything: eat back everything you burn and
 the deficit stays exactly where you set it. It also means exercise alone
 won't speed up loss if you eat all of it back — bank part of it to go
 faster.
+
+### Macro splits
+
+Four presets, switchable without recalculating everything:
+
+| Split | Protein | Rest of the calories |
+| --- | --- | --- |
+| Balanced | 0.8 g/lb goal weight | 55% carbs / 45% fat |
+| High protein | 1.0 g/lb | 50/50 |
+| Lower carb | 1.0 g/lb | 25% carbs / 75% fat |
+| Keto | 0.85 g/lb | carbs capped at 25 g, rest fat |
+
+**Protein is set per pound of goal weight, not as a percentage of
+calories.** A percentage quietly under-delivers protein exactly when
+calories are lowest — which is when lean mass is most at risk. Anchoring it
+avoids that. If a split drives fat below ~0.3 g/lb, the option says so.
 
 ### Pick your activity level excluding workouts
 

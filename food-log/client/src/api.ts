@@ -4,7 +4,9 @@ import type {
   Exercise,
   Food,
   Goals,
+  GoalType,
   HealthSyncMode,
+  MacroSplitId,
   LogEntry,
   MealType,
   Plan,
@@ -70,9 +72,13 @@ export const api = {
     get: () => request<Profile | null>("/profile"),
     update: (input: Omit<Profile, "updatedAt">) =>
       request<Profile>("/profile", { method: "PUT", body: JSON.stringify(input) }),
-    plan: () => request<Plan>("/profile/plan"),
-    preview: (input: Omit<Profile, "updatedAt">) =>
-      request<Plan>("/profile/plan/preview", { method: "POST", body: JSON.stringify(input) }),
+    plan: (goalType: GoalType, macroSplit: MacroSplitId) =>
+      request<Plan>(`/profile/plan?goalType=${goalType}&macroSplit=${macroSplit}`),
+    preview: (input: Omit<Profile, "updatedAt">, goalType: GoalType, macroSplit: MacroSplitId) =>
+      request<Plan>("/profile/plan/preview", {
+        method: "POST",
+        body: JSON.stringify({ ...input, goalType, macroSplit }),
+      }),
   },
   settings: {
     get: () => request<Settings>("/settings"),
