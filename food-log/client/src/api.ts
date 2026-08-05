@@ -82,8 +82,8 @@ export const api = {
   },
   settings: {
     get: () => request<Settings>("/settings"),
-    update: (healthSyncMode: HealthSyncMode) =>
-      request<Settings>("/settings", { method: "PUT", body: JSON.stringify({ healthSyncMode }) }),
+    update: (patch: Partial<Pick<Settings, "healthSyncMode" | "exerciseEatBackPercent">>) =>
+      request<Settings>("/settings", { method: "PUT", body: JSON.stringify(patch) }),
   },
   lookup: {
     search: (q: string) =>

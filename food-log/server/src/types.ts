@@ -59,6 +59,15 @@ export type HealthSyncMode = "reconcile" | "add";
 
 export interface Settings {
   healthSyncMode: HealthSyncMode;
+  /**
+   * Share of burned calories (0-100) credited back to the day's goal.
+   *
+   * Defaults to 50 rather than 100 because wearables overestimate calorie
+   * burn by roughly 30% on average, and considerably more in some studies.
+   * Crediting the full reported burn is the most common way a deficit
+   * silently disappears.
+   */
+  exerciseEatBackPercent: number;
 }
 
 /** Excludes logged workouts — those are added back separately when logged. */

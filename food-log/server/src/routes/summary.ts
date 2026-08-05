@@ -3,8 +3,11 @@ import { db } from "../db.js";
 import type { Exercise, HealthSyncMode, LogEntry, MealType, Macros } from "../types.js";
 
 export interface BurnBreakdown {
-  /** Total added to the day's calorie goal. */
+  /** Calories actually burned, before any eat-back share is applied. */
   burned: number;
+  /** The portion added to the day's calorie goal. */
+  credited: number;
+  eatBackPercent: number;
   manual: number;
   health: number;
   /** What the health total contributed on top of hand-logged workouts. */
@@ -16,8 +19,15 @@ export interface BurnBreakdown {
  * A phone's active-energy figure already includes the workout you typed in,
  * so in `reconcile` mode the day's burn is the larger of the two rather than
  * the sum — the same adjustment model MyFitnessPal uses.
+ *
+ * Only `eatBackPercent` of the result is credited back to the goal, since
+ * wearables systematically overestimate burn.
  */
-export function computeBurn(exercises: Exercise[], mode: HealthSyncMode): BurnBreakdown {
+export function computeBurn(
+  exercises: Exercise[],
+  mode: HealthSyncMode,
+  eatBackPercent: number
+): BurnBreakdown {
   const manual = exercises
     .filter((e) => e.source !== "health")
     .reduce((sum, e) => sum + e.caloriesBurned, 0);
@@ -27,7 +37,16 @@ export function computeBurn(exercises: Exercise[], mode: HealthSyncMode): BurnBr
     .reduce((max, e) => Math.max(max, e.caloriesBurned), 0);
 
   const burned = mode === "add" ? manual + health : Math.max(manual, health);
-  return { burned, manual, health, adjustment: burned - manual, mode };
+  const pct = Math.min(100, Math.max(0, eatBackPercent));
+  return {
+    burned,
+    credited: Math.round((burned * pct) / 100),
+    eatBackPercent: pct,
+    manual,
+    health,
+    adjustment: burned - manual,
+    mode,
+  };
 }
 
 function emptyMacros(): Macros {
@@ -69,8 +88,9 @@ summaryRouter.get("/", (req, res) => {
     meal.entries.sort((a, b) => a.loggedAt.localeCompare(b.loggedAt));
   }
 
-  const burn = computeBurn(dayExercise, db.get().settings.healthSyncMode);
-  const adjustedGoals = { ...goals, calories: goals.calories + burn.burned };
+  const { settings } = db.get();
+  const burn = computeBurn(dayExercise, settings.healthSyncMode, settings.exerciseEatBackPercent);
+  const adjustedGoals = { ...goals, calories: goals.calories + burn.credited };
 
   res.json({
     date,
@@ -104,7 +124,8 @@ trendsRouter.get("/", (req, res) => {
     }
     const burned = computeBurn(
       exercises.filter((e) => e.loggedDate === date),
-      settings.healthSyncMode
+      settings.healthSyncMode,
+      settings.exerciseEatBackPercent
     ).burned;
     return { date, ...totals, burned };
   });

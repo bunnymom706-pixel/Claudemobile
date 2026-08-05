@@ -6,16 +6,26 @@ export default function Settings() {
   const [goals, setGoals] = useState<Goals | null>(null);
   const [saved, setSaved] = useState(false);
   const [syncMode, setSyncMode] = useState<HealthSyncMode | null>(null);
+  const [eatBack, setEatBack] = useState<number | null>(null);
 
   useEffect(() => {
     api.goals.get().then(setGoals);
-    api.settings.get().then((s) => setSyncMode(s.healthSyncMode));
+    api.settings.get().then((s) => {
+      setSyncMode(s.healthSyncMode);
+      setEatBack(s.exerciseEatBackPercent);
+    });
   }, []);
 
   async function changeSyncMode(mode: HealthSyncMode) {
     setSyncMode(mode);
-    const updated = await api.settings.update(mode);
+    const updated = await api.settings.update({ healthSyncMode: mode });
     setSyncMode(updated.healthSyncMode);
+  }
+
+  async function changeEatBack(percent: number) {
+    setEatBack(percent);
+    const updated = await api.settings.update({ exerciseEatBackPercent: percent });
+    setEatBack(updated.exerciseEatBackPercent);
   }
 
   async function save() {
@@ -58,6 +68,32 @@ export default function Settings() {
         <button onClick={save} className="w-full rounded-md bg-amber-500 py-2 font-medium text-slate-950">
           {saved ? "Saved ✓" : "Save goals"}
         </button>
+      </div>
+
+      <h2 className="pt-2 text-lg font-semibold">Exercise calories</h2>
+      <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+        <p className="text-xs text-slate-400">
+          How much of what you burn gets added back to the day's calorie goal.
+        </p>
+        <div className="flex gap-1">
+          {[0, 50, 75, 100].map((pct) => (
+            <button
+              key={pct}
+              onClick={() => changeEatBack(pct)}
+              className={`flex-1 rounded-md py-2 text-sm font-medium ${
+                eatBack === pct ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"
+              }`}
+            >
+              {pct}%
+            </button>
+          ))}
+        </div>
+        <p className="rounded-md bg-slate-800/50 p-2 text-xs text-slate-400">
+          Wearables overestimate calorie burn by around 30% on average, and much more in some
+          studies — so crediting the full amount is the usual way a deficit quietly disappears.{" "}
+          <span className="text-slate-300">50% is the common recommendation.</span> Pick 0% to keep
+          exercise as a bonus deficit and lose faster than your plan says.
+        </p>
       </div>
 
       <h2 className="pt-2 text-lg font-semibold">Health sync</h2>

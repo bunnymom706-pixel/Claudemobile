@@ -105,7 +105,7 @@ function defaultDb(): DbShape {
       fat: 65,
       updatedAt: now,
     },
-    settings: { healthSyncMode: "reconcile" },
+    settings: { healthSyncMode: "reconcile", exerciseEatBackPercent: 50 },
     profile: null,
   };
 }
@@ -126,7 +126,12 @@ function load(): DbShape {
   for (const e of cache.exercises) {
     if (!e.source) e.source = "manual";
   }
-  if (!cache.settings) cache.settings = { healthSyncMode: "reconcile" };
+  if (!cache.settings) {
+    cache.settings = { healthSyncMode: "reconcile", exerciseEatBackPercent: 50 };
+  }
+  if (typeof cache.settings.exerciseEatBackPercent !== "number") {
+    cache.settings.exerciseEatBackPercent = 50;
+  }
   if (cache.profile === undefined) cache.profile = null;
   return cache;
 }

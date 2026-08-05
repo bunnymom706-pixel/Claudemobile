@@ -44,9 +44,23 @@ export default function ExerciseCard({
         <div>
           <h3 className="font-semibold">Exercise</h3>
           <p className="text-xs text-slate-400">
-            {burned > 0
-              ? `+${Math.round(burned)} kcal burned — added to today's budget`
-              : "Burned calories get added back to your goal"}
+            {burned > 0 && breakdown ? (
+              breakdown.credited < breakdown.burned ? (
+                <>
+                  {Math.round(breakdown.burned)} kcal burned ·{" "}
+                  <span className="text-emerald-400">
+                    +{Math.round(breakdown.credited)} added back
+                  </span>{" "}
+                  ({breakdown.eatBackPercent}%)
+                </>
+              ) : (
+                <span className="text-emerald-400">
+                  +{Math.round(breakdown.credited)} kcal added to today's budget
+                </span>
+              )
+            ) : (
+              "Burned calories get added back to your goal"
+            )}
           </p>
         </div>
         <button

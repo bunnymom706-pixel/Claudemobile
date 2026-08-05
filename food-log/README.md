@@ -103,7 +103,7 @@ container rebuilds.
 | GET/POST | `/api/exercises` | list for a date / log calories burned |
 | DELETE | `/api/exercises/:id` | delete an exercise entry |
 | POST | `/api/health/sync` | receive active energy pushed from a phone |
-| GET/PUT | `/api/settings` | read / set `healthSyncMode` |
+| GET/PUT | `/api/settings` | read / set `healthSyncMode`, `exerciseEatBackPercent` |
 | GET/PUT | `/api/profile` | read / save your stats and goal weight |
 | GET | `/api/profile/plan` | calorie options for the saved profile |
 | POST | `/api/profile/plan/preview` | options for stats passed inline |
@@ -216,6 +216,23 @@ curl ... -d '{"entries":[{"date":"2026-08-05","activeEnergy":512}]}'  # backfill
 
 Syncing the same day again **corrects** that day rather than adding a second
 entry, so running it hourly is safe.
+
+### How much of your burn gets added back
+
+Settings → Exercise calories controls the share of burned calories credited
+to the day's goal: **0 / 50 / 75 / 100%**, defaulting to 50.
+
+100% is not the safe default. Wearables overestimate calorie burn by around
+30% on average across studies, with individual devices off by considerably
+more — so crediting everything the tracker claims is the most common way a
+deficit quietly disappears. Half is the usual recommendation.
+
+Set it to **0%** to treat exercise as bonus deficit: your target stays flat
+regardless of training, and anything you burn makes you lose faster than the
+plan says. That's the setting for "I want to eat under."
+
+The dashboard always shows both numbers — what you burned, and what was
+credited — so the difference is never hidden.
 
 ### Avoiding double-counted calories
 

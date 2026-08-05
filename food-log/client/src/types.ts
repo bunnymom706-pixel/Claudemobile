@@ -49,6 +49,7 @@ export type HealthSyncMode = "reconcile" | "add";
 
 export interface Settings {
   healthSyncMode: HealthSyncMode;
+  exerciseEatBackPercent: number;
 }
 
 export type ActivityLevel = "sedentary" | "light" | "moderate" | "very";
@@ -119,6 +120,8 @@ export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
 
 export interface BurnBreakdown {
   burned: number;
+  credited: number;
+  eatBackPercent: number;
   manual: number;
   health: number;
   adjustment: number;

@@ -158,13 +158,26 @@ settingsRouter.get("/", (req, res) => {
 });
 
 settingsRouter.put("/", (req, res) => {
-  const mode = (req.body as { healthSyncMode?: unknown })?.healthSyncMode;
-  if (mode !== "reconcile" && mode !== "add") {
-    res.status(400).json({ error: "healthSyncMode must be 'reconcile' or 'add'" });
-    return;
-  }
+  const body = (req.body ?? {}) as { healthSyncMode?: unknown; exerciseEatBackPercent?: unknown };
   const state = db.get();
-  state.settings.healthSyncMode = mode;
+
+  if (body.healthSyncMode !== undefined) {
+    if (body.healthSyncMode !== "reconcile" && body.healthSyncMode !== "add") {
+      res.status(400).json({ error: "healthSyncMode must be 'reconcile' or 'add'" });
+      return;
+    }
+    state.settings.healthSyncMode = body.healthSyncMode;
+  }
+
+  if (body.exerciseEatBackPercent !== undefined) {
+    const pct = Number(body.exerciseEatBackPercent);
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+      res.status(400).json({ error: "exerciseEatBackPercent must be between 0 and 100" });
+      return;
+    }
+    state.settings.exerciseEatBackPercent = Math.round(pct);
+  }
+
   db.save();
   res.json(state.settings);
 });
