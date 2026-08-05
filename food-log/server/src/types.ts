@@ -34,8 +34,17 @@ export interface Goals extends Macros {
   updatedAt: string;
 }
 
+export interface Exercise {
+  id: string;
+  name: string;
+  caloriesBurned: number;
+  loggedDate: string; // YYYY-MM-DD
+  loggedAt: string; // ISO timestamp
+}
+
 export interface DbShape {
   foods: Food[];
   logs: LogEntry[];
+  exercises: Exercise[];
   goals: Goals;
 }

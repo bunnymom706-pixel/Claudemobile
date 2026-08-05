@@ -1,0 +1,104 @@
+import { useState } from "react";
+import type { Exercise } from "../types";
+
+interface ExerciseCardProps {
+  exercises: Exercise[];
+  burned: number;
+  onAdd: (name: string, caloriesBurned: number) => Promise<void>;
+  onDelete: (id: string) => void;
+}
+
+export default function ExerciseCard({ exercises, burned, onAdd, onDelete }: ExerciseCardProps) {
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState("");
+  const [calories, setCalories] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    const cal = Number(calories);
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
+    if (!cal || cal <= 0) {
+      setError("Enter calories burned");
+      return;
+    }
+    setError(null);
+    await onAdd(name.trim(), cal);
+    setName("");
+    setCalories("");
+    setShowForm(false);
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h3 className="font-semibold">Exercise</h3>
+          <p className="text-xs text-slate-400">
+            {burned > 0
+              ? `+${Math.round(burned)} kcal burned — added to today's budget`
+              : "Burned calories get added back to your goal"}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowForm((v) => !v)}
+          className="rounded-md bg-emerald-500 px-3 py-1 text-sm font-medium text-slate-950 hover:bg-emerald-400"
+        >
+          {showForm ? "Cancel" : "+ Add"}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="mb-3 space-y-2 rounded-md bg-slate-800/50 p-3">
+          <div className="flex gap-2">
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Run, lifting, walk"
+              className="flex-1 rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm"
+            />
+            <input
+              value={calories}
+              onChange={(e) => setCalories(e.target.value)}
+              placeholder="kcal burned"
+              type="number"
+              className="w-32 rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm"
+            />
+          </div>
+          {error && <p className="text-sm text-red-400">{error}</p>}
+          <button
+            onClick={submit}
+            className="w-full rounded-md bg-emerald-500 py-1.5 text-sm font-medium text-slate-950"
+          >
+            Log burn
+          </button>
+        </div>
+      )}
+
+      {exercises.length === 0 ? (
+        <p className="text-sm text-slate-500">No exercise logged yet today.</p>
+      ) : (
+        <ul className="divide-y divide-slate-800">
+          {exercises.map((e) => (
+            <li key={e.id} className="flex items-center justify-between py-2">
+              <span className="text-sm font-medium">{e.name}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-emerald-400">+{Math.round(e.caloriesBurned)} kcal</span>
+                <button
+                  onClick={() => onDelete(e.id)}
+                  className="text-xs text-slate-500 hover:text-red-400"
+                  aria-label={`Delete ${e.name}`}
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

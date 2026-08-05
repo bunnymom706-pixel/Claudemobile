@@ -97,6 +97,7 @@ function defaultDb(): DbShape {
   return {
     foods,
     logs,
+    exercises: [],
     goals: {
       calories: 2000,
       protein: 150,
@@ -118,6 +119,7 @@ function load(): DbShape {
     return cache;
   }
   cache = JSON.parse(readFileSync(DATA_FILE, "utf-8")) as DbShape;
+  if (!cache.exercises) cache.exercises = [];
   return cache;
 }
 

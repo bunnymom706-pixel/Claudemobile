@@ -34,6 +34,14 @@ export interface Goals extends Macros {
   updatedAt: string;
 }
 
+export interface Exercise {
+  id: string;
+  name: string;
+  caloriesBurned: number;
+  loggedDate: string;
+  loggedAt: string;
+}
+
 export interface MealBucket extends Macros {
   entries: LogEntry[];
 }
@@ -42,11 +50,15 @@ export interface DaySummary {
   date: string;
   totals: Macros;
   goals: Goals;
+  adjustedGoals: Goals;
+  burned: number;
+  exercises: Exercise[];
   byMeal: Record<MealType, MealBucket>;
 }
 
 export interface TrendPoint extends Macros {
   date: string;
+  burned: number;
 }
 
 export interface Trends {

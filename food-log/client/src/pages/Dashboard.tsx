@@ -7,6 +7,7 @@ import MacroRing from "../components/MacroRing";
 import MealSection from "../components/MealSection";
 import QuickAddBar from "../components/QuickAddBar";
 import EntryModal from "../components/EntryModal";
+import ExerciseCard from "../components/ExerciseCard";
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -48,6 +49,16 @@ export default function Dashboard() {
     refresh();
   }
 
+  async function handleAddExercise(name: string, caloriesBurned: number) {
+    await api.exercises.create({ name, caloriesBurned, loggedDate: date });
+    refresh();
+  }
+
+  async function handleDeleteExercise(id: string) {
+    await api.exercises.remove(id);
+    refresh();
+  }
+
   const favorites = foods.filter((f) => f.isFavorite);
 
   return (
@@ -63,11 +74,24 @@ export default function Dashboard() {
       ) : summary ? (
         <>
           <div className="flex flex-wrap justify-around gap-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4">
-            <MacroRing label="Calories" value={summary.totals.calories} goal={summary.goals.calories} unit="" color="#f59e0b" />
+            <MacroRing label="Calories" value={summary.totals.calories} goal={summary.adjustedGoals.calories} unit="" color="#f59e0b" />
             <MacroRing label="Protein" value={summary.totals.protein} goal={summary.goals.protein} unit="g" color="#ef4444" />
             <MacroRing label="Carbs" value={summary.totals.carbs} goal={summary.goals.carbs} unit="g" color="#3b82f6" />
             <MacroRing label="Fat" value={summary.totals.fat} goal={summary.goals.fat} unit="g" color="#10b981" />
           </div>
+          {summary.burned > 0 && (
+            <p className="-mt-3 text-center text-xs text-emerald-400">
+              Calorie goal: {Math.round(summary.goals.calories)} + {Math.round(summary.burned)} burned ={" "}
+              {Math.round(summary.adjustedGoals.calories)} kcal today
+            </p>
+          )}
+
+          <ExerciseCard
+            exercises={summary.exercises}
+            burned={summary.burned}
+            onAdd={handleAddExercise}
+            onDelete={handleDeleteExercise}
+          />
 
           <QuickAddBar favorites={favorites} onQuickAdd={handleQuickAdd} />
 
