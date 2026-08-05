@@ -34,12 +34,29 @@ export interface Goals extends Macros {
   updatedAt: string;
 }
 
+export type ExerciseSource = "manual" | "health";
+
 export interface Exercise {
   id: string;
   name: string;
   caloriesBurned: number;
   loggedDate: string;
   loggedAt: string;
+  source: ExerciseSource;
+}
+
+export type HealthSyncMode = "reconcile" | "add";
+
+export interface Settings {
+  healthSyncMode: HealthSyncMode;
+}
+
+export interface BurnBreakdown {
+  burned: number;
+  manual: number;
+  health: number;
+  adjustment: number;
+  mode: HealthSyncMode;
 }
 
 export type Basis = "label-serving" | "scaled-from-100g" | "per-100g";
@@ -76,6 +93,7 @@ export interface DaySummary {
   goals: Goals;
   adjustedGoals: Goals;
   burned: number;
+  burnBreakdown: BurnBreakdown;
   exercises: Exercise[];
   byMeal: Record<MealType, MealBucket>;
 }

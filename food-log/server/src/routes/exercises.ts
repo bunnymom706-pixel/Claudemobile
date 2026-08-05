@@ -31,6 +31,7 @@ exercisesRouter.post("/", (req, res) => {
     caloriesBurned: parsed.data.caloriesBurned,
     loggedDate: parsed.data.loggedDate,
     loggedAt: new Date().toISOString(),
+    source: "manual" as const,
   };
   state.exercises.push(entry);
   db.save();

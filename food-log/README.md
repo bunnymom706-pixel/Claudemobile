@@ -22,6 +22,8 @@ calories/protein/carbs/fat against daily goals, and see trends over time.
 - **Exercise / eat-back** — log calories burned and they're added to the
   day's calorie goal (goal + burned), so the ring shows what's actually
   left to eat.
+- **Health sync** — your phone can push its active-energy total to the app
+  automatically, no typing. See "Getting burned calories from your phone".
 - **Food library** — save any food once (name, brand, serving, macros),
   mark favorites, reuse or edit/delete later.
 - **Ad-hoc entries** — log something without saving it to the library, or
@@ -98,10 +100,89 @@ container rebuilds.
 | GET/PUT | `/api/goals` | read / set daily macro targets |
 | GET/POST | `/api/exercises` | list for a date / log calories burned |
 | DELETE | `/api/exercises/:id` | delete an exercise entry |
+| POST | `/api/health/sync` | receive active energy pushed from a phone |
+| GET/PUT | `/api/settings` | read / set `healthSyncMode` |
+| GET | `/api/status` | liveness check |
 | GET | `/api/lookup/search?q=` | search the nutrition databases |
 | GET | `/api/lookup/barcode/:code` | exact product by UPC |
 | GET | `/api/summary?date=` | totals, per-meal breakdown, burned + adjusted goal |
 | GET | `/api/trends?days=` | daily totals (incl. burned) for the last N days |
+
+## Getting burned calories from your phone
+
+**Apple Health has no cloud API.** Its data lives on your device, and only a
+native iOS app with HealthKit permission can read it — that's how
+MyFitnessPal does it. A web app can't pull from Health no matter what.
+
+So the phone pushes instead. The app exposes `POST /api/health/sync`, and
+anything that can send JSON on a schedule can drive it.
+
+### Option A — Apple Shortcuts (free, no extra app)
+
+1. Shortcuts app → **Automation** → **+** → **Time of Day**, set ~11:30pm,
+   Run Immediately.
+2. Add action **Find Health Samples**: type `Active Energy`, sort by Start
+   Date, and set the date range to Today. Add **Calculate Statistics** → Sum.
+3. Add action **Get Contents of URL**:
+   - URL: `http://<your-computer>:4001/api/health/sync`
+   - Method: `POST`, Request Body: `JSON`
+   - Field `activeEnergy` (Number) → the Sum from step 2
+4. Your phone and the computer running the server must be on the same
+   network. If you set `HEALTH_SYNC_TOKEN`, add a header
+   `Authorization: Bearer <token>`.
+
+Omitting the date means "today", which is what you want for a nightly run.
+
+### Option B — Health Auto Export (paid app, most automatic)
+
+Point its REST API export at `http://<your-computer>:4001/api/health/sync`
+and select the **Active Energy** metric. Its native payload shape is parsed
+as-is; no field mapping needed.
+
+### Option C — anything else
+
+Any of these work:
+
+```bash
+curl -X POST http://localhost:4001/api/health/sync \
+  -H 'Content-Type: application/json' \
+  -d '{"activeEnergy": 512}'                          # today
+
+curl ... -d '{"date":"2026-08-05","activeEnergy":512}' # specific day
+curl ... -d '{"entries":[{"date":"2026-08-05","activeEnergy":512}]}'  # backfill
+```
+
+Syncing the same day again **corrects** that day rather than adding a second
+entry, so running it hourly is safe.
+
+### Avoiding double-counted calories
+
+If your phone says you burned 512 kcal and you also hand-logged a 300 kcal
+run, the honest total is **512, not 812** — your phone already counted the
+run. That's the default (`reconcile`) and it matches MyFitnessPal's
+"adjustment" behavior. The dashboard shows the reconciliation when both
+sources are present.
+
+Switch to `add` in Settings only if your health source genuinely excludes
+what you log by hand.
+
+### A note on security
+
+The sync endpoint accepts writes. On a home network that's fine. If the
+server is reachable from anywhere else, set a shared secret:
+
+```bash
+HEALTH_SYNC_TOKEN=some-long-random-string npm run dev
+```
+
+Then send `Authorization: Bearer some-long-random-string` with each sync.
+
+### What this does not do
+
+- No Apple Watch/iPhone step or heart-rate data — active energy only.
+- No pull-based sync. If your phone doesn't push, nothing arrives.
+- Not connected to Strava, Fitbit, Garmin, or Whoop. Those have real cloud
+  APIs and could be added; Apple Health can't be.
 
 ## Nutrition data sources
 
@@ -119,5 +200,4 @@ falls back to manual entry rather than inventing numbers.
 
 - No auth — this is a single-user local tool, matching how it's run today.
 - Barcode entry is by typing the digits; there's no camera scanner yet.
-- No sync with Apple Health, Google Fit, or other tracking apps. Exercise
-  calories are entered by hand.
+- Health sync is push-only and covers active energy; see the section above.

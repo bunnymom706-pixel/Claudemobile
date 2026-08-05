@@ -105,6 +105,7 @@ function defaultDb(): DbShape {
       fat: 65,
       updatedAt: now,
     },
+    settings: { healthSyncMode: "reconcile" },
   };
 }
 
@@ -119,7 +120,12 @@ function load(): DbShape {
     return cache;
   }
   cache = JSON.parse(readFileSync(DATA_FILE, "utf-8")) as DbShape;
+  // Forward-migrate files written by earlier versions.
   if (!cache.exercises) cache.exercises = [];
+  for (const e of cache.exercises) {
+    if (!e.source) e.source = "manual";
+  }
+  if (!cache.settings) cache.settings = { healthSyncMode: "reconcile" };
   return cache;
 }
 

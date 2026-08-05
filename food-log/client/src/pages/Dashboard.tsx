@@ -89,6 +89,7 @@ export default function Dashboard() {
           <ExerciseCard
             exercises={summary.exercises}
             burned={summary.burned}
+            breakdown={summary.burnBreakdown}
             onAdd={handleAddExercise}
             onDelete={handleDeleteExercise}
           />

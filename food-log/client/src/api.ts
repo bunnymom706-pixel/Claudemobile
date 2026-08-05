@@ -1,4 +1,15 @@
-import type { DaySummary, DbFood, Exercise, Food, Goals, LogEntry, MealType, Trends } from "./types";
+import type {
+  DaySummary,
+  DbFood,
+  Exercise,
+  Food,
+  Goals,
+  HealthSyncMode,
+  LogEntry,
+  MealType,
+  Settings,
+  Trends,
+} from "./types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -52,6 +63,11 @@ export const api = {
     create: (input: { name: string; caloriesBurned: number; loggedDate: string }) =>
       request<Exercise>("/exercises", { method: "POST", body: JSON.stringify(input) }),
     remove: (id: string) => request<void>(`/exercises/${id}`, { method: "DELETE" }),
+  },
+  settings: {
+    get: () => request<Settings>("/settings"),
+    update: (healthSyncMode: HealthSyncMode) =>
+      request<Settings>("/settings", { method: "PUT", body: JSON.stringify({ healthSyncMode }) }),
   },
   lookup: {
     search: (q: string) =>

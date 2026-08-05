@@ -1,14 +1,21 @@
 import { useState } from "react";
-import type { Exercise } from "../types";
+import type { BurnBreakdown, Exercise } from "../types";
 
 interface ExerciseCardProps {
   exercises: Exercise[];
   burned: number;
+  breakdown?: BurnBreakdown;
   onAdd: (name: string, caloriesBurned: number) => Promise<void>;
   onDelete: (id: string) => void;
 }
 
-export default function ExerciseCard({ exercises, burned, onAdd, onDelete }: ExerciseCardProps) {
+export default function ExerciseCard({
+  exercises,
+  burned,
+  breakdown,
+  onAdd,
+  onDelete,
+}: ExerciseCardProps) {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
@@ -84,7 +91,14 @@ export default function ExerciseCard({ exercises, burned, onAdd, onDelete }: Exe
         <ul className="divide-y divide-slate-800">
           {exercises.map((e) => (
             <li key={e.id} className="flex items-center justify-between py-2">
-              <span className="text-sm font-medium">{e.name}</span>
+              <span className="flex items-center gap-2 text-sm font-medium">
+                {e.name}
+                {e.source === "health" && (
+                  <span className="rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-medium text-sky-300">
+                    from phone
+                  </span>
+                )}
+              </span>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-emerald-400">+{Math.round(e.caloriesBurned)} kcal</span>
                 <button
@@ -98,6 +112,23 @@ export default function ExerciseCard({ exercises, burned, onAdd, onDelete }: Exe
             </li>
           ))}
         </ul>
+      )}
+
+      {breakdown && breakdown.health > 0 && breakdown.manual > 0 && (
+        <p className="mt-3 rounded-md bg-slate-800/50 p-2 text-xs text-slate-400">
+          {breakdown.mode === "reconcile" ? (
+            <>
+              Your phone reported {Math.round(breakdown.health)} kcal, which already includes the{" "}
+              {Math.round(breakdown.manual)} kcal you logged by hand — counting{" "}
+              {Math.round(breakdown.burned)} kcal, not the sum.
+            </>
+          ) : (
+            <>
+              Adding both: {Math.round(breakdown.manual)} kcal logged by hand +{" "}
+              {Math.round(breakdown.health)} kcal from your phone.
+            </>
+          )}
+        </p>
       )}
     </div>
   );
