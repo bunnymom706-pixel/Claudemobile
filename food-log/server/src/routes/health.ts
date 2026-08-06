@@ -178,6 +178,16 @@ settingsRouter.put("/", (req, res) => {
     state.settings.tdeeSource = source;
   }
 
+  const weekly = (req.body as { weeklyLossTargetLbs?: unknown })?.weeklyLossTargetLbs;
+  if (weekly !== undefined) {
+    const lbs = Number(weekly);
+    if (!Number.isFinite(lbs) || lbs <= 0 || lbs > 2) {
+      res.status(400).json({ error: "weeklyLossTargetLbs must be between 0 and 2" });
+      return;
+    }
+    state.settings.weeklyLossTargetLbs = lbs;
+  }
+
   if (body.exerciseEatBackPercent !== undefined) {
     const pct = Number(body.exerciseEatBackPercent);
     if (!Number.isFinite(pct) || pct < 0 || pct > 100) {

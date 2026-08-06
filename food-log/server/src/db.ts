@@ -109,6 +109,7 @@ function defaultDb(): DbShape {
       healthSyncMode: "reconcile",
       exerciseEatBackPercent: 50,
       tdeeSource: "formula",
+      weeklyLossTargetLbs: 0.5,
     },
     profile: null,
     weights: [],
@@ -136,12 +137,16 @@ function load(): DbShape {
       healthSyncMode: "reconcile",
       exerciseEatBackPercent: 50,
       tdeeSource: "formula",
+      weeklyLossTargetLbs: 0.5,
     };
   }
   if (typeof cache.settings.exerciseEatBackPercent !== "number") {
     cache.settings.exerciseEatBackPercent = 50;
   }
   if (!cache.settings.tdeeSource) cache.settings.tdeeSource = "formula";
+  if (typeof cache.settings.weeklyLossTargetLbs !== "number") {
+    cache.settings.weeklyLossTargetLbs = 0.5;
+  }
   if (cache.profile === undefined) cache.profile = null;
   if (!cache.weights) cache.weights = [];
   return cache;

@@ -8,6 +8,7 @@ import { lookupRouter } from "./routes/lookup.js";
 import { healthRouter, settingsRouter } from "./routes/health.js";
 import { profileRouter } from "./routes/profile.js";
 import { weightsRouter } from "./routes/weights.js";
+import { weeklyRouter } from "./routes/weekly.js";
 import { summaryRouter, trendsRouter } from "./routes/summary.js";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/health", healthRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/weights", weightsRouter);
+app.use("/api/weekly", weeklyRouter);
 app.use("/api/summary", summaryRouter);
 app.use("/api/trends", trendsRouter);
 

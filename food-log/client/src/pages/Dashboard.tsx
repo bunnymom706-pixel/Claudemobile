@@ -8,6 +8,7 @@ import MealSection from "../components/MealSection";
 import QuickAddBar from "../components/QuickAddBar";
 import EntryModal from "../components/EntryModal";
 import ExerciseCard from "../components/ExerciseCard";
+import WeeklyCard from "../components/WeeklyCard";
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -85,6 +86,8 @@ export default function Dashboard() {
               {Math.round(summary.adjustedGoals.calories)} kcal today
             </p>
           )}
+
+          <WeeklyCard date={date} eaten={summary.totals.calories} />
 
           <ExerciseCard
             exercises={summary.exercises}

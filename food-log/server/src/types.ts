@@ -77,6 +77,8 @@ export interface Settings {
    * metabolism, but needs a couple of weeks of consistent logging first.
    */
   tdeeSource: TdeeSource;
+  /** Pounds per week the weekly budget aims for. */
+  weeklyLossTargetLbs: number;
 }
 
 export type TdeeSource = "formula" | "adaptive";

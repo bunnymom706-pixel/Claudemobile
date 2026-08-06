@@ -108,6 +108,7 @@ container rebuilds.
 | GET | `/api/profile/plan` | calorie options for the saved profile |
 | GET/POST | `/api/weights` | weigh-in history / log today's weight |
 | GET | `/api/weights/adaptive` | measured maintenance calories |
+| GET | `/api/weekly?date=` | weekly deficit budget + today's rebalanced target |
 | POST | `/api/profile/plan/preview` | options for stats passed inline |
 | GET | `/api/status` | liveness check |
 | GET | `/api/lookup/search?q=` | search the nutrition databases |
@@ -129,6 +130,28 @@ added on top without breaking anything: eat back everything you burn and
 the deficit stays exactly where you set it. It also means exercise alone
 won't speed up loss if you eat all of it back — bank part of it to go
 faster.
+
+### Weekly target with daily rebalancing
+
+The dashboard tracks a weekly deficit goal rather than a fixed daily number.
+Each day's target is:
+
+```
+today's target = today's expenditure − (remaining weekly deficit / days left)
+```
+
+Go over on Tuesday and Wednesday-through-Sunday quietly absorb it, instead
+of the week being "blown." Come in under and the later days loosen up.
+
+Two guardrails, because this is exactly where a naive version does harm:
+
+- **The daily target never drops below the floor** (1200/1500). If a week is
+  far enough off that staying on target would mean eating under it, the app
+  clamps and says the week will land short — deliberately choosing to miss
+  the weekly number rather than prescribe an unsafe day.
+- **Missing days are unknowns, not zeros.** Days with no food logged are
+  excluded from the running total and flagged, so an untracked day never
+  reads as a day you ate nothing.
 
 ### Formula vs adaptive maintenance
 

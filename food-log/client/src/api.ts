@@ -15,6 +15,7 @@ import type {
   Profile,
   Settings,
   Trends,
+  WeeklyBudget,
 } from "./types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -89,6 +90,7 @@ export const api = {
     ) =>
       request<Settings>("/settings", { method: "PUT", body: JSON.stringify(patch) }),
   },
+  weekly: (date: string) => request<WeeklyBudget>(`/weekly?date=${date}`),
   weights: {
     list: () => request<WeightEntry[]>("/weights"),
     log: (date: string, weightLbs: number) =>

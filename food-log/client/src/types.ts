@@ -53,6 +53,32 @@ export interface Settings {
   healthSyncMode: HealthSyncMode;
   exerciseEatBackPercent: number;
   tdeeSource: TdeeSource;
+  weeklyLossTargetLbs: number;
+}
+
+export interface WeeklyBudget {
+  weekStart: string;
+  weekEnd: string;
+  targetLossLbs: number;
+  targetWeeklyDeficit: number;
+  bankedDeficit: number;
+  remainingDeficit: number;
+  remainingDays: number;
+  unloggedPastDays: number;
+  todayExpenditure: number;
+  todayTarget: number;
+  floorHit: boolean;
+  projectedLossLbs: number;
+  message: string;
+  days: Array<{
+    date: string;
+    intake: number;
+    expenditure: number;
+    logged: boolean;
+    deficit: number;
+    isPast: boolean;
+    isToday: boolean;
+  }>;
 }
 
 export interface WeightEntry {
