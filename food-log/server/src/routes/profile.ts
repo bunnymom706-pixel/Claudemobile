@@ -22,7 +22,7 @@ const profileInput = z.object({
   heightCm: z.number().min(120).max(230),
   currentWeightLbs: z.number().min(70).max(700),
   goalWeightLbs: z.number().min(70).max(700),
-  activityLevel: z.enum(["sedentary", "light", "moderate", "very"]),
+  activityLevel: z.enum(["health-tracked", "sedentary", "light", "moderate", "very"]),
 });
 
 export const profileRouter = Router();

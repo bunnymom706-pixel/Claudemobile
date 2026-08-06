@@ -182,6 +182,28 @@ calories.** A percentage quietly under-delivers protein exactly when
 calories are lowest — which is when lean mass is most at risk. Anchoring it
 avoids that. If a split drives fat below ~0.3 g/lb, the option says so.
 
+### The simplest setup: let Health do the counting
+
+If your phone or watch pushes active energy, this is the least
+error-prone configuration:
+
+1. Activity level → **"My phone/watch tracks it — use resting burn only"**
+2. Exercise calories → **100%**
+3. Maintenance source → **Formula**
+
+Your base becomes resting burn minus your deficit, and every calorie of
+movement comes from the real measurement instead of a multiplier guess:
+
+```
+budget = (resting burn − deficit) + active energy from Health
+```
+
+Apple Health's Active Energy covers your **whole day's movement**, not just
+workouts. Pairing it with a normal activity level counts the same movement
+twice — for a 1486 kcal resting burn, picking "sedentary" instead adds
+about 300 phantom calories a day. That's the mistake this option exists to
+prevent.
+
 ### Pick your activity level excluding workouts
 
 The multipliers assume your baseline day *without* the exercise you log.

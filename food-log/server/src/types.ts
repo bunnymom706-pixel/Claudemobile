@@ -86,8 +86,14 @@ export interface WeightEntry {
   weightLbs: number;
 }
 
-/** Excludes logged workouts — those are added back separately when logged. */
-export type ActivityLevel = "sedentary" | "light" | "moderate" | "very";
+/**
+ * Excludes logged workouts — those are added back separately when logged.
+ *
+ * `health-tracked` is the one to use when a phone or watch pushes active
+ * energy: it multiplies by 1.0, so the base is resting burn only and every
+ * calorie of movement comes from the real measurement instead of a guess.
+ */
+export type ActivityLevel = "health-tracked" | "sedentary" | "light" | "moderate" | "very";
 
 export interface Profile {
   sex: "female" | "male";

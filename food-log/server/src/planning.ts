@@ -25,6 +25,9 @@ const KCAL_PER_LB = 3500;
  * training AND eating back exercise calories double-counts the same burn.
  */
 export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
+  // Resting burn only. Pairs with 100% eat-back of Health active energy,
+  // which already covers the whole day's movement.
+  "health-tracked": 1.0,
   sedentary: 1.2,
   light: 1.375,
   moderate: 1.55,

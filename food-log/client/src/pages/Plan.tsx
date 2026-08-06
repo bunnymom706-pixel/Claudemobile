@@ -12,7 +12,13 @@ import { ACTIVITY_LABELS, GOAL_TYPE_LABELS, MACRO_SPLIT_LABELS } from "../types"
 import { api } from "../api";
 import WeightCard from "../components/WeightCard";
 
-const ACTIVITY_LEVELS: ActivityLevel[] = ["sedentary", "light", "moderate", "very"];
+const ACTIVITY_LEVELS: ActivityLevel[] = [
+  "health-tracked",
+  "sedentary",
+  "light",
+  "moderate",
+  "very",
+];
 const GOAL_TYPES: GoalType[] = ["lose", "maintain", "gain"];
 const MACRO_SPLITS: MacroSplitId[] = ["balanced", "high-protein", "lower-carb", "keto"];
 

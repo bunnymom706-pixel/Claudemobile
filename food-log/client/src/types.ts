@@ -74,7 +74,7 @@ export interface AdaptiveResult {
   weightChangeLbs?: number;
 }
 
-export type ActivityLevel = "sedentary" | "light" | "moderate" | "very";
+export type ActivityLevel = "health-tracked" | "sedentary" | "light" | "moderate" | "very";
 
 export interface Profile {
   sex: "female" | "male";
@@ -137,6 +137,7 @@ export interface Plan {
 }
 
 export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
+  "health-tracked": "My phone/watch tracks it — use resting burn only",
   sedentary: "Sedentary — desk job, little movement",
   light: "Lightly active — on your feet some days",
   moderate: "Moderately active — active job or daily walking",
