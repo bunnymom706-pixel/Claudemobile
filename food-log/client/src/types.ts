@@ -47,9 +47,31 @@ export interface Exercise {
 
 export type HealthSyncMode = "reconcile" | "add";
 
+export type TdeeSource = "formula" | "adaptive";
+
 export interface Settings {
   healthSyncMode: HealthSyncMode;
   exerciseEatBackPercent: number;
+  tdeeSource: TdeeSource;
+}
+
+export interface WeightEntry {
+  date: string;
+  weightLbs: number;
+}
+
+export interface AdaptiveResult {
+  available: boolean;
+  reason?: string;
+  tdee?: number;
+  confidence?: "low" | "medium" | "high";
+  daysSpanned?: number;
+  loggedDays?: number;
+  coverage?: number;
+  avgIntake?: number;
+  trendStartLbs?: number;
+  trendEndLbs?: number;
+  weightChangeLbs?: number;
 }
 
 export type ActivityLevel = "sedentary" | "light" | "moderate" | "very";
@@ -104,6 +126,9 @@ export interface Plan {
   floor: number;
   goalType: GoalType;
   macroSplit: MacroSplitId;
+  tdeeSource: TdeeSource;
+  adaptive?: AdaptiveResult;
+  eatBackConflict?: string | null;
   lbsToLose: number;
   proteinTarget: number;
   goalBmi: number;

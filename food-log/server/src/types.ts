@@ -68,6 +68,22 @@ export interface Settings {
    * silently disappears.
    */
   exerciseEatBackPercent: number;
+  /**
+   * `formula` uses Mifflin-St Jeor × an activity multiplier — works on day
+   * one, but it's a population average.
+   *
+   * `adaptive` derives maintenance from what actually happened: your logged
+   * intake versus your real weight trend. Self-corrects for your own
+   * metabolism, but needs a couple of weeks of consistent logging first.
+   */
+  tdeeSource: TdeeSource;
+}
+
+export type TdeeSource = "formula" | "adaptive";
+
+export interface WeightEntry {
+  date: string; // YYYY-MM-DD
+  weightLbs: number;
 }
 
 /** Excludes logged workouts — those are added back separately when logged. */
@@ -127,4 +143,5 @@ export interface DbShape {
   goals: Goals;
   settings: Settings;
   profile: Profile | null;
+  weights: WeightEntry[];
 }

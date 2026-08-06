@@ -7,8 +7,10 @@ import type {
   PlanOption,
   Profile,
 } from "../types";
+import type { TdeeSource } from "../types";
 import { ACTIVITY_LABELS, GOAL_TYPE_LABELS, MACRO_SPLIT_LABELS } from "../types";
 import { api } from "../api";
+import WeightCard from "../components/WeightCard";
 
 const ACTIVITY_LEVELS: ActivityLevel[] = ["sedentary", "light", "moderate", "very"];
 const GOAL_TYPES: GoalType[] = ["lose", "maintain", "gain"];
@@ -99,6 +101,7 @@ export default function Plan() {
   const [appliedId, setAppliedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tdeeSource, setTdeeSource] = useState<TdeeSource>("formula");
 
   useEffect(() => {
     api.profile.get().then((p) => {
@@ -107,14 +110,18 @@ export default function Plan() {
         setForm(rest);
       }
     });
+    api.settings.get().then((s) => setTdeeSource(s.tdeeSource));
   }, []);
 
   const calculate = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setPlan(await api.profile.preview(form, goalType, macroSplit));
+      // Save first, then read back through /plan so the adaptive maintenance
+      // figure and any eat-back conflict come from the same code path the
+      // rest of the app uses.
       await api.profile.update(form);
+      setPlan(await api.profile.plan(goalType, macroSplit));
       setAppliedId(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not build a plan");
@@ -122,6 +129,11 @@ export default function Plan() {
       setLoading(false);
     }
   }, [form, goalType, macroSplit]);
+
+  async function changeSource(source: TdeeSource) {
+    await api.settings.update({ tdeeSource: source });
+    if (plan) calculate();
+  }
 
   // Once a plan is on screen, changing goal or split refreshes it in place
   // rather than making you hit calculate again.
@@ -146,6 +158,23 @@ export default function Plan() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4">
+      <WeightCard
+        source={tdeeSource}
+        onSourceChange={(s) => {
+          setTdeeSource(s);
+          changeSource(s);
+        }}
+        onLogged={() => {
+          api.profile.get().then((p) => {
+            if (p) {
+              const { updatedAt: _updatedAt, ...rest } = p;
+              setForm(rest);
+            }
+          });
+          if (plan) calculate();
+        }}
+      />
+
       <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-900/50 p-4">
         <h2 className="font-semibold">Your details</h2>
 
@@ -257,10 +286,19 @@ export default function Plan() {
             </p>
           )}
 
+          {plan.eatBackConflict && (
+            <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+              {plan.eatBackConflict}
+            </p>
+          )}
+
           <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4 text-sm">
             <p>
               Resting burn <span className="font-semibold">{plan.bmr}</span> kcal · maintenance{" "}
-              <span className="font-semibold">{plan.tdee}</span> kcal
+              <span className="font-semibold">{plan.tdee}</span> kcal{" "}
+              <span className="text-xs text-slate-400">
+                ({plan.tdeeSource === "adaptive" ? "measured from your results" : "formula estimate"})
+              </span>
               {plan.goalType !== "maintain" && plan.lbsToLose > 0 && (
                 <>
                   {" "}

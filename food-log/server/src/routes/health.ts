@@ -169,6 +169,15 @@ settingsRouter.put("/", (req, res) => {
     state.settings.healthSyncMode = body.healthSyncMode;
   }
 
+  const source = (req.body as { tdeeSource?: unknown })?.tdeeSource;
+  if (source !== undefined) {
+    if (source !== "formula" && source !== "adaptive") {
+      res.status(400).json({ error: "tdeeSource must be 'formula' or 'adaptive'" });
+      return;
+    }
+    state.settings.tdeeSource = source;
+  }
+
   if (body.exerciseEatBackPercent !== undefined) {
     const pct = Number(body.exerciseEatBackPercent);
     if (!Number.isFinite(pct) || pct < 0 || pct > 100) {

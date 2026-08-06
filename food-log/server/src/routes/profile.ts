@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db.js";
 import { buildPlan } from "../planning.js";
+import { computeAdaptiveTdee } from "../adaptive.js";
 import type { GoalType, MacroSplitId } from "../types.js";
 
 const goalTypes = ["lose", "maintain", "gain"] as const;
@@ -44,12 +45,37 @@ profileRouter.put("/", (req, res) => {
 
 /** Calorie options for the saved profile, or for one passed inline. */
 profileRouter.get("/plan", (req, res) => {
-  const profile = db.get().profile;
+  const state = db.get();
+  const profile = state.profile;
   if (!profile) {
     res.status(404).json({ error: "Set up your profile first" });
     return;
   }
-  res.json(buildPlan(profile, readGoalType(req.query.goalType), readSplit(req.query.macroSplit)));
+
+  // Adaptive maintenance replaces the formula only when there's enough data
+  // to trust it; otherwise fall back rather than reporting a shaky number.
+  const adaptive =
+    state.settings.tdeeSource === "adaptive"
+      ? computeAdaptiveTdee(state.weights, state.logs)
+      : undefined;
+  const override = adaptive?.available ? adaptive.tdee : undefined;
+
+  const plan = buildPlan(
+    profile,
+    readGoalType(req.query.goalType),
+    readSplit(req.query.macroSplit),
+    override
+  );
+
+  // Adaptive maintenance is measured from real weight change, so it already
+  // contains however much you typically train. Crediting logged workouts on
+  // top counts that training twice.
+  const eatBackConflict =
+    override !== undefined && state.settings.exerciseEatBackPercent > 0
+      ? `Your maintenance figure is measured from real weight change, so it already includes your usual training. Adding back ${state.settings.exerciseEatBackPercent}% of logged exercise counts that twice. With adaptive maintenance, 0% is the consistent setting — unusually hard days aside.`
+      : null;
+
+  res.json({ ...plan, adaptive, eatBackConflict });
 });
 
 profileRouter.post("/plan/preview", (req, res) => {

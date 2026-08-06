@@ -106,6 +106,8 @@ container rebuilds.
 | GET/PUT | `/api/settings` | read / set `healthSyncMode`, `exerciseEatBackPercent` |
 | GET/PUT | `/api/profile` | read / save your stats and goal weight |
 | GET | `/api/profile/plan` | calorie options for the saved profile |
+| GET/POST | `/api/weights` | weigh-in history / log today's weight |
+| GET | `/api/weights/adaptive` | measured maintenance calories |
 | POST | `/api/profile/plan/preview` | options for stats passed inline |
 | GET | `/api/status` | liveness check |
 | GET | `/api/lookup/search?q=` | search the nutrition databases |
@@ -127,6 +129,42 @@ added on top without breaking anything: eat back everything you burn and
 the deficit stays exactly where you set it. It also means exercise alone
 won't speed up loss if you eat all of it back — bank part of it to go
 faster.
+
+### Formula vs adaptive maintenance
+
+Two ways to get your maintenance number, switchable on the Plan tab:
+
+**Formula** — Mifflin-St Jeor × an activity multiplier. Works on day one, but
+it's a population average and can be ~10% off for any individual.
+
+**Adaptive** — measured from what actually happened:
+
+```
+maintenance = average daily intake − (weight trend change × 3500) / days
+```
+
+If you averaged 1500 kcal and lost 3 lb over 21 days, the missing tissue
+supplied the difference, so maintenance is 1500 + 500 = 2000. No assumptions
+about your metabolism — it measures yours, and self-corrects as you go. This
+is the model MacroFactor uses.
+
+The rate comes from a **least-squares fit over every weigh-in**, not from
+comparing the first and last. Daily weight is mostly water; an exponential
+moving average was tried first and lags badly — on a known 3.0 lb loss it
+reported 2.6 and undershot maintenance by ~70 kcal. Regression recovers a
+linear trend exactly and still averages out noise (tested at ±1.5 lb of
+daily noise: within 1%).
+
+Adaptive stays off until it has something to say — at least 2 weigh-ins
+spanning 10+ days, 14+ days of food logs, and 70% logging coverage. Below
+that it tells you what's missing and falls back to the formula rather than
+reporting a shaky number.
+
+**Adaptive and eating back exercise conflict.** A maintenance figure measured
+from real weight change already includes however much you normally train.
+Crediting logged workouts on top counts that training twice. With adaptive,
+0% eat-back is the consistent setting — which is why MacroFactor doesn't add
+exercise calories at all. The app warns when both are on.
 
 ### Macro splits
 

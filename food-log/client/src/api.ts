@@ -1,4 +1,6 @@
 import type {
+  AdaptiveResult,
+  WeightEntry,
   DaySummary,
   DbFood,
   Exercise,
@@ -82,8 +84,20 @@ export const api = {
   },
   settings: {
     get: () => request<Settings>("/settings"),
-    update: (patch: Partial<Pick<Settings, "healthSyncMode" | "exerciseEatBackPercent">>) =>
+    update: (
+      patch: Partial<Pick<Settings, "healthSyncMode" | "exerciseEatBackPercent" | "tdeeSource">>
+    ) =>
       request<Settings>("/settings", { method: "PUT", body: JSON.stringify(patch) }),
+  },
+  weights: {
+    list: () => request<WeightEntry[]>("/weights"),
+    log: (date: string, weightLbs: number) =>
+      request<WeightEntry>("/weights", {
+        method: "POST",
+        body: JSON.stringify({ date, weightLbs }),
+      }),
+    remove: (date: string) => request<void>(`/weights/${date}`, { method: "DELETE" }),
+    adaptive: () => request<AdaptiveResult>("/weights/adaptive"),
   },
   lookup: {
     search: (q: string) =>

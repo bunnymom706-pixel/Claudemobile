@@ -129,6 +129,7 @@ export interface Plan {
   floor: number;
   goalType: GoalType;
   macroSplit: MacroSplitId;
+  tdeeSource: "formula" | "adaptive";
   lbsToLose: number;
   proteinTarget: number;
   goalBmi: number;
@@ -156,10 +157,12 @@ function goalWarningFor(goalBmi: number): string | null {
 export function buildPlan(
   profile: Profile,
   goalType: GoalType = "lose",
-  splitId: MacroSplitId = "balanced"
+  splitId: MacroSplitId = "balanced",
+  /** Overrides the formula estimate when adaptive TDEE is in use. */
+  tdeeOverride?: number
 ): Plan {
   const bmr = calcBmr(profile);
-  const tdee = calcTdee(profile);
+  const tdee = tdeeOverride ?? calcTdee(profile);
   const floor = CALORIE_FLOOR[profile.sex];
   const lbsToChange = Math.abs(profile.currentWeightLbs - profile.goalWeightLbs);
 
@@ -222,6 +225,7 @@ export function buildPlan(
     floor,
     goalType,
     macroSplit: splitId,
+    tdeeSource: tdeeOverride === undefined ? "formula" : "adaptive",
     lbsToLose: lbsToChange,
     proteinTarget: options[0]?.proteinTarget ?? 0,
     goalBmi,
