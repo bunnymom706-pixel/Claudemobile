@@ -1,0 +1,89 @@
+{
+  "_readme": [
+    "Copy this to ads/listings.json and fill it in. listings.json is gitignored",
+    "because it holds property names and street addresses, which are internal",
+    "reference only and never appear in a public ad.",
+    "",
+    "Every field below is required unless marked optional. A field that is absent",
+    "means 'not confirmed', and the generator will refuse to write that ad rather",
+    "than invent a number. Use null only where noted.",
+    "",
+    "  id                 short slug used for the draft filename",
+    "  internal           property_name, address, optional also_never_print list.",
+    "                     Used only to search, disambiguate, and run the leak check.",
+    "  management         'greystar' triggers the mandatory TMLP pricing block",
+    "  zip, area          the approved level of specificity for a public ad",
+    "  slogan             first line, no emoji, must be unique across the batch",
+    "  standout           the one real feature the ad is built around",
+    "  header_callout     optional, defaults to standout",
+    "  insider            optional. Omit it rather than pad it with something generic",
+    "  unit_sentence      optional override for the bed/bath sentence",
+    "  special            null if there is genuinely no special. Never a guess.",
+    "  tmlp               required when management is greystar",
+    "  amenities          kind drives priority order: pool, gym, dog park, garage,",
+    "                     ev charging, rooftop, coworking. Capped at 3 bullets total,",
+    "                     including the pet line.",
+    "  pet_policy         optional. This line owns the paw emoji.",
+    "  divider            one of  ★ ✦ ✧ ✩ ✪ ❖ ◆  and varied across the batch"
+  ],
+  "listings": [
+    {
+      "id": "01",
+      "internal": {
+        "property_name": "Cedarline Heights",
+        "address": "1200 Bluecrest Ln, Austin, TX 78704",
+        "also_never_print": []
+      },
+      "management": "greystar",
+      "zip": "78704",
+      "area": "South Austin",
+      "slogan": "South Austin skyline views, without the downtown price tag.",
+      "standout": "rooftop pool with downtown views",
+      "header_callout": "rooftop pool with downtown views",
+      "insider": "Locals know this stretch of South Austin gets you five minutes from the greenbelt without the I-35 traffic.",
+      "unit_sentence": "Rooftop pool with skyline views right outside your door. Spacious 2 bed, 2 bath layout with room to spread out.",
+      "beds": 2,
+      "baths": 2,
+      "unit": "412",
+      "base_rent": 2100,
+      "tmlp": 2340,
+      "special": "one month free on a 13-month lease",
+      "special_emoji": "✨",
+      "header_emoji": "🏙️",
+      "amenities": [
+        { "kind": "pool", "text": "Rooftop pool with downtown views" },
+        { "kind": "gym", "text": "Fitness center" },
+        { "kind": "dog park", "text": "Fenced dog park" }
+      ],
+      "pet_policy": "Pet friendly, $300 deposit",
+      "divider": "✦"
+    },
+    {
+      "id": "02",
+      "internal": {
+        "property_name": "Marbrook Crossing",
+        "address": "4501 Tannerly Dr, Austin, TX 78745",
+        "also_never_print": []
+      },
+      "management": "rpm living",
+      "zip": "78745",
+      "area": "Southwest Austin, near the greenbelt",
+      "slogan": "A fenced yard in Austin, which is rarer than a free parking spot.",
+      "standout": "private fenced yard",
+      "header_callout": "private fenced yard on a quiet interior street",
+      "insider": "The trailhead at the end of the street connects straight through to the greenbelt, so you skip the parking lot entirely.",
+      "beds": 1,
+      "baths": 1,
+      "unit": "108",
+      "base_rent": 1495,
+      "special": null,
+      "header_emoji": "🌳",
+      "amenities": [
+        { "kind": "pool", "text": "Resort style pool" },
+        { "kind": "garage", "text": "Attached garage parking" }
+      ],
+      "pet_policy": "Pet friendly, two pets max",
+      "divider": "★"
+    }
+  ]
+}

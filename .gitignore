@@ -2,3 +2,8 @@
 # that should not be public while this repo is public.
 context.local.md
 *.local.md
+
+# Real listing data. Holds property names and street addresses, which are
+# internal reference only and must never appear in a public ad or this repo.
+ads/listings.json
+drafts/
