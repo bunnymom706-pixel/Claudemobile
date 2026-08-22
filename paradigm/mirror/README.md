@@ -1,37 +1,43 @@
 # Paradigm Mirror
 
-The simple one. It does a single job: show you which paradigms are running you, what each one actually means, and the one specific move that changes it.
+Type what is actually happening, in your own words, and it names the paradigm underneath — then marks the exact words in your sentence that gave it away.
 
-No program, no streak, no daily obligation. Open it when you want.
+That last part is the whole app. A paradigm is only ever visible in the language it produces, so seeing your own phrasing highlighted back at you *is* the awareness. The reading then tells you what it costs, the exact moment you can catch it next time, and the one move that changes it.
 
-## How it works
+No quiz, no program, no streak. Open it whenever something is happening.
 
-**Scan** — 24 statements, tap 1 to 5. About two minutes. Answer fast; your first reaction is the accurate one.
+## How to use it
 
-**Mirror** — your eight paradigms as an eye chart, except inverted: the one running you hardest is set in the largest type and they descend from there. Loud ones in teal, quiet ones greyed. Tap any line.
+Type it however it comes out — messy, mid-thought, one line or ten:
 
-**Reading** — for each paradigm:
+> *"I keep saying sorry in every message. Who am I to charge that much honestly. They'll figure out I'm not worth it."*
 
-- what it means
-- how it sounds in your own head
-- where it came from
-- what it is costing you, as three concrete behaviours
-- **the tell** — the exact moment you can catch it
-- **the one move** — a single when-then act, not a list
-- the line to say instead
+You get back:
 
-**Catches** — tap when you notice one running. That is the whole change mechanism, not a score. Proctor's own order is that awareness moves first: a feeling is your conscious awareness of the vibration you are in, and noticing is what stops a default completing unopposed. You cannot change what you cannot see.
+- **I Don't Deserve It** — clear read
+- your sentence with **"Who am I to"** and **"figure out I'm not worth it"** highlighted
+- **the tell** — the word "just". Just checking in, just wondering. That word is the paradigm talking.
+- **the one move** — when you catch "just" in something you are about to send → delete it and send the sentence without it
+- **say this instead** — "I am paid for the result I produce, and the result is good."
+
+If it reads you wrong, tap the right one. That is not a failure of the app — naming it yourself is the stronger version of the same move.
 
 ## The eight
 
 Never Enough · I Don't Deserve It · It Has To Hurt · Be Liked First · Not Ready Yet · Stay Small · I Always Fade · It Gets Taken
 
-## Honesty about the scoring
+## Pattern
 
-Three statements per paradigm is enough to point at something and nowhere near enough to be a diagnosis. The app says so on the results screen. If a number looks wrong to you, trust yourself over it — noticing that you disagree is itself the awareness this is for.
+Everything you type builds an eye chart of which paradigms actually run your days — the one showing up most is set in the largest type. It is drawn from real situations, not from a questionnaire about yourself, which is why it is worth more than a self-report score.
+
+## How the identifying works
+
+Weighted phrase matching over your own language, running entirely on the device with no signal and no network. Scoring counts distinct patterns hit, so one repeated word cannot run away with it.
+
+It is a mirror, not a diagnosis, and it is deliberately loud about being unsure: below a threshold it says "nothing jumped out" and asks you to pick from all eight rather than guessing confidently. Measured 24/24 on realistic phrasings across the eight paradigms, and correctly declines to read ordinary non-loaded text.
 
 ## Getting it on your phone
 
-Same as the Engine: open the Pages URL in **Safari**, share button, **Add to Home Screen**. Its own icon, full screen, works with no signal. Verified offline with data intact.
+Open the Pages URL in **Safari**, share button, **Add to Home Screen**. Own icon, full screen, works offline.
 
 If you want the doing side — impressing a replacement paradigm daily, the terror barrier, the instant shift, the goal arithmetic — that is [The Impression Engine](../) one level up. This app shows you what to point it at.

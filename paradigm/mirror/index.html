@@ -16,23 +16,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap">
 <style>
 /* ── Tokens ──────────────────────────────────────────────────────────────
-   An eye test for beliefs. Clinical paper, deep slate ink, one measuring
-   teal. Light is the default; dark is designed, not inverted. Every colour
-   is a token so no rule is ever defined only inside a media block. */
+   Clinical paper, deep slate ink, one measuring teal. Light is the default,
+   dark is designed rather than inverted. Every colour is a token so no rule
+   is ever defined only inside a media block. */
 :root{
-  --paper:#F3F4F7;
-  --card:#FFFFFF;
-  --sunk:#EAECF1;
-  --line:#D8DBE3;
-  --line-soft:#E6E8EE;
-  --ink:#16181D;
-  --ink-2:#4A4F5C;
-  --ink-3:#7B8090;
-  --teal:#0F5257;
-  --teal-lit:#177C84;
-  --teal-wash:#E4EFEF;
-  --clay:#8A4B36;
-  --clay-wash:#F6EAE5;
+  --paper:#F3F4F7; --card:#FFFFFF; --sunk:#EAECF1;
+  --line:#D8DBE3; --line-soft:#E6E8EE;
+  --ink:#16181D; --ink-2:#4A4F5C; --ink-3:#7B8090;
+  --teal:#0F5257; --teal-lit:#177C84; --teal-wash:#E4EFEF; --teal-mark:#BFE0E0;
+  --clay:#8A4B36; --clay-wash:#F6EAE5;
   --shadow:0 1px 2px rgba(22,24,29,.05), 0 6px 20px rgba(22,24,29,.05);
   --body:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --slab:"Zilla Slab",Georgia,serif;
@@ -41,24 +33,24 @@
   :root:not([data-theme="light"]){
     --paper:#101215; --card:#181B20; --sunk:#0B0D10; --line:#2B2F37; --line-soft:#22262D;
     --ink:#ECEEF2; --ink-2:#A8AEBB; --ink-3:#767C89;
-    --teal:#5FBCC0; --teal-lit:#7FD3D6; --teal-wash:#132A2C; --clay:#D89078; --clay-wash:#2A1A15;
+    --teal:#5FBCC0; --teal-lit:#7FD3D6; --teal-wash:#132A2C; --teal-mark:#1D4447;
+    --clay:#D89078; --clay-wash:#2A1A15;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
   }
 }
 :root[data-theme="dark"]{
   --paper:#101215; --card:#181B20; --sunk:#0B0D10; --line:#2B2F37; --line-soft:#22262D;
   --ink:#ECEEF2; --ink-2:#A8AEBB; --ink-3:#767C89;
-  --teal:#5FBCC0; --teal-lit:#7FD3D6; --teal-wash:#132A2C; --clay:#D89078; --clay-wash:#2A1A15;
+  --teal:#5FBCC0; --teal-lit:#7FD3D6; --teal-wash:#132A2C; --teal-mark:#1D4447;
+  --clay:#D89078; --clay-wash:#2A1A15;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
 }
 
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{
-  margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
   font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
-  padding-bottom:calc(84px + env(safe-area-inset-bottom));
-}
+  padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--teal-lit);outline-offset:3px;border-radius:3px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -68,17 +60,18 @@ button,input,textarea{font:inherit;color:inherit}
 .view.on{display:block}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:1rem;
-  padding:1.5rem 0 1rem;border-bottom:1px solid var(--line);margin-bottom:1.75rem}
-.top h1{margin:0;font-family:var(--body);font-weight:600;font-size:.76rem;
-  letter-spacing:.2em;text-transform:uppercase;color:var(--ink-2)}
+  padding:1.5rem 0 1rem;border-bottom:1px solid var(--line);margin-bottom:1.6rem}
+.top h1{margin:0;font-weight:600;font-size:.76rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-2)}
 .top .meta{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
   font-variant-numeric:tabular-nums;white-space:nowrap}
 
 h2.head{font-family:var(--slab);font-weight:700;font-size:1.9rem;line-height:1.15;
   margin:0 0 .6rem;text-wrap:balance;letter-spacing:-.01em}
-h3.sub{font-family:var(--body);font-weight:600;font-size:.74rem;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--teal);margin:0 0 .55rem}
-p.lede{color:var(--ink-2);margin:0 0 1.3rem;font-size:1.02rem}
+h2.head.big{font-size:2.3rem}
+h4.lbl{font-weight:600;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 .5rem}
+p.lede{color:var(--ink-2);margin:0 0 1.2rem;font-size:1.02rem}
 p.small{color:var(--ink-3);font-size:.85rem;line-height:1.55;margin:.6rem 0 0}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
@@ -88,8 +81,8 @@ p.small{color:var(--ink-3);font-size:.85rem;line-height:1.55;margin:.6rem 0 0}
 .btn:hover{border-color:var(--ink-3)}
 .btn:active{transform:translateY(1px)}
 .btn.primary{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:600}
-:root[data-theme="dark"] .btn.primary{color:#0B1416}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0B1416}}
+:root[data-theme="dark"] .btn.primary{color:#0B1416}
 .btn.primary:hover{background:var(--teal-lit);border-color:var(--teal-lit)}
 .btn.wide{width:100%}
 .btn.quiet{background:transparent;border-color:transparent;color:var(--ink-3);padding-left:0;padding-right:0}
@@ -100,53 +93,35 @@ p.small{color:var(--ink-3);font-size:.85rem;line-height:1.55;margin:.6rem 0 0}
 .card{background:var(--card);border:1px solid var(--line-soft);border-radius:8px;
   box-shadow:var(--shadow);padding:1.35rem;margin-bottom:1.1rem}
 
-/* ── The scan: one statement at a time ─────────────────────────────────── */
-.progress{height:2px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:2rem}
-.progress i{display:block;height:100%;background:var(--teal);transition:width .3s ease}
-.stmt{font-family:var(--slab);font-weight:600;font-size:1.85rem;line-height:1.22;
-  letter-spacing:-.012em;margin:0 0 2rem;text-wrap:balance;min-height:3.2em}
-.agree{display:flex;flex-direction:column;gap:.5rem}
-.agree button{display:flex;align-items:center;gap:.85rem;background:var(--card);
-  border:1px solid var(--line);border-radius:6px;padding:.85rem 1rem;cursor:pointer;
-  text-align:left;font-size:.98rem;transition:border-color .12s ease,background .12s ease}
-.agree button:hover{border-color:var(--teal);background:var(--teal-wash)}
-.agree button .n{flex:0 0 1.6rem;height:1.6rem;border-radius:50%;border:1px solid var(--line);
-  display:grid;place-items:center;font-size:.78rem;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.agree button:hover .n{border-color:var(--teal);color:var(--teal)}
+/* ── The box ───────────────────────────────────────────────────────────── */
+textarea.box{width:100%;min-height:9.5rem;background:var(--card);border:1px solid var(--line);
+  border-radius:8px;padding:1.05rem 1.1rem;font-size:1.06rem;line-height:1.5;resize:vertical;
+  box-shadow:var(--shadow);font-family:var(--body)}
+textarea.box::placeholder{color:var(--ink-3)}
+textarea.box:focus{border-color:var(--teal)}
+.hintrow{display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0 1.1rem}
+.hint{background:transparent;border:1px dashed var(--line);color:var(--ink-3);border-radius:100px;
+  padding:.34rem .75rem;font-size:.82rem;cursor:pointer;text-align:left}
+.hint:hover{border-style:solid;border-color:var(--teal);color:var(--teal)}
 
-/* ── The mirror: an eye chart, biggest line first ──────────────────────── */
-.chart{margin:0 0 1rem;padding:0;list-style:none}
-.chart li{border-bottom:1px solid var(--line-soft)}
-.chart li:last-child{border-bottom:0}
-.chart button{width:100%;background:none;border:0;padding:.85rem 0;cursor:pointer;
-  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;text-align:left}
-.chart .nm{font-family:var(--slab);font-weight:700;line-height:1.1;letter-spacing:-.02em;color:var(--ink)}
-.chart .pc{font-size:.76rem;color:var(--ink-3);font-variant-numeric:tabular-nums;
-  letter-spacing:.06em;white-space:nowrap}
-.chart .r1 .nm{font-size:2.5rem}
-.chart .r2 .nm{font-size:2.05rem}
-.chart .r3 .nm{font-size:1.7rem}
-.chart .r4 .nm{font-size:1.42rem}
-.chart .r5 .nm{font-size:1.2rem}
-.chart .r6 .nm{font-size:1.05rem}
-.chart .r7 .nm{font-size:.95rem}
-.chart .r8 .nm{font-size:.88rem}
-.chart .loud .nm{color:var(--teal)}
-.chart .quiet .nm{color:var(--ink-3)}
-.chart button:hover .nm{text-decoration:underline;text-underline-offset:4px;
-  text-decoration-thickness:1px}
+/* ── The result ────────────────────────────────────────────────────────── */
+.verdict{font-family:var(--slab);font-weight:700;font-size:2.4rem;line-height:1.05;
+  letter-spacing:-.02em;margin:0 0 .35rem;color:var(--teal);text-wrap:balance}
+.conf{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:600;margin:0 0 1.2rem}
+.quoted{background:var(--sunk);border-radius:8px;padding:1.05rem 1.1rem;
+  font-family:var(--slab);font-size:1.05rem;line-height:1.55;color:var(--ink-2)}
+.quoted mark{background:var(--teal-mark);color:var(--ink);padding:.05em .18em;border-radius:3px}
+.alts{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.7rem}
+.alts button{background:var(--card);border:1px solid var(--line);border-radius:100px;
+  padding:.4rem .85rem;font-size:.85rem;cursor:pointer;color:var(--ink-2)}
+.alts button:hover{border-color:var(--teal);color:var(--teal)}
 
-.legend{display:flex;justify-content:space-between;font-size:.74rem;color:var(--ink-3);
-  letter-spacing:.08em;text-transform:uppercase;padding-top:.6rem;border-top:1px solid var(--line)}
-
-/* ── The reading ───────────────────────────────────────────────────────── */
-.section{margin-bottom:1.6rem}
-.section h4{font-family:var(--body);font-weight:600;font-size:.72rem;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--ink-3);margin:0 0 .5rem}
+.section{margin-bottom:1.5rem}
 .section p{margin:0 0 .6rem}
 .section p:last-child{margin-bottom:0}
 .voice{border-left:2px solid var(--line);padding-left:1rem;margin:0}
-.voice p{font-family:var(--slab);font-weight:500;font-size:1.05rem;color:var(--ink-2);
+.voice p{font-family:var(--slab);font-weight:500;font-size:1.02rem;color:var(--ink-2);
   margin:0 0 .35rem;line-height:1.4}
 .voice p:last-child{margin-bottom:0}
 ul.costs{margin:0;padding-left:1.15rem}
@@ -160,113 +135,99 @@ ul.costs li{margin-bottom:.4rem;color:var(--ink-2)}
 .swap{border:1px dashed var(--line);border-radius:6px;padding:1rem 1.1rem}
 .swap p{margin:0;font-family:var(--slab);font-weight:600;font-size:1.08rem;line-height:1.35}
 
-.catchbar{display:flex;align-items:center;gap:.75rem;background:var(--sunk);
-  border-radius:6px;padding:.75rem .85rem;margin-top:1.4rem}
-.catchbar .cnt{font-family:var(--slab);font-weight:700;font-size:1.5rem;
-  font-variant-numeric:tabular-nums;color:var(--teal);min-width:1.6rem;text-align:center}
-.catchbar .lbl{flex:1;font-size:.85rem;color:var(--ink-2);line-height:1.4}
+/* ── The pattern: an eye chart built from what you actually typed ──────── */
+.chart{margin:0 0 1rem;padding:0;list-style:none}
+.chart li{border-bottom:1px solid var(--line-soft)}
+.chart li:last-child{border-bottom:0}
+.chart button{width:100%;background:none;border:0;padding:.85rem 0;cursor:pointer;
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;text-align:left}
+.chart .nm{font-family:var(--slab);font-weight:700;line-height:1.1;letter-spacing:-.02em;color:var(--ink)}
+.chart .pc{font-size:.76rem;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chart .r1 .nm{font-size:2.4rem}.chart .r2 .nm{font-size:2rem}.chart .r3 .nm{font-size:1.66rem}
+.chart .r4 .nm{font-size:1.4rem}.chart .r5 .nm{font-size:1.2rem}.chart .r6 .nm{font-size:1.05rem}
+.chart .r7 .nm{font-size:.95rem}.chart .r8 .nm{font-size:.88rem}
+.chart .loud .nm{color:var(--teal)}
+.chart .none .nm{color:var(--ink-3)}
+.chart button:hover .nm{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.legend{display:flex;justify-content:space-between;font-size:.74rem;color:var(--ink-3);
+  letter-spacing:.08em;text-transform:uppercase;padding-top:.6rem;border-top:1px solid var(--line)}
 
-.catchrow{display:flex;align-items:center;gap:.9rem;padding:.85rem 0;border-bottom:1px solid var(--line-soft)}
-.catchrow:last-child{border-bottom:0}
-.catchrow .nm{flex:1;font-family:var(--slab);font-weight:600;font-size:1.02rem;min-width:0}
-.catchrow .n{font-variant-numeric:tabular-nums;color:var(--ink-3);font-size:.85rem;min-width:1.5rem;text-align:right}
-
-.bar{height:5px;background:var(--sunk);border-radius:3px;overflow:hidden;margin-top:.4rem}
-.bar i{display:block;height:100%;background:var(--teal);border-radius:3px}
-
-.dock{position:fixed;left:0;right:0;bottom:0;background:var(--paper);
-  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20}
-.dock-inner{max-width:36rem;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
-.dock button{background:none;border:0;padding:.85rem .3rem .95rem;cursor:pointer;
-  font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
-.dock button.on{color:var(--teal);box-shadow:inset 0 2px 0 var(--teal)}
+.entry{border-left:2px solid var(--line-soft);padding:.1rem 0 .1rem .9rem;margin-bottom:1.05rem}
+.entry .when{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.entry .tag{color:var(--teal);font-weight:600}
+.entry p{margin:.2rem 0 0;font-size:.94rem;color:var(--ink-2);line-height:1.5}
 
 .hidden{display:none!important}
 a.plain{color:var(--teal);text-decoration:underline;text-underline-offset:3px}
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);z-index:20}
+.dock-inner{max-width:36rem;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.dock button{background:none;border:0;padding:.85rem .3rem .95rem;cursor:pointer;font-size:.72rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.dock button.on{color:var(--teal);box-shadow:inset 0 2px 0 var(--teal)}
 </style>
 </head>
 <body>
 
-<!-- ══ INTRO ═══════════════════════════════════════════════════════════ -->
-<section class="view" id="v-intro"><div class="wrap">
-  <div class="top"><h1>Paradigm Mirror</h1><span class="meta">2 minutes</span></div>
-  <h2 class="head">You are not choosing most of this.</h2>
-  <p class="lede">A paradigm is a bundle of beliefs and habits sitting in your subconscious. Most of it went in before you were seven, absorbed from the people around you — you did not pick it and you were never asked. It then decides roughly 95% of what you do, silently, all day.</p>
-  <p class="lede">That is why willpower keeps losing. You are not arguing with a decision. You are arguing with a default.</p>
-  <p class="lede">You cannot change what you cannot see, which is the only thing this app does. Twenty-four statements, about two minutes. Then it shows you which paradigms are running you, what each one actually costs you, the exact moment you can catch it, and the one specific move that changes it.</p>
-  <button class="btn primary wide" data-act="start">Start the scan</button>
-  <p class="small">Nothing is sent anywhere. Everything stays on this device. Answer fast and honestly — your first reaction is the accurate one, and the polite answer is not the one running you.</p>
+<section class="view" id="v-type"><div class="wrap">
+  <div class="top"><h1>Paradigm Mirror</h1><span class="meta" id="type-meta"></span></div>
+  <div id="type-body"></div>
 </div></section>
 
-<!-- ══ SCAN ════════════════════════════════════════════════════════════ -->
-<section class="view" id="v-scan"><div class="wrap">
-  <div class="top"><h1>Scan</h1><span class="meta" id="scan-count"></span></div>
-  <div class="progress"><i id="scan-prog"></i></div>
-  <p class="stmt" id="scan-stmt"></p>
-  <div class="agree" id="scan-agree"></div>
-  <button class="btn quiet" data-act="scan-back" id="scan-back">Back</button>
+<section class="view" id="v-result"><div class="wrap">
+  <div class="top"><h1>Identified</h1><button class="btn quiet" data-act="new">Type another</button></div>
+  <div id="result-body"></div>
 </div></section>
 
-<!-- ══ MIRROR ══════════════════════════════════════════════════════════ -->
-<section class="view" id="v-mirror"><div class="wrap">
-  <div class="top"><h1>The Mirror</h1><span class="meta" id="mirror-date"></span></div>
-  <div id="mirror-body"></div>
-</div></section>
-
-<!-- ══ READING ═════════════════════════════════════════════════════════ -->
 <section class="view" id="v-read"><div class="wrap">
-  <div class="top"><h1 id="read-top">Reading</h1><button class="btn quiet" data-act="back-mirror">All paradigms</button></div>
+  <div class="top"><h1 id="read-top">Reading</h1><button class="btn quiet" data-act="back">Back</button></div>
   <div id="read-body"></div>
 </div></section>
 
-<!-- ══ CATCHES ═════════════════════════════════════════════════════════ -->
-<section class="view" id="v-catch"><div class="wrap">
-  <div class="top"><h1>Catches</h1><span class="meta" id="catch-total"></span></div>
-  <div id="catch-body"></div>
+<section class="view" id="v-pattern"><div class="wrap">
+  <div class="top"><h1>Pattern</h1><span class="meta" id="pattern-meta"></span></div>
+  <div id="pattern-body"></div>
+</div></section>
+
+<section class="view" id="v-about"><div class="wrap">
+  <div class="top"><h1>What this is</h1><span class="meta">Read once</span></div>
+  <div id="about-body"></div>
 </div></section>
 
 <nav class="dock" aria-label="Sections"><div class="dock-inner">
-  <button data-go="mirror" type="button">Mirror</button>
-  <button data-go="catch" type="button">Catches</button>
-  <button data-go="intro" type="button">What is this</button>
+  <button data-go="type" type="button">Type</button>
+  <button data-go="pattern" type="button">Pattern</button>
+  <button data-go="about" type="button">About</button>
 </div></nav>
 
 <script>
 "use strict";
 /* ═══════════════════════════════════════════════════════════════════════
    PARADIGM MIRROR
-   A companion to the Impression Engine, doing the one job that app assumes
-   you have already done: seeing what is actually running you.
 
-   The whole mechanism is three moves — SEE it, CATCH it, SWAP it — which is
-   Proctor's own order. He held that awareness is the first mover: a feeling
-   is your conscious awareness of the vibration you are in, and the act of
-   becoming aware is itself what starts moving a negative vibration toward
-   neutral. So the catch counter is not a score. It is the intervention.
+   You type what is actually happening, in your own words, and it names the
+   paradigm underneath it — then shows you the exact words in your sentence
+   that gave it away.
 
-   No streaks, no program, no daily obligation. Open it when you want.
+   That last part is the whole app. Proctor's order puts awareness first, and
+   a paradigm is only ever visible in the language it produces. Seeing your
+   own phrasing marked up is the awareness; the reading tells you what it
+   costs and the one move that changes it.
+
+   The matcher is weighted pattern matching over your own text. It runs
+   entirely on the device, works with no signal, and is honest about being a
+   mirror rather than a diagnosis — when it is unsure it says so and asks.
    ═══════════════════════════════════════════════════════════════════════ */
 
-const KEY = "paradigm-mirror.v1";
+const KEY = "paradigm-mirror.v2";
 
-/* Each paradigm carries everything the reading needs: how it sounds in your
-   own head, where it came from, what it costs in behaviour, the exact moment
-   it is catchable, one if-then move, and the line to say instead. */
 const P = [
   {
     id:"enough", name:"Never Enough",
-    means:"You run as if supply is finite and about to end — of money, time, leads, chances. It is not pessimism. It is a nervous system that learned the shape of running out.",
-    items:[
-      "There is never quite enough money, however much comes in.",
-      "If someone else gets the opportunity, that is one fewer for me.",
-      "I hold on to what I have rather than spend it on growing."
-    ],
+    means:"You are running as if supply is finite and about to end — of money, time, leads, chances. It is not pessimism. It is a nervous system that learned the shape of running out.",
+    voice:["There is never quite enough, however much comes in.","If they get it, that is one fewer for me.","I hold on to what I have rather than spend it on growing."],
     from:"Almost always watched an adult run out of something before you were seven. You learned the feeling before you had words for it, so it does not present as a belief. It presents as realism.",
-    costs:[
-      "You underprice, and you take the first number offered.",
-      "You chase every lead badly instead of the right one well.",
-      "You will not spend on the thing that would grow the business."
-    ],
+    costs:["You underprice, and you take the first number offered.","You chase every lead badly instead of the right one well.","You will not spend on the thing that would grow the business."],
     tell:"The tightening in your chest a half-second before you name a number.",
     when:"you feel yourself about to lower a number",
     move:"Say the original number out loud, then stop talking. Let the silence sit.",
@@ -274,18 +235,10 @@ const P = [
   },
   {
     id:"deserve", name:"I Don't Deserve It",
-    means:"Underneath, you do not believe you have earned the right to be paid well or to want more. This is self-image, and self-image sets a ceiling that results cannot rise above for long.",
-    items:[
-      "Some part of me thinks I do not really deserve a lot of money.",
-      "When something goes well I put it down to luck more than to me.",
-      "I quietly expect to be found out."
-    ],
+    means:"Underneath, you do not believe you have earned the right to be paid well or to want more. This is self-image, and self-image sets a ceiling results cannot stay above for long.",
+    voice:["Some part of me thinks I do not really deserve this.","When it goes well it was luck more than me.","I quietly expect to be found out."],
     from:"Built out of how you were treated, not out of anything you did. Self-image forms from other people's behaviour toward you, mostly before you were old enough to evaluate it. None of that is your fault; all of it is now yours to work with.",
-    costs:[
-      "You apologise inside your own messages before you ask for anything.",
-      "You discount before anyone asks you to.",
-      "You over-deliver to justify being paid at all, and a win leaves you uneasy rather than pleased."
-    ],
+    costs:["You apologise inside your own messages before you ask for anything.","You discount before anyone asks you to.","You over-deliver to justify being paid at all, and a win leaves you uneasy rather than pleased."],
     tell:"The word “just”. Just checking in, just wondering, just wanted to ask. That word is the paradigm talking.",
     when:"you catch the word “just” in something you are about to send",
     move:"Delete it and send the sentence without it. Do not soften anything else to compensate.",
@@ -294,17 +247,9 @@ const P = [
   {
     id:"hurt", name:"It Has To Hurt",
     means:"You believe money is only legitimate if it cost you suffering. So easy money feels wrong, and you find ways to make it expensive.",
-    items:[
-      "If the work was easy, it does not really count.",
-      "However much I did today, I should have done more.",
-      "Resting when the work is finished still feels like getting away with something."
-    ],
-    from:"You were praised for effort rather than for outcome, or you watched someone exhaust themselves and were taught to read that as love.",
-    costs:[
-      "You pick the hard low-value task over the easy high-value one.",
-      "You measure the day in hours worked instead of in leases signed.",
-      "You quietly resent the work, which leaks into how you talk to people."
-    ],
+    voice:["If the work was easy, it does not really count.","However much I did today, I should have done more.","Resting when the work is finished still feels like getting away with something."],
+    from:"You were praised for effort rather than outcome, or you watched someone exhaust themselves and were taught to read that as love.",
+    costs:["You pick the hard low-value task over the easy high-value one.","You measure the day in hours worked instead of in leases signed.","You quietly resent the work, and it leaks into how you talk to people."],
     tell:"Choosing the harder task when a faster one pays more.",
     when:"you are about to start a long task",
     move:"Ask out loud: is there a ten-minute version of this? Do that one first, and only continue if it is still needed.",
@@ -313,55 +258,31 @@ const P = [
   {
     id:"liked", name:"Be Liked First",
     means:"You need warmth in place before you will ask for anything, so you keep trading the ask away to keep the warmth.",
-    items:[
-      "I would rather wait for them to bring it up than push.",
-      "I do not want to be a bother.",
-      "Being liked matters more to me than being direct."
-    ],
+    voice:["I would rather wait for them to bring it up than push.","I do not want to be a bother.","Being liked matters more to me than being direct."],
     from:"Somewhere early, being liked was how you stayed safe. It worked, which is why it is still running.",
-    costs:[
-      "You send friendly messages that contain no actual request.",
-      "You let a client go quiet rather than chase them.",
-      "You accept a worse split rather than seem difficult."
-    ],
+    costs:["You send friendly messages that contain no actual request.","You let a client go quiet rather than chase them.","You accept a worse split rather than seem difficult."],
     tell:"A message you are about to send that has no question and no ask in it.",
     when:"you finish writing a message and before you send it",
-    move:"Find the ask. If there is not one, add it. If it already has one, do not soften it.",
+    move:"Find the ask. If there is not one, add it. If it is already there, do not soften it.",
     swap:"The ask is the service. People are relieved when someone is direct."
   },
   {
     id:"ready", name:"Not Ready Yet",
     means:"You treat preparing as progress. It is the most respectable available form of not starting, because it looks exactly like work.",
-    items:[
-      "I need to get set up properly before I really start.",
-      "I should learn more about this first.",
-      "I would rather get it right than get it out."
-    ],
+    voice:["I need to get set up properly before I really start.","I should learn more about this first.","I would rather get it right than get it out."],
     from:"Preparation was safe. Being seen unprepared was not. So you got very good at the safe half.",
-    costs:[
-      "You build the tracker instead of making the call.",
-      "You research instead of sending the message.",
-      "Your busiest days produce nothing anyone could reply to."
-    ],
+    costs:["You build the tracker instead of making the call.","You research instead of sending the message.","Your busiest days produce nothing anyone could reply to."],
     tell:"You are organising something instead of talking to someone.",
     when:"you notice you are building, tidying or researching",
-    move:"Stop mid-task and send one message to one real person. Then go back if you still want to.",
+    move:"Stop mid-task and send one message to one real person. Then go back to it if you still want to.",
     swap:"I begin at once, whether I am ready or not."
   },
   {
     id:"small", name:"Stay Small",
     means:"You hold yourself under a size where you would be noticed, judged, or expected to keep it up.",
-    items:[
-      "I would rather not put myself out there publicly.",
-      "I play down good news when I share it.",
-      "I do not want to become one of those people who promotes themselves."
-    ],
-    from:"Visibility cost you something once. Shrinking worked, and nothing has told your nervous system that the danger has passed.",
-    costs:[
-      "You do not post, so the people looking for you cannot find you.",
-      "You dilute your own wins in the telling.",
-      "Your pipeline stays exactly the size of your comfort."
-    ],
+    voice:["I would rather not put myself out there.","I play down good news when I share it.","I do not want to become one of those people who promotes themselves."],
+    from:"Visibility cost you something once. Shrinking worked, and nothing has told your nervous system the danger has passed.",
+    costs:["You do not post, so the people looking for you cannot find you.","You dilute your own wins in the telling.","Your pipeline stays exactly the size of your comfort."],
     tell:"About to share something and finding yourself softening it, hedging it, or deleting it.",
     when:"you catch yourself softening something before you post or send it",
     move:"Send the unsoftened version. Do not read it again first.",
@@ -370,17 +291,9 @@ const P = [
   {
     id:"fade", name:"I Always Fade",
     means:"You expect your own follow-through to run out, so you never build on anything. The prediction is what causes the fade, not the other way round.",
-    items:[
-      "I start strong and then lose steam. That is just how I am.",
-      "There is not much point starting, I will drop it like the last one.",
-      "I would rather begin something new than finish the last thing."
-    ],
+    voice:["I start strong and then lose steam. That is just how I am.","There is not much point starting, I will drop it like the last one.","I would rather begin something new than finish the last thing."],
     from:"A few early failures got generalised into an identity. The evidence was thin; the conclusion was total.",
-    costs:[
-      "You stop following up after one silence.",
-      "You abandon a working system on day four.",
-      "You keep starting, so nothing ever compounds."
-    ],
+    costs:["You stop following up after one silence.","You abandon a working system on day four.","You keep starting, so nothing ever compounds."],
     tell:"Day three or four of anything, and that specific flat feeling that says here we go again.",
     when:"you feel the day-three flatness arrive",
     move:"Do the smallest possible version of the thing, badly, and mark it done. Not a good version. A done one.",
@@ -389,264 +302,452 @@ const P = [
   {
     id:"taken", name:"It Gets Taken",
     means:"You brace for loss, so you never fully land in a good result. Bracing feels like being sensible. It is a paradigm.",
-    items:[
-      "When things go well I start waiting for something to go wrong.",
-      "I do not let myself get comfortable.",
-      "Good things do not tend to last for me."
-    ],
-    from:"Something good was removed suddenly and early. Bracing was an accurate response then. It is running on a threat that has passed.",
-    costs:[
-      "You do not celebrate a signed lease, so nothing ever feels like progress.",
-      "You over-check things that are fine, and call it being careful.",
-      "Your anxiety goes up when things go well, which teaches you to keep them small."
-    ],
+    voice:["When things go well I start waiting for something to go wrong.","I do not let myself get comfortable.","Good things do not tend to last for me."],
+    from:"Something good was removed suddenly and early. Bracing was accurate then. It is running now on a threat that has passed.",
+    costs:["You do not celebrate a signed lease, so nothing ever feels like progress.","You over-check things that are fine and call it being careful.","Your anxiety rises when things go well, which teaches you to keep them small."],
     tell:"Something good happens and you immediately start scanning for the catch.",
     when:"something good lands",
     move:"Write it down in one sentence and read it out loud. Do nothing else with it — no checking, no bracing.",
     swap:"I am allowed to keep this, and I can get more."
   }
 ];
+function byId(id){ return P.find(x => x.id === id); }
 
-/* Two of the three statements are worded straight, one is not reverse-scored
-   — this is a mirror, not a psychometric instrument, and it says so. */
-const ITEMS = (() => {
-  const out = [];
-  P.forEach(p => p.items.forEach((t, i) => out.push({ p:p.id, t, i })));
-  /* Fixed interleave so the same paradigm's three statements never sit
-     together and prime each other. Deterministic — no shuffling, so a
-     re-scan asks them in the same order and the numbers stay comparable. */
-  const spread = [];
-  for(let round = 0; round < 3; round++)
-    for(let k = 0; k < P.length; k++)
-      spread.push(out[k*3 + round]);
-  return spread;
-})();
+/* ── The matcher ────────────────────────────────────────────────────────
+   Weighted phrase patterns over the user's own words. 3 = unmistakable,
+   2 = strong, 1 = suggestive. Score is the sum of DISTINCT patterns hit, so
+   one repeated word cannot run away with it. Overlapping human language is
+   real, so overlaps are allowed and weighted toward the better fit. */
+const SIG = {
+  enough: [
+    [3,"can'?t afford|cannot afford|too expensive|out of my budget"],
+    [3,"there'?s never enough|never enough money|not enough money|no money"],
+    [3,"running out|ran out|run out of"],
+    [3,"lowball|low ?balled|knocked me down|talked me down"],
+    [2,"broke|skint|behind on (the )?(rent|bills|payments)|bills? (are|is) due"],
+    [2,"discount|knock (it|something) off|cut (my|the) (fee|rate|price|commission)"],
+    [2,"lowered? (my|the) (price|rate|fee|number)|dropped (my|the) (price|rate|fee)"],
+    [2,"took the first (offer|number)|settled for|had to take (it|whatever)"],
+    [2,"slow month|dry|no leads|nothing coming in|pipeline is empty"],
+    [2,"someone else got|they went with someone|lost (it|the deal) to"],
+    [2,"scraping|barely (making|covering|enough)|paycheck to paycheck"],
+    [2,"can'?t (afford to|justify) spend"],
+    [1,"tight|expensive|cheaper|save money|waste of money|too much money"],
+    [1,"only made|only got|just enough"]
+  ],
+  deserve: [
+    [3,"don'?t deserve|do not deserve|undeserving|not worthy"],
+    [3,"who am i to|what right do i have"],
+    [3,"imposter|impostor|fraud|a fake|found out|figure out i'?m not"],
+    [3,"not good enough|not worth (it|that|what)"],
+    [2,"embarrassed|ashamed|humiliat|cringed at myself"],
+    [2,"felt (bad|guilty|awful) (about )?(asking|charging|invoicing|billing)"],
+    [2,"i was (just )?lucky|got lucky|a fluke|right place right time"],
+    [2,"shouldn'?t (be able to|get to|have) ask"],
+    [2,"apologis|apologiz|said sorry|kept saying sorry"],
+    [2,"over ?deliver|did extra to make up|worked extra to justify"],
+    [1,"\\bjust (checking|wondering|wanted|following|seeing|asking|thought)"],
+    [1,"sorry to|so sorry|stupid of me|my fault"]
+  ],
+  hurt: [
+    [3,"burn(t|ed) out|burnout|running on empty|nothing left in the tank"],
+    [3,"worked (all day|all night|the whole|every)|been at (it|this) (all|since)"],
+    [3,"should have done more|didn'?t do enough|haven'?t done enough"],
+    [2,"exhaust|shattered|wiped|drained|dead on my feet"],
+    [2,"no break|didn'?t (take a break|stop|eat)|haven'?t stopped"],
+    [2,"feel(s)? lazy|being lazy|slacking|not working hard enough"],
+    [2,"guilty (about )?(resting|stopping|taking|a day off|the day off)"],
+    [2,"grind|hustle|graft|flat out|back to back"],
+    [2,"felt too easy|was too easy|shouldn'?t be this easy|didn'?t feel earned"],
+    [1,"\\d+ hours|all weekend|since 5 ?am|since six|late again|tired"],
+    [1,"wasted the (day|morning|afternoon)|nothing to show for"]
+  ],
+  liked: [
+    [3,"don'?t want to (be a )?bother|not want to bother|hate bothering"],
+    [3,"come across as (pushy|rude|desperate|aggressive|annoying)|seem (pushy|rude|desperate|aggressive)"],
+    [3,"don'?t want to (push|pester|nag|chase|hassle|bug)"],
+    [3,"what will they think|they'?ll think i'?m|worried what they think"],
+    [2,"annoying|pushy|nagging|pestering|too much|being a pain"],
+    [2,"waiting (for them|to hear|on them)|haven'?t heard back|they went quiet|ghosted"],
+    [2,"didn'?t want to (seem|sound|look)"],
+    [2,"awkward|uncomfortable (asking|bringing)|weird to ask"],
+    [2,"want them to like me|need them to like|be liked"],
+    [1,"friendly|nice|polite|hope (that'?s|this is) ok|no rush|no pressure|whenever you"],
+    [1,"followed up (again|twice)|third time"]
+  ],
+  ready: [
+    [3,"not ready|isn'?t ready|aren'?t ready|before i (start|launch|begin|post)"],
+    [3,"once i (have|get|finish|set up|build|figure)|when i'?ve (got|finished|set)"],
+    [3,"need to (set up|organise|organize|sort out|build|figure out|research|learn) (a|the|my|it|this|everything|more)?"],
+    [2,"still (working on|building|setting up|figuring|sorting|researching)"],
+    [2,"spent (the day|all day|hours) (on|building|organising|organizing|researching|setting)"],
+    [2,"tracker|spreadsheet|system|template|workflow|dashboard|folder"],
+    [2,"haven'?t started|not started (it )?yet|keep putting (it|this) off"],
+    [2,"get it (right|perfect)|make it perfect|perfect(ing)? it"],
+    [1,"prepare|preparation|plan(ning)?|learn more|watch(ing)? (a )?(video|course|tutorial)"],
+    [1,"tidy|clean up|reorganis|reorganiz|later|tomorrow i'?ll"]
+  ],
+  small: [
+    [3,"put myself out there|putting myself out there"],
+    [3,"didn'?t post|couldn'?t post|almost posted|deleted (the|my) (post|it|story)|took it down"],
+    [3,"self ?promot|showing off|show(ing)? off|bragging|blowing my own"],
+    [3,"look(s|ed)? (desperate|cringe|salesy|thirsty|like an ad)|feel(s)? cringe|so cringe"],
+    [2,"don'?t want (the )?attention|attention on me|everyone (will )?see|people i know will see"],
+    [2,"post(ing)?|share(d)? it|on (facebook|instagram|marketplace|social)|reel|story|video of me"],
+    [2,"played (it|that) down|downplay|made it smaller|didn'?t mention"],
+    [2,"be seen|being seen|visible|out in the open"],
+    [1,"hedge|softened|rewrote it|toned (it )?down|deleted (half|the end)"],
+    [1,"one of those people|those kinds of posts"]
+  ],
+  fade: [
+    [3,"always (do this|happens|the same)|here we go again|same (thing|pattern) (every|again)"],
+    [3,"lost (steam|motivation|momentum|interest)|no motivation|can'?t be bothered any ?more"],
+    [3,"gave up|gave it up|quit (again|after)|stopped (doing|after|going)|fell off"],
+    [3,"never finish|don'?t finish|never stick|can'?t stick (to|with)|can'?t keep (it )?up"],
+    [2,"started strong|first (few days|week) was fine|day (three|four|3|4)"],
+    [2,"what'?s the point|pointless|why bother|no point"],
+    [2,"abandon|dropped it|let it slide|stopped tracking|stopped logging"],
+    [2,"like (the )?last time|like every other time|same as before"],
+    [1,"streak|consistent|consistency|routine|habit|keep going"],
+    [1,"start(ing)? (something|a) new|new (plan|system|idea) instead"]
+  ],
+  taken: [
+    [3,"too good to be true|waiting for (it|something|the other)|other shoe"],
+    [3,"jinx|speak too soon|tempting fate|touch wood"],
+    [3,"something (will|is going to|is gonna) go wrong|it'?ll fall through|won'?t last|do(n'?t|es not) last|doesn'?t last"],
+    [3,"fell through|fall(en)? through|backed out|changed (their|her|his) mind|cancell?ed|pulled out"],
+    [3,"going too well|it'?s too well|too well|almost too"],
+    [2,"can'?t (enjoy|relax|celebrate|let myself)|didn'?t let myself|won'?t let myself"],
+    [2,"nervous|anxious|on edge|bracing|waiting for the catch|scared it|feel sick"],
+    [2,"keep checking|checking (it|the) |checked (it )?again|had to check|refresh"],
+    [2,"don'?t get comfortable|not getting comfortable|too early to celebrate|not counting on"],
+    [1,"good news|went well|signed|approved|accepted|closed|yes but"]
+  ]
+};
+/* Compile once. Word-ish boundaries keep "just" from matching "adjust". */
+const COMPILED = {};
+Object.keys(SIG).forEach(k => {
+  COMPILED[k] = SIG[k].map(r => [r[0], new RegExp("(?:^|[^a-z])(" + r[1] + ")", "gi")]);
+});
 
-const AGREE = [
-  { v:1, l:"Not me at all" },
-  { v:2, l:"Rarely" },
-  { v:3, l:"Sometimes" },
-  { v:4, l:"Often" },
-  { v:5, l:"That is exactly me" }
-];
+function analyse(text){
+  const out = P.map(p => {
+    let score = 0;
+    const hits = [];
+    (COMPILED[p.id] || []).forEach(pair => {
+      const w = pair[0], re = new RegExp(pair[1].source, "gi");
+      let m, found = false, guard = 0;
+      while((m = re.exec(text)) !== null && guard++ < 200){
+        const g = m[1];
+        if(g && g.trim()){
+          const s = m.index + m[0].indexOf(g);
+          hits.push({ s, e: s + g.length });
+          found = true;
+        }
+        if(m.index === re.lastIndex) re.lastIndex++;
+      }
+      if(found) score += w;
+    });
+    return { p, score, hits };
+  });
+  out.sort((a,b) => b.score - a.score || P.indexOf(a.p) - P.indexOf(b.p));
+  return out;
+}
+function confidence(res){
+  const top = res[0], gap = top.score - (res[1] ? res[1].score : 0);
+  if(top.score >= 6 && gap >= 2) return { k:"clear", t:"Clear read" };
+  if(top.score >= 4) return { k:"likely", t:"Most likely" };
+  if(top.score >= 2) return { k:"maybe", t:"Best guess — check it" };
+  return { k:"none", t:"No clear read" };
+}
+/* Merge overlapping spans so the marked-up quote never nests tags. */
+function highlight(text, hits){
+  if(!hits.length) return esc(text);
+  const sorted = hits.slice().sort((a,b) => a.s - b.s);
+  const merged = [];
+  sorted.forEach(h => {
+    const last = merged[merged.length-1];
+    if(last && h.s <= last.e) last.e = Math.max(last.e, h.e);
+    else merged.push({ s:h.s, e:h.e });
+  });
+  let out = "", at = 0;
+  merged.forEach(m => {
+    out += esc(text.slice(at, m.s)) + "<mark>" + esc(text.slice(m.s, m.e)) + "</mark>";
+    at = m.e;
+  });
+  return out + esc(text.slice(at));
+}
 
-const BLANK = { v:1, answers:{}, scanned:null, catches:{}, i:0, view:"intro", openId:null };
+/* ── State ─────────────────────────────────────────────────────────────── */
+const BLANK = { v:2, entries:[], draft:"", view:"type", openId:null, lastId:null, seenAbout:false };
 let S = load();
-
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(!raw) return JSON.parse(JSON.stringify(BLANK));
-    return Object.assign(JSON.parse(JSON.stringify(BLANK)), JSON.parse(raw));
+    if(raw) return Object.assign(JSON.parse(JSON.stringify(BLANK)), JSON.parse(raw));
+    /* Carry the catch counts over from the quiz version if it is there. */
+    const old = localStorage.getItem("paradigm-mirror.v1");
+    const seed = JSON.parse(JSON.stringify(BLANK));
+    if(old){ try{ seed.seenAbout = !!JSON.parse(old).scanned; }catch(e){} }
+    return seed;
   }catch(e){ return JSON.parse(JSON.stringify(BLANK)); }
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function el(id){ return document.getElementById(id); }
-function today(){
+function words(s){ return String(s||"").trim().split(/\s+/).filter(Boolean); }
+function stamp(){
   const d = new Date();
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  return { on: d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),
+           at: d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}) };
 }
 function pretty(k){
-  if(!k) return "";
-  const p = k.split("-").map(Number);
-  return new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+  const p = String(k).split("-").map(Number);
+  return new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{month:"short",day:"numeric"});
 }
-function byId(id){ return P.find(x => x.id === id); }
-
-/* Score: 3 items at 1–5 gives 3–15, expressed 0–100% of how loudly it runs. */
-function score(id){
-  const p = byId(id);
-  let sum = 0, n = 0;
-  p.items.forEach((_, i) => {
-    const a = S.answers[id + ":" + i];
-    if(a){ sum += a; n++; }
-  });
-  if(!n) return null;
-  const avg = sum / n;
-  return Math.round(((avg - 1) / 4) * 100);
-}
-function ranked(){
-  return P.map(p => ({ p, s: score(p.id) }))
-          .filter(x => x.s != null)
-          .sort((a,b) => b.s - a.s);
-}
-function answered(){ return Object.keys(S.answers).length; }
-function complete(){ return answered() >= ITEMS.length; }
-
-/* ── Scan ──────────────────────────────────────────────────────────────── */
-function renderScan(){
-  const item = ITEMS[S.i];
-  if(!item){ finishScan(); return; }
-  el("scan-count").textContent = (S.i + 1) + " / " + ITEMS.length;
-  el("scan-prog").style.width = ((S.i) / ITEMS.length * 100) + "%";
-  el("scan-stmt").textContent = item.t;
-  const current = S.answers[item.p + ":" + item.i];
-  el("scan-agree").innerHTML = AGREE.map(a =>
-    `<button type="button" data-answer="${a.v}"${current===a.v?' style="border-color:var(--teal);background:var(--teal-wash)"':""}>
-      <span class="n">${a.v}</span><span>${esc(a.l)}</span></button>`).join("");
-  el("scan-back").classList.toggle("hidden", S.i === 0);
-}
-function answer(v){
-  const item = ITEMS[S.i];
-  S.answers[item.p + ":" + item.i] = v;
-  S.i++;
-  save();
-  if(S.i >= ITEMS.length) finishScan();
-  else renderScan();
-}
-function finishScan(){
-  S.scanned = today();
-  S.i = 0;
-  save();
-  go("mirror");
+function counts(){
+  const c = {};
+  P.forEach(p => c[p.id] = 0);
+  S.entries.forEach(e => { if(c[e.id] != null) c[e.id]++; });
+  return c;
 }
 
-/* ── Mirror ────────────────────────────────────────────────────────────── */
-function renderMirror(){
-  if(!complete()){
-    el("mirror-date").textContent = "";
-    el("mirror-body").innerHTML = `<h2 class="head">Nothing to show yet.</h2>
-      <p class="lede">Run the scan and this becomes a list of what is actually running you, loudest first.</p>
-      <button class="btn primary wide" data-act="start">Start the scan</button>`;
-    return;
-  }
-  const r = ranked();
-  el("mirror-date").textContent = pretty(S.scanned);
-  const top = r[0];
-  el("mirror-body").innerHTML = `
-    <h2 class="head">Loudest first.</h2>
-    <p class="lede">Read it like an eye chart, except the line you cannot ignore is the big one. The top two or three are doing most of the deciding. Tap any of them.</p>
-    <ul class="chart">
-      ${r.map((x, i) => `<li class="r${i+1} ${x.s >= 60 ? "loud" : (x.s < 35 ? "quiet" : "")}">
-        <button type="button" data-open="${x.p.id}">
-          <span class="nm">${esc(x.p.name)}</span><span class="pc">${x.s}</span>
-        </button></li>`).join("")}
-    </ul>
-    <div class="legend"><span>Running you</span><span>Barely there</span></div>
-    <div class="card" style="margin-top:1.75rem">
-      <h3 class="sub">Where to put your attention</h3>
-      <p style="margin:0 0 .7rem"><strong>${esc(top.p.name)}</strong> is the one shaping the most of your day right now. ${esc(top.p.tell)}</p>
-      <p style="margin:0;color:var(--ink-2)">Work one at a time. Trying to catch all eight at once is how none of them get caught.</p>
-      <button class="btn wide" data-open="${top.p.id}" style="margin-top:1rem">Read ${esc(top.p.name)}</button>
+/* ── Type ──────────────────────────────────────────────────────────────── */
+const PROMPTS = [
+  "A client went quiet and I don't know what to send",
+  "I've rewritten this message four times",
+  "I was about to lower my price",
+  "I didn't post the thing I wrote",
+  "It's going well and I feel sick about it",
+  "I've done nothing all day but organise"
+];
+function renderType(){
+  const recent = S.entries.slice(0,3);
+  el("type-meta").textContent = S.entries.length ? S.entries.length + " logged" : "";
+  el("type-body").innerHTML = `
+    <h2 class="head big">What's happening?</h2>
+    <p class="lede">Type it however it comes out — messy, mid-thought, one line or ten. It reads your actual words and names the paradigm underneath, then shows you which words gave it away.</p>
+    <textarea class="box" id="box" placeholder="I keep rewriting this message to the leasing office and I still haven't sent it…">${esc(S.draft||"")}</textarea>
+    <div class="hintrow">${PROMPTS.map(t => `<button type="button" class="hint" data-prompt="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+    <button class="btn primary wide" data-act="identify" id="go" ${words(S.draft).length >= 3 ? "" : "disabled"}>Identify it</button>
+    <p class="small">Nothing leaves this device. It works with no signal.</p>
+    ${recent.length ? `<div style="margin-top:2.2rem">
+      <h4 class="lbl">Recent</h4>
+      ${recent.map(e => `<div class="entry"><span class="when">${esc(pretty(e.on))} ${esc(e.at)} · <span class="tag">${esc(byId(e.id) ? byId(e.id).name : "—")}</span></span>
+        <p>${esc(e.text.length > 130 ? e.text.slice(0,130) + "…" : e.text)}</p></div>`).join("")}
+      <button class="btn quiet" data-go="pattern">See the pattern</button></div>` : ""}`;
+}
+
+/* ── Result ────────────────────────────────────────────────────────────── */
+function renderResult(){
+  const e = S.entries.find(x => x.key === S.lastId);
+  if(!e){ go("type"); return; }
+  const res = analyse(e.text);
+  const chosen = res.find(r => r.p.id === e.id) || res[0];
+  const conf = e.corrected ? { k:"clear", t:"You picked this" } : confidence(res);
+  const p = chosen.p;
+  /* On a no-read the "top" is arbitrary at score zero, so offer all eight
+     rather than silently withholding one. */
+  const alts = conf.k === "none" ? res.slice() : res.filter(r => r.p.id !== p.id).slice(0, 3);
+
+  el("result-body").innerHTML = `
+    ${conf.k === "none" ? `
+      <h2 class="head">Nothing jumped out.</h2>
+      <p class="lede">Your wording did not match anything strongly, which happens — and is not a failure of yours. Read the eight and pick the one that lands. Recognising it yourself is worth more than the app guessing right.</p>
+    ` : `
+      <p class="conf">${esc(conf.t)}</p>
+      <h2 class="verdict">${esc(p.name)}</h2>
+      <p class="lede">${esc(p.means)}</p>
+      <div class="section">
+        <h4 class="lbl">${e.corrected ? "What you wrote" : "The words that gave it away"}</h4>
+        <div class="quoted">${e.corrected ? esc(e.text) : highlight(e.text, chosen.hits)}</div>
+        ${e.corrected ? "" : '<p class="small">Those are your words, not the app\'s. A paradigm is only ever visible in the language it produces — seeing your own phrasing marked up is the awareness.</p>'}
+      </div>
+      <div class="section">
+        <h4 class="lbl">The tell — how to catch it next time</h4>
+        <div class="tell"><p>${esc(p.tell)}</p></div>
+      </div>
+      <div class="section">
+        <h4 class="lbl">Do this with what you just typed</h4>
+        <div class="move"><span class="when">When ${esc(p.when)}</span><p>${esc(p.move)}</p></div>
+      </div>
+      <div class="section">
+        <h4 class="lbl">Say this instead</h4>
+        <div class="swap"><p>${esc(p.swap)}</p></div>
+      </div>
+      <button class="btn wide" data-open="${p.id}">Read all of ${esc(p.name)}</button>
+    `}
+    <div class="section" style="margin-top:1.6rem">
+      <h4 class="lbl">${conf.k === "none" ? "Pick the one that fits" : "Not that one?"}</h4>
+      <div class="alts">${alts.map(r => `<button type="button" data-correct="${r.p.id}">${esc(r.p.name)}</button>`).join("")}</div>
+      <p class="small">Correcting it is not a failure of the app. Naming it yourself is the stronger version of the same move, and it teaches the pattern list what your language actually looks like.</p>
     </div>
-    <button class="btn quiet" data-act="rescan">Run the scan again</button>
-    <p class="small">This is a mirror, not a measurement. Three statements per paradigm is enough to point at something, nowhere near enough to be a diagnosis. If a number looks wrong to you, trust yourself over it — noticing that you disagree is itself the awareness this is for.</p>`;
+    <button class="btn primary wide" data-act="new" style="margin-top:.8rem">Type another</button>
+    <button class="btn quiet" data-act="delete-last" style="margin-top:.4rem">Delete this entry</button>`;
 }
 
 /* ── Reading ───────────────────────────────────────────────────────────── */
 function renderRead(){
   const p = byId(S.openId);
-  if(!p){ go("mirror"); return; }
-  const s = score(p.id);
-  const c = S.catches[p.id] || 0;
-  el("read-top").textContent = s == null ? "Reading" : s + " / 100";
+  if(!p){ go("type"); return; }
+  const n = counts()[p.id] || 0;
+  el("read-top").textContent = n ? n + (n === 1 ? " time" : " times") : "Reading";
   el("read-body").innerHTML = `
     <h2 class="head">${esc(p.name)}</h2>
     <p class="lede">${esc(p.means)}</p>
-
-    <div class="section"><h4>How it sounds in your head</h4>
-      <div class="voice">${p.items.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
-
-    <div class="section"><h4>Where it came from</h4><p>${esc(p.from)}</p></div>
-
-    <div class="section"><h4>What it is costing you</h4>
+    <div class="section"><h4 class="lbl">How it sounds in your head</h4>
+      <div class="voice">${p.voice.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
+    <div class="section"><h4 class="lbl">Where it came from</h4><p>${esc(p.from)}</p></div>
+    <div class="section"><h4 class="lbl">What it is costing you</h4>
       <ul class="costs">${p.costs.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>
-
-    <div class="section"><h4>The tell — how to catch it</h4>
+    <div class="section"><h4 class="lbl">The tell — how to catch it</h4>
       <div class="tell"><p>${esc(p.tell)}</p></div></div>
-
-    <div class="section"><h4>The one move</h4>
+    <div class="section"><h4 class="lbl">The one move</h4>
       <div class="move"><span class="when">When ${esc(p.when)}</span><p>${esc(p.move)}</p></div>
       <p class="small">One move, not a list. A list is something to read; this is something to do. It is written as when-then on purpose — deciding the trigger in advance is the difference between an intention and an action.</p></div>
-
-    <div class="section"><h4>Say this instead</h4>
+    <div class="section"><h4 class="lbl">Say this instead</h4>
       <div class="swap"><p>${esc(p.swap)}</p></div></div>
-
-    <div class="catchbar">
-      <span class="cnt">${c}</span>
-      <span class="lbl">${c === 0
-        ? "You have not caught this one yet. Catching it in the act is the change — you cannot alter a default you never see running."
-        : c === 1 ? "Caught once. The second one is easier than the first."
-        : "Caught " + c + " times. Each catch weakens the automatic part of it."}</span>
-      <button class="btn sm" data-catch="${p.id}" type="button">Caught it</button>
-    </div>
-    <button class="btn quiet" data-act="back-mirror" style="margin-top:1.2rem">All paradigms</button>`;
+    ${n ? `<p class="small">You have logged this one ${n} ${n===1?"time":"times"}.</p>` : ""}
+    <button class="btn quiet" data-act="back" style="margin-top:1rem">Back</button>`;
 }
 
-/* ── Catches ───────────────────────────────────────────────────────────── */
-function renderCatch(){
-  const total = Object.keys(S.catches).reduce((n,k) => n + S.catches[k], 0);
-  el("catch-total").textContent = total + (total === 1 ? " catch" : " catches");
-  const r = complete() ? ranked() : P.map(p => ({ p, s:null }));
-  const max = Math.max(1, ...Object.keys(S.catches).map(k => S.catches[k]));
-  el("catch-body").innerHTML = `
-    <h2 class="head">Catching it is the change.</h2>
-    <p class="lede">There is no streak here and nothing to keep up. Tap one the moment you notice it running — mid-sentence, mid-message, mid-decision. Awareness is not preparation for the work. In Proctor's model it <em>is</em> the work: the noticing is what stops the default from completing unopposed.</p>
-    ${r.map(x => {
-      const c = S.catches[x.p.id] || 0;
-      return `<div class="catchrow">
-        <div style="flex:1;min-width:0">
-          <div class="nm">${esc(x.p.name)}</div>
-          <div class="bar"><i style="width:${Math.round(c/max*100)}%"></i></div>
-        </div>
-        <span class="n">${c}</span>
-        <button class="btn sm" data-catch="${x.p.id}" type="button">+1</button>
-      </div>`;
-    }).join("")}
-    ${total === 0 ? '<p class="small">Nothing caught yet. The first one usually happens a few hours after you read its tell — that is the whole point of reading the tell.</p>' : ""}
-    ${total > 0 ? `<button class="btn quiet" data-act="reset-catches" style="margin-top:1.2rem">Reset the counts</button>` : ""}
-    <p class="small" style="margin-top:2rem">Doing the work daily is a different app. If you want the repetition side — impressing a replacement paradigm, the terror barrier, the goal arithmetic — that is <a class="plain" href="../index.html">The Impression Engine</a>.</p>`;
+/* ── Pattern ───────────────────────────────────────────────────────────── */
+function renderPattern(){
+  const c = counts();
+  const total = S.entries.length;
+  el("pattern-meta").textContent = total ? total + (total === 1 ? " entry" : " entries") : "";
+  if(!total){
+    el("pattern-body").innerHTML = `<h2 class="head">Nothing to see yet.</h2>
+      <p class="lede">Type a few real situations and this becomes a picture of which paradigms actually run your days — built from what happened to you, not from a questionnaire about yourself.</p>
+      <button class="btn primary wide" data-go="type">Type something</button>`;
+    return;
+  }
+  const rank = P.map(p => ({ p, n:c[p.id] })).sort((a,b) => b.n - a.n);
+  const max = Math.max(1, rank[0].n);
+  const top = rank[0];
+  el("pattern-body").innerHTML = `
+    <h2 class="head">Loudest first.</h2>
+    <p class="lede">Built from the ${total} ${total===1?"situation":"situations"} you have typed in. Read it like an eye chart, except the line you cannot ignore is the big one. Tap any of them.</p>
+    <ul class="chart">
+      ${rank.map((x,i) => `<li class="r${i+1} ${x.n === max && x.n > 0 ? "loud" : (x.n === 0 ? "none" : "")}">
+        <button type="button" data-open="${x.p.id}">
+          <span class="nm">${esc(x.p.name)}</span>
+          <span class="pc">${x.n === 0 ? "—" : x.n}</span></button></li>`).join("")}
+    </ul>
+    <div class="legend"><span>Comes up most</span><span>Not yet</span></div>
+    ${top.n > 0 ? `<div class="card" style="margin-top:1.75rem">
+      <h4 class="lbl">Where to put your attention</h4>
+      <p style="margin:0 0 .7rem"><strong>${esc(top.p.name)}</strong> is the one showing up most in what you actually type. ${esc(top.p.tell)}</p>
+      <p style="margin:0;color:var(--ink-2)">Work one at a time. Trying to catch all eight at once is how none of them get caught.</p>
+      <button class="btn wide" data-open="${top.p.id}" style="margin-top:1rem">Read ${esc(top.p.name)}</button></div>` : ""}
+    <h4 class="lbl" style="margin-top:2rem">Everything you have typed</h4>
+    ${S.entries.slice(0,40).map(e => `<div class="entry">
+      <span class="when">${esc(pretty(e.on))} ${esc(e.at)} · <span class="tag">${esc(byId(e.id) ? byId(e.id).name : "—")}</span>${e.corrected ? " · you named it" : ""}</span>
+      <p>${esc(e.text.length > 220 ? e.text.slice(0,220) + "…" : e.text)}</p></div>`).join("")}
+    ${S.entries.length > 40 ? `<p class="small">Showing the last 40 of ${S.entries.length}.</p>` : ""}
+    <button class="btn quiet" data-act="clear" style="margin-top:1.2rem">Clear everything</button>`;
+}
+
+/* ── About ─────────────────────────────────────────────────────────────── */
+function renderAbout(){
+  el("about-body").innerHTML = `
+    <h2 class="head">You are not choosing most of this.</h2>
+    <p class="lede">A paradigm is a bundle of beliefs and habits sitting in your subconscious. Most of it went in before you were seven, absorbed from the people around you — you did not pick it and you were never asked. It then decides roughly 95% of what you do, silently, all day.</p>
+    <p class="lede">That is why willpower keeps losing. You are not arguing with a decision. You are arguing with a default.</p>
+    <p class="lede">You cannot change what you cannot see, which is the only thing this app does. Type what is happening, and it names the paradigm underneath and marks the words in your own sentence that gave it away. Then it gives you the tell, one move, and the line to say instead.</p>
+    <h4 class="lbl" style="margin-top:2rem">How the identifying works</h4>
+    <p class="lede">Weighted pattern matching over your own language, running entirely on this device. It is a mirror, not a diagnosis, and it is deliberately loud about being unsure — when nothing matches strongly it says so and asks you to pick instead. Correcting it is the better version of the same move: recognising it yourself is the point.</p>
+    <h4 class="lbl" style="margin-top:2rem">The eight</h4>
+    <ul class="costs">${P.map(p => `<li><strong>${esc(p.name)}</strong> — ${esc(p.means.split(".")[0])}.</li>`).join("")}</ul>
+    <p class="small" style="margin-top:2rem">Built on Bob Proctor's model of paradigms and his order of operations, in which awareness moves first. If you want the doing side — impressing a replacement paradigm daily, the terror barrier, the goal arithmetic — that is <a class="plain" href="../index.html">The Impression Engine</a>. This app shows you what to point it at.</p>
+    <p class="small">This is belief and behaviour work, not treatment for trauma. If the childhood material itself becomes the loud part rather than the pattern, that needs a person, not an app.</p>`;
 }
 
 /* ── Navigation ────────────────────────────────────────────────────────── */
+const VIEWS = ["type","result","read","pattern","about"];
 function go(v){
   S.view = v; save();
   document.querySelectorAll(".view").forEach(x => x.classList.remove("on"));
   const t = el("v-" + v);
   if(t) t.classList.add("on");
-  document.querySelectorAll(".dock button").forEach(b =>
-    b.classList.toggle("on", b.dataset.go === v || (v === "read" && b.dataset.go === "mirror")));
+  document.querySelectorAll(".dock button").forEach(b => b.classList.toggle("on",
+    b.dataset.go === v || (v === "result" && b.dataset.go === "type") || (v === "read" && b.dataset.go === "pattern")));
   window.scrollTo(0,0);
   render();
 }
 function render(){
-  if(S.view === "scan") renderScan();
-  else if(S.view === "mirror") renderMirror();
+  if(S.view === "type") renderType();
+  else if(S.view === "result") renderResult();
   else if(S.view === "read") renderRead();
-  else if(S.view === "catch") renderCatch();
+  else if(S.view === "pattern") renderPattern();
+  else if(S.view === "about") renderAbout();
+}
+
+function identify(){
+  const text = (el("box") ? el("box").value : S.draft || "").trim();
+  if(words(text).length < 3) return;
+  const res = analyse(text);
+  const conf = confidence(res);
+  const s = stamp();
+  const entry = { key:"e" + Date.now().toString(36), on:s.on, at:s.at, text,
+                  id: conf.k === "none" ? null : res[0].p.id, corrected:false };
+  S.entries.unshift(entry);
+  S.lastId = entry.key;
+  S.draft = "";
+  save();
+  go("result");
 }
 
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-act],[data-answer],[data-open],[data-catch]");
+  const t = e.target.closest("[data-go],[data-act],[data-open],[data-correct],[data-prompt]");
   if(!t) return;
 
   if(t.dataset.go){ go(t.dataset.go); return; }
-  if(t.dataset.answer){ answer(+t.dataset.answer); return; }
+  if(t.dataset.prompt){
+    const box = el("box");
+    if(box){ box.value = t.dataset.prompt; S.draft = box.value; save();
+      el("go").disabled = false; box.focus(); }
+    return;
+  }
   if(t.dataset.open){ S.openId = t.dataset.open; save(); go("read"); return; }
-  if(t.dataset.catch){
-    const id = t.dataset.catch;
-    S.catches[id] = (S.catches[id] || 0) + 1;
-    save();
-    render();
+  if(t.dataset.correct){
+    const en = S.entries.find(x => x.key === S.lastId);
+    if(en){ en.id = t.dataset.correct; en.corrected = true; save(); renderResult(); }
     return;
   }
 
   const a = t.dataset.act;
-  if(a === "start"){ S.i = 0; go("scan"); return; }
-  if(a === "rescan"){ S.answers = {}; S.i = 0; save(); go("scan"); return; }
-  if(a === "scan-back"){ if(S.i > 0){ S.i--; save(); renderScan(); } return; }
-  if(a === "back-mirror"){ go("mirror"); return; }
-  if(a === "reset-catches"){ S.catches = {}; save(); renderCatch(); return; }
+  if(a === "identify"){ identify(); return; }
+  if(a === "new"){ S.draft = ""; save(); go("type"); setTimeout(() => { const b = el("box"); if(b) b.focus(); }, 60); return; }
+  if(a === "back"){ go(S.entries.length ? "pattern" : "type"); return; }
+  if(a === "delete-last"){
+    S.entries = S.entries.filter(x => x.key !== S.lastId);
+    S.lastId = null; save(); go("type"); return;
+  }
+  if(a === "clear"){
+    if(confirm("Delete every entry? This cannot be undone.")){ S.entries = []; S.lastId = null; save(); renderPattern(); }
+    return;
+  }
 });
 
-/* ── Boot ──────────────────────────────────────────────────────────────── */
+document.addEventListener("input", e => {
+  if(e.target.id !== "box") return;
+  S.draft = e.target.value;
+  save();
+  const btn = el("go");
+  if(btn) btn.disabled = words(S.draft).length < 3;
+});
+/* Cmd/Ctrl+Enter submits, because typing on a phone keyboard is enough work. */
+document.addEventListener("keydown", e => {
+  if(e.target.id === "box" && (e.metaKey || e.ctrlKey) && e.key === "Enter") identify();
+});
+
 (function boot(){
-  if(S.view === "scan" && complete()) S.view = "mirror";
-  if(S.view === "read" && !S.openId) S.view = "mirror";
-  if(!["intro","scan","mirror","read","catch"].includes(S.view)) S.view = complete() ? "mirror" : "intro";
-  if(S.view === "intro" && complete()) S.view = "mirror";
+  if(!VIEWS.includes(S.view)) S.view = "type";
+  if(S.view === "result" && !S.entries.some(x => x.key === S.lastId)) S.view = "type";
+  if(S.view === "read" && !S.openId) S.view = "type";
+  if(!S.seenAbout && !S.entries.length){ S.view = "about"; S.seenAbout = true; save(); }
   go(S.view);
   const secure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
   if("serviceWorker" in navigator && secure) navigator.serviceWorker.register("sw.js").catch(() => {});
