@@ -32,4 +32,6 @@ So the displacement figure on the Reading screen is a geometric mean of the two 
 
 ## Data
 
-Local storage only, tied to the one browser. Clearing site data wipes it. **Export a backup** on the Reading screen writes a JSON file; **Import** restores it. Use it before switching phones.
+Local storage only, tied to the one browser. Clearing site data or switching phones wipes it.
+
+**Back up** on the Reading screen gives you the JSON two ways: copy the text, or save it as a file. Copying is the one that always works — saving a file needs a host that allows it, which the published page asks the viewer for and a local file handles itself. **Restore** takes pasted text or a file, and replaces everything currently stored.
