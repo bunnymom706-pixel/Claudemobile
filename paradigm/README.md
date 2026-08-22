@@ -1,6 +1,6 @@
 # The Impression Engine
 
-> Want the fast daily driver? [`strike/`](strike/) is **Strike** — this app's mechanism at one 45-second run per visit, one screen, three-step setup, and it imports your backup from here in one paste.
+> Want just today? [`strike/`](strike/) is **Strike** — one line runs the day, one button shifts the moment in under a minute, and everything resets at midnight. No program, no streaks.
 >
 > Looking for the simple one? [`mirror/`](mirror/) is the **Paradigm Mirror** — type what is happening and it names the paradigm underneath, highlighting the words in your own sentence that gave it away. No program, no streak. Start there if you are not sure what to point this at.
 

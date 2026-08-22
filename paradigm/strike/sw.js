@@ -2,7 +2,7 @@
    Everything the app needs is four files and the fonts. Cache them on install
    so the app opens with no signal; serve the network first for the HTML so a
    redeploy is picked up, and the cache first for everything else. */
-const CACHE = "strike-v1";
+const CACHE = "strike-v2";
 const SHELL = [
   "./",
   "./index.html",

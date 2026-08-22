@@ -1,28 +1,23 @@
 # Strike
 
-The Impression Engine's mechanism with the friction machined off. One screen, no tabs.
+Today and this moment. Nothing else.
 
-**Each open of the app is one ~45-second run:** one impression from a rotating angle (Speak, See, Feel, Prove — 30 seconds or one typed line), then a ten-second board (daily act tick, wall check), done. The ember ring fills across the day's visits.
+**One line runs the day.** You write it in the morning — or whenever you open the app — and it expires at midnight. Not a life sentence, not a 90-day program. Tomorrow it asks again, offers yesterday's line back if it worked, and keeps a small shelf of lines that have worked before.
 
-Deliberately, there is **no way to binge all the impressions at once**. Spaced repetition is the method; massed repetition is its junk-food substitute. The app tells you so on the way out.
+**One button shifts the moment.** The second something has you — the price flinch, the unsent message, the silence after a no — hit **Shift this moment**. Under a minute:
 
-## Faster where it counts
+1. **What's got you?** Tap it or say it your way. Naming the feeling is not a warm-up — it is your awareness of the vibration you're in, and naming it is what starts moving it.
+2. **Through neutral.** Three rounds of cyclic sighing (skippable). You don't jump from bad to good; you pass through neutral.
+3. **Say today's line once, out loud. Then name the next five minutes.** One physical thing. The move is the shift — everything before it was just how you got to it.
 
-- **Setup is 3 steps, not 7** — belief and statement (five live checks as pills), believability with the bridge gate, then goal, date, and the daily act.
-- **Import an Impression Engine backup** — paste the JSON and setup fills itself. Switching costs ten seconds, nothing gets retyped.
-- **30-second impressions** instead of 60. Frequency and feeling carry the impression, not duration.
-- **The 28-day dot grid** replaces charts: dot fill = strikes that day, mint ring = act done. One glance.
+The move lands on a **next-five-minutes list** on the home screen with a tick box. The list dies at midnight with everything else.
 
-## Kept from the research, uncut
+## What it deliberately does not have
 
-- The five statement checks (present tense, no future, no negatives, has feeling, holdable length).
-- The believability gate — under 5, you run an editable bridge, because affirmations backfire at low self-worth.
-- Mental contrasting baked into the **See** angle: the picture is never run without naming the obstacle.
-- **Prove** logs straight into the evidence ledger that raises the bridge.
-- Displacement is still a geometric mean — repetition × behaviour, either at zero reads zero.
+No streaks. No day counters. No month grids. No goal dates. No history. Nothing to fall behind on, and no yesterday to feel bad about. The only numbers anywhere are today's: shifts, moves named, moves made — and they read 0/0/0 every morning by design.
+
+If you want the long game — a paradigm impressed over weeks, the terror barrier, the evidence ladder — that's [the Impression Engine](../). Strike is for the day you're actually in.
 
 ## Data
 
-Local storage, this browser only. **Back up** copies the JSON; **Restore** takes a Strike backup (full restore) or an Engine backup (fills setup). PWA: manifest, icons, offline shell — add to home screen from the Pages URL in Safari.
-
-The Engine (`../`) remains the full-featured version: multiple paradigms, money roots, instant shift, faculty drills. Strike is the daily driver; the Engine is the workshop.
+Local storage, this browser. Saved lines persist; everything else self-wipes daily. PWA — add to home screen from the Pages URL in Safari; works offline.
