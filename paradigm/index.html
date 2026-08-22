@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>The Impression Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────────────
+   Single committed visual world: a dark plate that ideas get struck into.
+   Used at 5am and last thing at night, so it is deliberately dark-only.
+   Every colour is painted explicitly; nothing is inherited from the host. */
+:root{
+  --ground:#0F1118;
+  --plate:#181B24;
+  --plate-hi:#1F2330;
+  --recess:#0A0B10;
+  --rule:#272C39;
+  --rule-soft:#1D2130;
+  --text:#E7E4DC;
+  --text-dim:#9CA0AE;
+  --text-faint:#6A6E7C;
+  --copper:#C4854B;
+  --copper-lit:#E0A868;
+  --copper-deep:#7A5028;
+  --patina:#6FB39A;
+  --retreat:#7C7FA8;
+  --shadow:0 1px 0 rgba(255,255,255,.045) inset, 0 2px 14px rgba(0,0,0,.5);
+  --press:inset 0 2px 6px rgba(0,0,0,.75), inset 0 -1px 0 rgba(255,255,255,.05);
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:"Archivo",var(--sans);
+  --step:1.5rem;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));
+}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--copper-lit);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── Shell ─────────────────────────────────────────────────────────────── */
+.wrap{max-width:34rem;margin:0 auto;padding:0 1.15rem}
+.screen{display:none;padding-top:1.5rem}
+.screen.on{display:block}
+.masthead{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:1.4rem 0 1.1rem;border-bottom:1px solid var(--rule-soft);margin-bottom:1.5rem;
+}
+.masthead h1{
+  margin:0;font-family:var(--disp);font-weight:800;font-stretch:118%;
+  font-size:1.02rem;letter-spacing:.13em;text-transform:uppercase;color:var(--text);
+}
+.masthead .daycount{font-family:var(--mono);font-size:.72rem;color:var(--copper);letter-spacing:.08em;white-space:nowrap}
+
+/* ── Type ──────────────────────────────────────────────────────────────── */
+h2.sec{
+  font-family:var(--disp);font-weight:800;font-stretch:112%;
+  font-size:1.32rem;letter-spacing:-.005em;margin:0 0 .35rem;text-wrap:balance;
+}
+.eyebrow{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--copper);margin:0 0 .5rem;
+}
+.eyebrow.dim{color:var(--text-faint)}
+p.lede{color:var(--text-dim);margin:0 0 1.15rem;font-size:.94rem;max-width:34em}
+p.note{color:var(--text-faint);font-size:.82rem;margin:.5rem 0 0;line-height:1.5}
+.src{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase}
+
+/* ── Plates ────────────────────────────────────────────────────────────── */
+.plate{
+  background:var(--plate);border:1px solid var(--rule-soft);border-radius:3px;
+  box-shadow:var(--shadow);padding:1.15rem;margin-bottom:1rem;
+}
+.plate.tight{padding:.9rem 1rem}
+.plate-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.75rem}
+.stack{display:flex;flex-direction:column;gap:1rem}
+.row{display:flex;gap:.6rem;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+
+/* ── The statement: struck into the plate ──────────────────────────────── */
+.statement{
+  background:var(--recess);border:1px solid var(--rule);border-radius:3px;
+  box-shadow:var(--press);padding:1.35rem 1.2rem;
+}
+.statement .txt{
+  font-family:var(--disp);font-weight:700;font-stretch:104%;
+  font-size:1.28rem;line-height:1.32;letter-spacing:-.012em;
+  color:var(--text);text-wrap:balance;margin:0;
+  text-shadow:0 1px 0 rgba(0,0,0,.85);
+}
+.statement.big .txt{font-size:1.62rem;font-weight:800}
+
+/* ── Tally strikes: one mark pressed in per impression ─────────────────── */
+.tally{display:flex;flex-wrap:wrap;gap:.42rem;align-items:center;min-height:34px}
+.strike{
+  width:11px;height:32px;border-radius:1.5px;
+  background:var(--recess);box-shadow:var(--press);
+  border:1px solid var(--rule-soft);
+}
+.strike.hit{
+  background:linear-gradient(180deg,var(--copper-lit),var(--copper-deep));
+  border-color:var(--copper-deep);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 0 10px rgba(196,133,75,.22);
+}
+.strike.fresh{animation:press .34s cubic-bezier(.3,1.4,.5,1)}
+@keyframes press{0%{transform:scaleY(1.5) translateY(-4px);opacity:.3}60%{transform:scaleY(.9)}100%{transform:none;opacity:1}}
+.tally-meta{font-family:var(--mono);font-size:.72rem;color:var(--text-dim);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  background:var(--plate-hi);color:var(--text);border:1px solid var(--rule);
+  border-radius:3px;padding:.72rem 1.05rem;cursor:pointer;
+  font-family:var(--mono);font-size:.76rem;letter-spacing:.11em;text-transform:uppercase;
+  transition:background .14s ease,border-color .14s ease,transform .06s ease;
+}
+.btn:hover{background:#242938;border-color:var(--rule)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:linear-gradient(180deg,var(--copper),#A96C36);
+  border-color:var(--copper-deep);color:#140D06;font-weight:500;
+}
+.btn.primary:hover{background:linear-gradient(180deg,var(--copper-lit),var(--copper))}
+.btn.wide{width:100%}
+.btn.ghost{background:transparent;border-color:var(--rule-soft);color:var(--text-dim)}
+.btn.ghost:hover{color:var(--text);border-color:var(--rule)}
+.btn.sm{padding:.5rem .75rem;font-size:.68rem}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.done{background:transparent;border-color:var(--copper-deep);color:var(--copper);cursor:default}
+.btn.done:hover{background:transparent}
+
+/* ── Inputs ────────────────────────────────────────────────────────────── */
+label.fld{display:block;margin-bottom:1rem}
+label.fld > span{
+  display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-dim);margin-bottom:.4rem;
+}
+input[type=text],input[type=date],textarea,select{
+  width:100%;background:var(--recess);border:1px solid var(--rule);border-radius:3px;
+  padding:.7rem .8rem;font-size:.95rem;box-shadow:var(--press);
+}
+textarea{resize:vertical;min-height:5.5rem;line-height:1.5}
+input::placeholder,textarea::placeholder{color:var(--text-faint)}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.9rem}
+.chip{
+  background:var(--recess);border:1px solid var(--rule);color:var(--text-dim);
+  border-radius:100px;padding:.35rem .7rem;font-size:.8rem;cursor:pointer;text-align:left;
+}
+.chip:hover{color:var(--text);border-color:var(--copper-deep)}
+.chip.on{background:var(--copper-deep);border-color:var(--copper);color:var(--text)}
+
+/* ── Validation notes ──────────────────────────────────────────────────── */
+.checks{list-style:none;margin:.6rem 0 0;padding:0;display:flex;flex-direction:column;gap:.4rem}
+.checks li{
+  font-size:.82rem;color:var(--retreat);line-height:1.45;
+  padding-left:1rem;position:relative;
+}
+.checks li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:1px;background:var(--retreat)}
+.checks li.ok{color:var(--patina)}
+.checks li.ok::before{background:var(--patina)}
+
+/* ── Step rail (builder) ───────────────────────────────────────────────── */
+.rail{display:flex;gap:3px;margin-bottom:1.4rem}
+.rail i{flex:1;height:2px;background:var(--rule-soft);border-radius:1px}
+.rail i.on{background:var(--copper)}
+
+/* ── Task rows ─────────────────────────────────────────────────────────── */
+.task{
+  display:flex;gap:.8rem;align-items:flex-start;
+  padding:.85rem 0;border-bottom:1px solid var(--rule-soft);
+}
+.task:last-child{border-bottom:0;padding-bottom:0}
+.task:first-child{padding-top:0}
+.tick{
+  flex:0 0 22px;width:22px;height:22px;margin-top:.1rem;border-radius:2px;
+  background:var(--recess);border:1px solid var(--rule);box-shadow:var(--press);
+  cursor:pointer;display:grid;place-items:center;padding:0;
+}
+.tick svg{width:13px;height:13px;stroke:var(--copper-lit);stroke-width:2.4;fill:none;opacity:0;
+  stroke-linecap:round;stroke-linejoin:round}
+.tick.on{background:var(--copper-deep);border-color:var(--copper)}
+span.tick{cursor:default}
+.tick.on svg{opacity:1}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:.94rem;line-height:1.4}
+.task-title.struck{color:var(--text-faint);text-decoration:line-through;text-decoration-color:var(--copper-deep)}
+.task-sub{font-size:.8rem;color:var(--text-faint);margin-top:.15rem;line-height:1.45}
+
+/* ── Session overlay ───────────────────────────────────────────────────── */
+.session{
+  position:fixed;inset:0;background:var(--ground);z-index:50;
+  display:none;flex-direction:column;padding:1.4rem;
+  padding-bottom:calc(1.4rem + env(safe-area-inset-bottom));
+  overflow-y:auto;
+}
+.session.on{display:flex;animation:rise .22s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.session-inner{max-width:34rem;margin:auto;width:100%;display:flex;flex-direction:column;gap:1.2rem}
+.session .angle{
+  font-family:var(--disp);font-weight:900;font-stretch:125%;font-size:2.1rem;
+  letter-spacing:.02em;text-transform:uppercase;color:var(--copper);margin:0;line-height:1;
+}
+.session .instruct{color:var(--text-dim);font-size:.95rem;margin:0;max-width:34em}
+.ring{display:block;margin:0 auto}
+.ring circle{fill:none;stroke-width:3}
+.ring .track{stroke:var(--rule)}
+.ring .prog{stroke:var(--copper);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.ring-num{
+  font-family:var(--mono);font-size:1.1rem;fill:var(--text);text-anchor:middle;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── Metrics ───────────────────────────────────────────────────────────── */
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem}
+.metric{background:var(--plate);border:1px solid var(--rule-soft);border-radius:3px;padding:.85rem .9rem;box-shadow:var(--shadow)}
+.metric .k{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--text-faint);display:block;margin-bottom:.3rem}
+.metric .v{font-family:var(--disp);font-weight:800;font-stretch:110%;font-size:1.75rem;line-height:1;font-variant-numeric:tabular-nums}
+.metric .v small{font-family:var(--mono);font-size:.72rem;font-weight:400;color:var(--text-faint);letter-spacing:.04em}
+.metric.pat .v{color:var(--patina)}
+.metric.ret .v{color:var(--retreat)}
+.metric.cop .v{color:var(--copper)}
+
+/* ── Strength gauge ────────────────────────────────────────────────────── */
+.gauge{height:10px;background:var(--recess);border:1px solid var(--rule);border-radius:2px;box-shadow:var(--press);overflow:hidden}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--copper-deep),var(--copper-lit));transition:width .5s ease}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.65rem;color:var(--text-faint);margin-top:.35rem;letter-spacing:.06em}
+
+/* ── Step chart ────────────────────────────────────────────────────────── */
+.chart{width:100%;height:110px;display:block}
+.chart .grid{stroke:var(--rule-soft);stroke-width:1}
+.chart .line{fill:none;stroke:var(--copper);stroke-width:2;stroke-linejoin:miter}
+.chart .cap{fill:var(--copper-lit)}
+
+/* ── Log entries ───────────────────────────────────────────────────────── */
+.entry{border-left:2px solid var(--rule);padding:.15rem 0 .15rem .85rem;margin-bottom:1rem}
+.entry.through{border-left-color:var(--patina)}
+.entry.back{border-left-color:var(--retreat)}
+.entry.evi{border-left-color:var(--copper)}
+.entry .when{font-family:var(--mono);font-size:.66rem;color:var(--text-faint);letter-spacing:.08em;text-transform:uppercase}
+.entry p{margin:.2rem 0 0;font-size:.9rem;line-height:1.5}
+.empty{color:var(--text-faint);font-size:.87rem;font-style:italic}
+
+/* ── Library ───────────────────────────────────────────────────────────── */
+.card{border-top:1px solid var(--rule-soft);padding:1.05rem 0}
+.card:first-of-type{border-top:0;padding-top:.2rem}
+.card h3{font-family:var(--disp);font-weight:700;font-stretch:108%;font-size:1.02rem;margin:0 0 .35rem;letter-spacing:-.005em}
+.card p{margin:0 0 .5rem;font-size:.89rem;color:var(--text-dim);line-height:1.55}
+.card .apply{font-size:.85rem;color:var(--text);border-left:2px solid var(--copper-deep);padding-left:.7rem}
+.grouphead{
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--copper);margin:2rem 0 .2rem;padding-bottom:.4rem;border-bottom:1px solid var(--rule);
+}
+.grouphead:first-child{margin-top:0}
+
+/* ── Banner ────────────────────────────────────────────────────────────── */
+.banner{
+  border:1px solid var(--copper-deep);background:rgba(196,133,75,.07);
+  border-radius:3px;padding:.85rem 1rem;margin-bottom:1rem;
+}
+.banner p{margin:0;font-size:.87rem;line-height:1.5;color:var(--text)}
+.banner .eyebrow{margin-bottom:.3rem}
+
+/* ── Tab bar ───────────────────────────────────────────────────────────── */
+.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:rgba(15,17,24,.94);backdrop-filter:blur(12px);
+  border-top:1px solid var(--rule);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tabs-inner{max-width:34rem;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{
+  background:none;border:0;padding:.7rem .2rem .8rem;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:.28rem;color:var(--text-faint);
+}
+.tab svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tab span{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase}
+.tab.on{color:var(--copper)}
+.tab .dot{position:absolute}
+
+hr.rule{border:0;border-top:1px solid var(--rule-soft);margin:1.4rem 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ══ SESSION OVERLAY ══════════════════════════════════════════════════ -->
+<div class="session" id="session" role="dialog" aria-modal="true" aria-labelledby="s-angle">
+  <div class="session-inner">
+    <div class="spread">
+      <p class="eyebrow dim" id="s-count">Impression</p>
+      <button class="btn ghost sm" id="s-close" type="button">Leave</button>
+    </div>
+    <h2 class="angle" id="s-angle">Speak</h2>
+    <p class="instruct" id="s-instruct"></p>
+    <div class="statement big"><p class="txt" id="s-text"></p></div>
+    <div id="s-timerwrap">
+      <svg class="ring" id="s-ring" width="112" height="112" viewBox="0 0 112 112" aria-hidden="true">
+        <circle class="track" cx="56" cy="56" r="50"></circle>
+        <circle class="prog" cx="56" cy="56" r="50" transform="rotate(-90 56 56)"></circle>
+        <text class="ring-num" x="56" y="62" id="s-num">60</text>
+      </svg>
+    </div>
+    <div id="s-inputwrap" class="hidden">
+      <textarea id="s-input" rows="5"></textarea>
+      <p class="note" id="s-inputnote"></p>
+    </div>
+    <button class="btn primary wide" id="s-done" type="button" disabled>Hold it</button>
+  </div>
+</div>
+
+<!-- ══ BUILD ════════════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-build">
+  <div class="wrap">
+    <div class="masthead"><h1>The Impression Engine</h1><span class="daycount" id="build-step-label">Step 1 / 6</span></div>
+    <div class="rail" id="rail"></div>
+    <div id="build-body"></div>
+  </div>
+</section>
+
+<!-- ══ TODAY ════════════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-today">
+  <div class="wrap">
+    <div class="masthead"><h1>Today</h1><span class="daycount" id="today-day"></span></div>
+    <div id="today-body"></div>
+  </div>
+</section>
+
+<!-- ══ LOG ══════════════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-log">
+  <div class="wrap">
+    <div class="masthead"><h1>The Record</h1><span class="daycount" id="log-count"></span></div>
+    <div id="log-body"></div>
+  </div>
+</section>
+
+<!-- ══ PROGRESS ═════════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-progress">
+  <div class="wrap">
+    <div class="masthead"><h1>Reading</h1><span class="daycount" id="prog-day"></span></div>
+    <div id="prog-body"></div>
+  </div>
+</section>
+
+<!-- ══ LIBRARY ══════════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-library">
+  <div class="wrap">
+    <div class="masthead"><h1>The Law</h1><span class="daycount">Source material</span></div>
+    <div id="lib-body"></div>
+  </div>
+</section>
+
+<!-- ══ TABS ═════════════════════════════════════════════════════════════ -->
+<nav class="tabs" id="tabs" aria-label="Sections">
+  <div class="tabs-inner">
+    <button class="tab" data-go="today" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/></svg><span>Today</span></button>
+    <button class="tab" data-go="log" type="button"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><span>Record</span></button>
+    <button class="tab" data-go="progress" type="button"><svg viewBox="0 0 24 24"><path d="M4 18h4v-5H4zM10 18h4V8h-4zM16 18h4V4h-4z"/></svg><span>Reading</span></button>
+    <button class="tab" data-go="library" type="button"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M9 3v18"/></svg><span>Law</span></button>
+    <button class="tab" data-go="build" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg><span>Shift</span></button>
+  </div>
+</nav>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   THE IMPRESSION ENGINE
+   Synthesis of three sources, implemented as a daily mechanism:
+     · Bob Proctor — a paradigm is a multitude of habits in the subconscious.
+       Two ways in: an emotional impact, or constant spaced repetition.
+     · Price Pritchett, "You²" — the change is a discontinuous leap, and you
+       behave your way into it. The method changes, not the effort level.
+     · "Change Your Paradigm, Change Your Life" — results are the printout;
+       the terror barrier is the edge of the old paradigm, not a stop sign.
+   The engine multiplies the inner work by the outer work. Either at zero
+   means the whole thing is at zero, and it says so.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Storage ───────────────────────────────────────────────────────────── */
+const KEY = "impression-engine.v1";
+const BLANK = {
+  v: 1,
+  shift: null,          // committed program
+  draft: {},            // in-progress builder
+  step: 0,
+  slots: 5,
+  days: {},             // dateKey -> day record
+  evidence: [],
+  failures: [],
+  view: "build"
+};
+const clone = o => (typeof structuredClone === "function" ? structuredClone(o) : JSON.parse(JSON.stringify(o)));
+let S = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return clone(BLANK);
+    const parsed = JSON.parse(raw);
+    return Object.assign(clone(BLANK), parsed);
+  }catch(e){ return clone(BLANK); }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ /* private mode */ }
+}
+
+/* ── Dates ─────────────────────────────────────────────────────────────── */
+function key(d){
+  const x = d || new Date();
+  return x.getFullYear() + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + String(x.getDate()).padStart(2,"0");
+}
+function shiftDays(k, n){
+  const [y,m,d] = k.split("-").map(Number);
+  const x = new Date(y, m-1, d+n);
+  return key(x);
+}
+function daysBetween(a, b){
+  const pa = a.split("-").map(Number), pb = b.split("-").map(Number);
+  return Math.round((Date.UTC(pb[0],pb[1]-1,pb[2]) - Date.UTC(pa[0],pa[1]-1,pa[2]))/86400000);
+}
+function prettyDate(k){
+  const [y,m,d] = k.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+}
+function today(){ return key(); }
+function day(k){
+  const kk = k || today();
+  if(!S.days[kk]) S.days[kk] = { imp:[], leap:false, leapNote:"", swaps:[false,false,false], faculty:false, terror:null };
+  return S.days[kk];
+}
+function programDay(){
+  if(!S.shift) return 0;
+  return daysBetween(S.shift.committedAt, today()) + 1;
+}
+
+/* ── Helpers ───────────────────────────────────────────────────────────── */
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+    {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]
+  ));
+}
+function el(id){ return document.getElementById(id); }
+function words(s){ return String(s||"").trim().split(/\s+/).filter(Boolean); }
+
+/* ── Content: impression angles ────────────────────────────────────────── */
+/* Proctor's warning is that recitation does nothing. Each pass through the
+   day hits the same statement from a different angle so it stays alive. */
+const ANGLES = [
+  { id:"speak", name:"Speak", secs:60, tell:
+    "Out loud, slowly, three times. Out loud is not optional — you have to hear it in your own voice, in the room, as a fact you are reporting." },
+  { id:"see", name:"See", secs:60, tell:
+    "Eyes closed. Run one full scene of an ordinary day inside this paradigm. Not the highlight reel — a Tuesday. What you are doing at 10am. Who you are talking to." },
+  { id:"feel", name:"Feel", secs:60, tell:
+    "Find where it lands in your body and stay there the whole minute. The feeling is the part that actually goes in. An idea without the feeling attached is just a sentence." },
+  { id:"write", name:"Write", secs:0, tell:
+    "Type it from memory. No scrolling up. Whatever you cannot recall is not in yet — and now you know exactly which part to work on.", input:"Write it from memory…" },
+  { id:"prove", name:"Prove", secs:0, tell:
+    "One piece of evidence from the last 24 hours that this is already true. Small counts. You are training yourself to notice the new results instead of the old ones.", input:"What happened that fits the new paradigm?" },
+  { id:"seal", name:"Seal", secs:60, tell:
+    "Last impression before sleep. Read it, feel it, then take in nothing else — no phone, no scrolling. What you hand it at night is what it works on until morning." }
+];
+
+/* ── Content: the six higher faculties, on rotation ────────────────────── */
+const FACULTIES = [
+  { name:"Imagination", drill:"Build the scene of your C-goal already finished. Add one sensory detail you have never put in before — a smell, a texture, the sound of the room." },
+  { name:"Will", drill:"Pick one object. Hold your entire attention on it for three minutes, phone face down and out of reach. When your mind leaves, bring it back without comment." },
+  { name:"Perception", drill:"Take the worst fact in your situation right now. Write three other true ways to look at it. Not positive spins — genuinely different angles." },
+  { name:"Reason", drill:"Assume the new paradigm is already true. Reason forward: what would then be obvious to do this week that you are not currently doing?" },
+  { name:"Memory", drill:"Recall one specific time you already did the thing the old paradigm says you cannot. Get the details back — where you were, what you said. It happened. It is evidence." },
+  { name:"Intuition", drill:"Three minutes with no input at all. No screen, no music. Write down the first instruction that shows up. Then do it today, before you talk yourself out of it." }
+];
+function facultyToday(){
+  const n = S.shift ? Math.max(0, programDay()-1) : 0;
+  return FACULTIES[n % FACULTIES.length];
+}
+
+/* ── Content: the arenas ───────────────────────────────────────────────── */
+const ARENAS = ["Money","Self-image","Production","Health","Relationships","Discipline"];
+const COMMON_BELIEFS = [
+  "I have to work harder to earn more",
+  "Money is hard to get and easy to lose",
+  "I am not the kind of person who does that",
+  "I need to be ready before I start",
+  "If I want it done right I do it myself",
+  "I always start strong and then fade",
+  "People like me don't get that",
+  "I have to be liked to be paid",
+  "Asking for money is taking from people",
+  "It has never worked before so it won't now"
+];
+
+/* ── Validation: the statement ─────────────────────────────────────────── */
+function checkStatement(t){
+  const s = String(t||"").trim();
+  const out = [];
+  if(!s) return out;
+  const lower = " " + s.toLowerCase() + " ";
+  const w = words(s).length;
+
+  const hasI = /\bi\s+(am|have|earn|attract|close|serve|give|do|move|live|feel|choose|help|make|hold|receive)\b/i.test(s);
+  out.push({ ok:hasI, msg: hasI
+    ? "Stated in the present, first person."
+    : 'Start from "I am" — or another present-tense "I" verb. It only accepts what is stated as already so.' });
+
+  const future = /\b(will|going to|want to|wanting|hope|hoping|wish|someday|soon|try|trying|plan to|intend)\b/.test(lower);
+  out.push({ ok:!future, msg: future
+    ? '"Will", "want", "hope", "try" all file it under future. It stays there. Write it as done.'
+    : "No future tense. It reads as fact." });
+
+  const neg = /\b(not|never|no longer|don't|dont|doesn't|stop|quit|less|without|struggle|debt|broke|fail)\b/.test(lower);
+  out.push({ ok:!neg, msg: neg
+    ? "A negative still impresses the thing you named. Say what is, not what isn't."
+    : "No negatives. Only the new picture." });
+
+  const feel = /\b(grateful|thankful|happy|thrilled|love|joy|joyful|calm|free|proud|easy|easily|delighted|excited|peaceful|certain)\b/.test(lower);
+  out.push({ ok:feel, msg: feel
+    ? "Carries a feeling. That is the part that goes in."
+    : "No feeling word anywhere. Repetition without emotion is recitation — name the feeling the result produces." });
+
+  const lenOk = w >= 8 && w <= 45;
+  out.push({ ok:lenOk, msg: lenOk
+    ? w + " words — short enough to hold, long enough to picture."
+    : (w < 8 ? "Too thin to feel. Give it enough detail that saying it produces a picture."
+             : w + " words. Too long to say five times a day from memory. Cut it under 45.") });
+
+  return out;
+}
+function checkGoal(t){
+  const s = String(t||"").trim();
+  const out = [];
+  if(!s) return out;
+  const lower = " " + s.toLowerCase() + " ";
+  const incremental = /\b(more|better|improve|increase|grow a bit|a little|slightly|10%|20%|steady|consistent|keep)\b/.test(lower);
+  out.push({ ok:!incremental, msg: incremental
+    ? "This reads like an improvement on what you already do. That is an A-goal — it keeps the old method and asks for more effort. Go past what you know how to do."
+    : "Not an improvement on the current method. Good — that is the point." });
+  const specific = /\d/.test(s);
+  out.push({ ok:specific, msg: specific
+    ? "Has a number in it. It can be measured, so it can be missed, so it is real."
+    : "No number. A goal you cannot measure cannot be missed, which means it cannot pull you." });
+  const scary = words(s).length >= 5;
+  out.push({ ok:scary, msg: scary ? "Specific enough to picture." : "Too vague to picture. Say exactly what the result looks like." });
+  return out;
+}
+
+/* ── The builder ───────────────────────────────────────────────────────── */
+const STEPS = [
+  {
+    eyebrow:"Step one · Read the printout",
+    title:"What are your results, actually?",
+    lede:"Results do not lie and they do not negotiate. Whatever you have right now is the exact printout of the paradigm running you. Write the facts — numbers, counts, dates. No feelings, no reasons, no context.",
+    render(d){
+      return `
+      <div class="chips" data-chipgroup="arena">
+        ${ARENAS.map(a=>`<button type="button" class="chip${d.arena===a?" on":""}" data-chip="arena" data-val="${esc(a)}">${esc(a)}</button>`).join("")}
+      </div>
+      <label class="fld"><span>The facts as they stand</span>
+        <textarea data-f="results" rows="6" placeholder="e.g. 2 leases closed in the last 90 days. 11 leads contacted last week. 3 days out of 7 I did no outreach at all.">${esc(d.results||"")}</textarea>
+      </label>
+      <p class="note">If this is uncomfortable to write, you are writing the right thing. <span class="src">Proctor — results are the printout</span></p>`;
+    },
+    valid:d => (d.arena && words(d.results).length >= 5)
+  },
+  {
+    eyebrow:"Step two · Name it",
+    title:"What would someone have to believe to get exactly those results?",
+    lede:"Work backwards. Nobody produces results by accident — they produce them by operating on a rule they never chose and never checked. Find the rule.",
+    render(d){
+      return `
+      <div class="chips">
+        ${COMMON_BELIEFS.map(b=>`<button type="button" class="chip${d.belief===b?" on":""}" data-chip="belief" data-val="${esc(b)}">${esc(b)}</button>`).join("")}
+      </div>
+      <label class="fld"><span>The paradigm, in one sentence</span>
+        <textarea data-f="belief" rows="3" placeholder="Say it the way it actually sounds in your head.">${esc(d.belief||"")}</textarea>
+      </label>
+      <p class="note">Pick one from above or write your own. Say it the ugly way — the polite version is not the one running.</p>`;
+    },
+    valid:d => words(d.belief).length >= 3
+  },
+  {
+    eyebrow:"Step three · The habits it wears",
+    title:"Three things it makes you do",
+    lede:"A paradigm is not an idea, it is a bundle of habits. You cannot fight the bundle. You can only catch it in the act. Name three observable behaviours — things a camera would see.",
+    render(d){
+      const h = d.habits || ["","",""];
+      return [0,1,2].map(i=>`
+        <label class="fld"><span>Habit ${i+1}</span>
+          <input type="text" data-f="habit${i}" value="${esc(h[i]||"")}" placeholder="${["e.g. I rewrite the message five times before sending it","e.g. I check the inbox instead of making the call","e.g. I stop at 4pm and call it a full day"][i]}">
+        </label>`).join("") +
+        `<p class="note">A camera would see it. "I lack confidence" is not a habit. "I close the laptop when someone doesn't reply" is.</p>`;
+    },
+    valid:d => (d.habits||[]).filter(x=>words(x).length>=3).length === 3
+  },
+  {
+    eyebrow:"Step four · Write the replacement",
+    title:"The new paradigm",
+    lede:"You do not remove a paradigm, you displace it. This is the sentence you will impress five times a day until it is the one that answers first. Present tense, first person, carrying a feeling.",
+    render(d){
+      const checks = checkStatement(d.statement);
+      return `
+      <label class="fld"><span>Say it as already true</span>
+        <textarea data-f="statement" rows="4" placeholder="I am so happy and grateful now that…">${esc(d.statement||"")}</textarea>
+      </label>
+      <ul class="checks" data-live="statement">
+        ${checks.map(c=>`<li class="${c.ok?"ok":""}">${esc(c.msg)}</li>`).join("") || '<li class="ok">Write it and this will check it against the rules.</li>'}
+      </ul>
+      <p class="note">The five tests above are not style notes. Each one is a way statements fail to land. <span class="src">Proctor · autosuggestion</span></p>`;
+    },
+    valid:d => checkStatement(d.statement).filter(c=>!c.ok).length === 0
+  },
+  {
+    eyebrow:"Step five · The leap",
+    title:"Set a C-goal",
+    lede:"An A-goal is something you already know how to do. A B-goal is something you think you can do. A C-goal is the one you have no idea how to reach — and it is the only one that forces a new method instead of more effort. Pritchett's point is that the bigger goal is often the easier one, because it makes the old approach obviously useless.",
+    render(d){
+      const checks = checkGoal(d.goal);
+      return `
+      <label class="fld"><span>The goal you don't know how to reach</span>
+        <textarea data-f="goal" rows="3" placeholder="Say the result, with a number in it.">${esc(d.goal||"")}</textarea>
+      </label>
+      <label class="fld"><span>By when</span>
+        <input type="date" data-f="goalDate" value="${esc(d.goalDate||"")}">
+      </label>
+      <ul class="checks">
+        ${checks.map(c=>`<li class="${c.ok?"ok":""}">${esc(c.msg)}</li>`).join("") || '<li class="ok">Write it and this will check whether it is actually a C-goal.</li>'}
+      </ul>
+      <p class="note">Do not work out how. The how arrives after the commitment, not before it — that order is the whole trick. <span class="src">Pritchett · You²</span></p>`;
+    },
+    valid:d => words(d.goal).length >= 5 && !!d.goalDate
+  },
+  {
+    eyebrow:"Step six · Behave your way in",
+    title:"The swaps, and the daily act",
+    lede:"Repetition alone rehearses. What converts a rehearsal into a paradigm is doing something the old one would not do — today, before you feel ready. Give each habit a trigger and a replacement, then name the one act you will repeat daily.",
+    render(d){
+      const h = d.habits||["","",""];
+      const sw = d.swaps || [{},{},{}];
+      return h.map((x,i)=>`
+        <div class="plate tight">
+          <p class="eyebrow dim">Habit ${i+1}</p>
+          <p style="margin:.1rem 0 .7rem;font-size:.9rem;color:var(--text-dim)">${esc(x)}</p>
+          <label class="fld"><span>When this happens</span>
+            <input type="text" data-f="swap${i}trigger" value="${esc(sw[i]&&sw[i].trigger||"")}" placeholder="the moment it fires">
+          </label>
+          <label class="fld" style="margin-bottom:0"><span>I do this instead</span>
+            <input type="text" data-f="swap${i}new" value="${esc(sw[i]&&sw[i].now||"")}" placeholder="the replacement act">
+          </label>
+        </div>`).join("") + `
+        <label class="fld"><span>The daily out-of-character act</span>
+          <textarea data-f="leap" rows="3" placeholder="One specific thing the new person does every day that the old one avoids.">${esc(d.leap||"")}</textarea>
+        </label>
+        <p class="note">Make it small enough to do on your worst day and uncomfortable enough that the old paradigm argues about it.</p>`;
+    },
+    valid:d => words(d.leap).length >= 4 && (d.swaps||[]).filter(s=>s&&words(s.now).length>=2).length === 3
+  }
+];
+
+function renderBuild(){
+  const d = S.draft;
+  const rail = el("rail");
+  rail.innerHTML = STEPS.map((_,i)=>`<i class="${i<=S.step?"on":""}"></i>`).join("");
+  el("build-step-label").textContent = S.step < STEPS.length ? `Step ${S.step+1} / ${STEPS.length}` : "Review";
+
+  if(S.step >= STEPS.length){ renderReview(); return; }
+
+  const st = STEPS[S.step];
+  const ok = st.valid(d);
+  el("build-body").innerHTML = `
+    <p class="eyebrow">${esc(st.eyebrow)}</p>
+    <h2 class="sec">${esc(st.title)}</h2>
+    <p class="lede">${esc(st.lede)}</p>
+    ${st.render(d)}
+    <div class="row" style="margin-top:1.4rem;gap:.6rem">
+      ${S.step>0?'<button class="btn ghost" data-nav="back" type="button">Back</button>':""}
+      <button class="btn primary" data-nav="next" type="button" ${ok?"":"disabled"} style="flex:1">${S.step===STEPS.length-1?"Review":"Continue"}</button>
+    </div>
+    ${ok?"":'<p class="note">Fill the fields above to continue. The unfinished version is the one that does nothing.</p>'}
+  `;
+}
+
+function renderReview(){
+  const d = S.draft;
+  const committed = !!S.shift;
+  el("build-body").innerHTML = `
+    <p class="eyebrow">${committed?"The running program":"Last look"}</p>
+    <h2 class="sec">${committed?"Your shift":"Commit it"}</h2>
+    <p class="lede">${committed
+      ? "This is what the engine is impressing. Change it only when the results tell you to — switching statements every week is how nothing gets impressed at all."
+      : "Once you commit, the clock starts and today becomes day one. Nothing here is locked; you can revise it. But revise it rarely."}</p>
+
+    <div class="statement" style="margin-bottom:1rem"><p class="txt">${esc(d.statement)}</p></div>
+
+    <div class="plate">
+      <p class="eyebrow dim">C-goal · ${esc(d.goalDate||"")}</p>
+      <p style="margin:.1rem 0 0;font-size:.95rem">${esc(d.goal)}</p>
+    </div>
+    <div class="plate">
+      <p class="eyebrow dim">Daily act</p>
+      <p style="margin:.1rem 0 0;font-size:.95rem">${esc(d.leap)}</p>
+    </div>
+    <div class="plate">
+      <p class="eyebrow dim">Displacing · ${esc(d.arena||"")}</p>
+      <p style="margin:.1rem 0 .7rem;font-size:.95rem;color:var(--text-dim)">${esc(d.belief)}</p>
+      ${(d.swaps||[]).map((s,i)=>`<p style="margin:.35rem 0;font-size:.86rem;color:var(--text-dim)">
+        <span class="src">When</span> ${esc(s.trigger||"—")} <span class="src">→</span> ${esc(s.now||"—")}</p>`).join("")}
+    </div>
+
+    <label class="fld" style="margin-top:1rem"><span>Impressions per day</span>
+      <select data-f="slots">
+        ${[3,4,5,6].map(n=>`<option value="${n}"${S.slots===n?" selected":""}>${n} a day${n===3?" — the floor":n===5?" — recommended":""}</option>`).join("")}
+      </select>
+    </label>
+    <p class="note">Spaced repetition beats one long sitting. Three is the floor; below that the old paradigm never loses the argument.</p>
+
+    <div class="row" style="margin-top:1.4rem;gap:.6rem">
+      <button class="btn ghost" data-nav="back" type="button">Back</button>
+      <button class="btn primary" data-nav="commit" type="button" style="flex:1">${committed?"Save changes":"Commit — start day one"}</button>
+    </div>
+    ${committed?'<button class="btn ghost wide" data-nav="export" type="button" style="margin-top:.6rem">Export a backup</button>':""}
+  `;
+}
+
+/* ── Today ─────────────────────────────────────────────────────────────── */
+function renderToday(){
+  if(!S.shift){ go("build"); return; }
+  const d = day();
+  const sh = S.shift;
+  const n = sh.slots || S.slots;
+  const done = d.imp.length;
+  const fac = facultyToday();
+  el("today-day").textContent = "Day " + programDay();
+
+  const gap = quietDays();
+  const banner = gap >= 2 ? `
+    <div class="banner">
+      <p class="eyebrow">${gap} days without an impression</p>
+      <p>The old paradigm did not come back — it never left. It just stopped being argued with. One sixty-second session right now puts you back in the fight; there is nothing to make up.</p>
+    </div>` : "";
+
+  el("today-body").innerHTML = `
+    ${banner}
+    <div class="plate">
+      <div class="plate-head">
+        <p class="eyebrow" style="margin:0">Impressions today</p>
+        <span class="tally-meta">${done} / ${n}</span>
+      </div>
+      <div class="tally" id="tally">
+        ${Array.from({length:Math.max(n,done)},(_,i)=>`<span class="strike${i<done?" hit":""}"></span>`).join("")}
+      </div>
+      <div class="statement" style="margin-top:1rem"><p class="txt">${esc(sh.statement)}</p></div>
+      ${done < n
+        ? `<button class="btn primary wide" data-act="session" style="margin-top:1rem">Impression ${done+1} · ${esc(ANGLES[done % ANGLES.length].name)}</button>`
+        : `<button class="btn done wide" style="margin-top:1rem" type="button">All ${n} struck today</button>
+           <button class="btn ghost wide" data-act="session" style="margin-top:.5rem">One more anyway</button>`}
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">The act that breaks character</p>
+      <div class="task">
+        <button class="tick${d.leap?" on":""}" data-toggle="leap" aria-label="Mark the daily act done" type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+        </button>
+        <div class="task-body">
+          <div class="task-title${d.leap?" struck":""}">${esc(sh.leap)}</div>
+          <div class="task-sub">Repetition without new behaviour is rehearsal. This is the part that makes it real.</div>
+        </div>
+      </div>
+      ${d.leap ? `
+      <label class="fld" style="margin:.9rem 0 0"><span>What did the old paradigm say when you went to do it?</span>
+        <textarea data-f="leapNote" data-save="day" rows="2" placeholder="Write the exact sentence it used.">${esc(d.leapNote||"")}</textarea>
+      </label>` : ""}
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">Habit swaps</p>
+      ${(sh.swaps||[]).map((s,i)=>`
+        <div class="task">
+          <button class="tick${d.swaps[i]?" on":""}" data-toggle="swap" data-i="${i}" aria-label="Mark swap ${i+1} done" type="button">
+            <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+          </button>
+          <div class="task-body">
+            <div class="task-title${d.swaps[i]?" struck":""}">${esc(s.now)}</div>
+            <div class="task-sub">Trigger: ${esc(s.trigger||"—")}</div>
+          </div>
+        </div>`).join("")}
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">Faculty drill · ${esc(fac.name)}</p>
+      <div class="task">
+        <button class="tick${d.faculty?" on":""}" data-toggle="faculty" aria-label="Mark drill done" type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+        </button>
+        <div class="task-body">
+          <div class="task-title${d.faculty?" struck":""}">${esc(fac.drill)}</div>
+          <div class="task-sub">Six faculties on rotation. Most adults run on five senses and wonder why nothing changes.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">The terror barrier</p>
+      ${d.terror ? `
+        <p style="margin:.1rem 0 .6rem;font-size:.92rem;color:${d.terror.crossed?"var(--patina)":"var(--retreat)"}">
+          ${d.terror.crossed ? "You went through it." : "You went back. Logged, not judged — the retreat is data about where the edge is."}</p>
+        <p style="margin:0;font-size:.88rem;color:var(--text-dim)">${esc(d.terror.note||"")}</p>
+        <button class="btn ghost sm" data-act="terror-clear" style="margin-top:.8rem" type="button">Change it</button>
+      ` : `
+        <p class="lede" style="margin-bottom:.9rem">Anxiety at the edge of the old paradigm is not a warning, it is the location of the boundary. Most people feel it and retreat to bondage. Did you hit it today?</p>
+        <label class="fld"><span>What happened at the wall</span>
+          <textarea id="terror-note" rows="2" placeholder="The moment, and what your body did."></textarea>
+        </label>
+        <div class="row">
+          <button class="btn" data-act="terror" data-crossed="1" type="button" style="flex:1">Went through</button>
+          <button class="btn" data-act="terror" data-crossed="0" type="button" style="flex:1">Went back</button>
+        </div>
+        <button class="btn ghost wide sm" data-act="terror" data-crossed="none" style="margin-top:.5rem" type="button">Never got near it today</button>
+      `}
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">C-goal · ${esc(sh.goalDate||"")}</p>
+      <p style="margin:.1rem 0 .3rem;font-size:.95rem">${esc(sh.goal)}</p>
+      <p class="note">${daysToGoal()}</p>
+    </div>
+  `;
+}
+
+function daysToGoal(){
+  if(!S.shift || !S.shift.goalDate) return "";
+  const n = daysBetween(today(), S.shift.goalDate);
+  if(n > 1) return n + " days left. You still do not know how. That is correct — commit first, the method shows up en route.";
+  if(n === 1) return "Tomorrow.";
+  if(n === 0) return "Today is the date.";
+  return Math.abs(n) + " days past. Score it honestly in the record, then set the next one bigger, not smaller.";
+}
+
+function quietDays(){
+  if(!S.shift) return 0;
+  let n = 0;
+  for(let i = 1; i <= 30; i++){
+    const k = shiftDays(today(), -i);
+    if(k < S.shift.committedAt) break;
+    const rec = S.days[k];
+    if(rec && rec.imp.length) break;
+    n++;
+  }
+  return n;
+}
+
+/* ── Session ───────────────────────────────────────────────────────────── */
+let sess = null;
+function openSession(){
+  const d = day();
+  const angle = ANGLES[d.imp.length % ANGLES.length];
+  sess = { angle, left: angle.secs, timer:null };
+  el("s-count").textContent = "Impression " + (d.imp.length+1);
+  el("s-angle").textContent = angle.name;
+  el("s-instruct").textContent = angle.tell;
+  el("s-text").textContent = S.shift.statement;
+  const doneBtn = el("s-done");
+
+  if(angle.secs > 0){
+    el("s-timerwrap").classList.remove("hidden");
+    el("s-inputwrap").classList.add("hidden");
+    const ring = el("s-ring").querySelector(".prog");
+    const C = 2 * Math.PI * 50;
+    ring.style.strokeDasharray = C;
+    ring.style.strokeDashoffset = 0;
+    el("s-num").textContent = angle.secs;
+    doneBtn.disabled = true;
+    doneBtn.textContent = "Hold it";
+    sess.timer = setInterval(()=>{
+      sess.left--;
+      el("s-num").textContent = Math.max(0, sess.left);
+      ring.style.strokeDashoffset = C * (1 - sess.left/angle.secs);
+      if(sess.left <= 0){
+        clearInterval(sess.timer); sess.timer = null;
+        doneBtn.disabled = false;
+        doneBtn.textContent = "Struck";
+      }
+    }, 1000);
+  } else {
+    el("s-timerwrap").classList.add("hidden");
+    el("s-inputwrap").classList.remove("hidden");
+    const ta = el("s-input");
+    ta.value = "";
+    ta.placeholder = angle.input;
+    el("s-inputnote").textContent = angle.id === "write"
+      ? "Recall it. Do not go back and copy it."
+      : "This gets filed in the record as evidence.";
+    doneBtn.disabled = true;
+    doneBtn.textContent = "Struck";
+    ta.oninput = () => { doneBtn.disabled = words(ta.value).length < 4; };
+    setTimeout(()=>ta.focus(), 120);
+  }
+  el("session").classList.add("on");
+}
+function closeSession(complete){
+  if(sess && sess.timer) clearInterval(sess.timer);
+  if(complete && sess){
+    const d = day();
+    const angle = sess.angle;
+    d.imp.push({ a: angle.id, at: new Date().toISOString() });
+    if(angle.id === "prove"){
+      const v = el("s-input").value.trim();
+      if(v) S.evidence.unshift({ text:v, on: today() });
+    }
+    if(angle.id === "write"){
+      const v = el("s-input").value.trim();
+      const acc = similarity(v, S.shift.statement);
+      if(acc < 0.6) S.evidence.unshift({ text:"Recall was rough — the statement is not in yet. Keep striking.", on: today(), sys:true });
+    }
+    save();
+  }
+  sess = null;
+  el("session").classList.remove("on");
+  if(complete){ renderToday(); flashLastStrike(); }
+}
+function flashLastStrike(){
+  const marks = document.querySelectorAll("#tally .strike.hit");
+  const last = marks[marks.length-1];
+  if(last) last.classList.add("fresh");
+}
+function similarity(a,b){
+  const A = new Set(words(a.toLowerCase().replace(/[^\w\s]/g,"")));
+  const B = words(b.toLowerCase().replace(/[^\w\s]/g,""));
+  if(!B.length) return 1;
+  let hit = 0;
+  B.forEach(w => { if(A.has(w)) hit++; });
+  return hit / B.length;
+}
+
+/* ── Record ────────────────────────────────────────────────────────────── */
+function renderLog(){
+  const terrors = Object.keys(S.days).filter(k=>S.days[k].terror).sort().reverse();
+  const leaps = Object.keys(S.days).filter(k=>S.days[k].leap && S.days[k].leapNote).sort().reverse();
+  el("log-count").textContent = S.evidence.length + " entries";
+  el("log-body").innerHTML = `
+    <div class="plate">
+      <p class="eyebrow">File a failure</p>
+      <p class="lede" style="margin-bottom:.8rem">Pritchett's rule: failure is not the opposite of the leap, it is the toll on the road. Log it fast, take the one thing it taught you, keep moving at speed.</p>
+      <label class="fld"><span>What did not work, and what it tells you</span>
+        <textarea id="fail-in" rows="3" placeholder="Tried X. Got Y. So the next move is Z."></textarea>
+      </label>
+      <button class="btn wide" data-act="fail-add" type="button">File it</button>
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">Log evidence</p>
+      <label class="fld"><span>Something that happened that fits the new paradigm</span>
+        <textarea id="evi-in" rows="2" placeholder="Small counts. Especially small."></textarea>
+      </label>
+      <button class="btn wide" data-act="evi-add" type="button">Add</button>
+    </div>
+
+    <h2 class="sec" style="margin-top:2rem">Evidence</h2>
+    <p class="lede">Results are the printout. New results show up small and early, and the old paradigm is very good at not noticing them.</p>
+    ${S.evidence.length ? S.evidence.slice(0,40).map(e=>`
+      <div class="entry evi"><span class="when">${esc(prettyDate(e.on))}</span><p>${esc(e.text)}</p></div>`).join("")
+      : '<p class="empty">Nothing filed yet.</p>'}
+
+    <h2 class="sec" style="margin-top:2rem">The wall</h2>
+    <p class="lede">Every crossing widens the paradigm. Every retreat marks exactly where the edge sits — which is worth knowing.</p>
+    ${terrors.length ? terrors.map(k=>{
+      const t = S.days[k].terror;
+      return `<div class="entry ${t.crossed?"through":"back"}">
+        <span class="when">${esc(prettyDate(k))} · ${t.crossed?"Through":"Back"}</span>
+        <p>${esc(t.note||"—")}</p></div>`;
+    }).join("") : '<p class="empty">No encounters logged.</p>'}
+
+    <h2 class="sec" style="margin-top:2rem">Out of character</h2>
+    ${leaps.length ? leaps.map(k=>`
+      <div class="entry"><span class="when">${esc(prettyDate(k))} · what it said</span><p>${esc(S.days[k].leapNote)}</p></div>`).join("")
+      : '<p class="empty">No notes yet. When you do the daily act, write what the old paradigm said to stop you.</p>'}
+
+    <h2 class="sec" style="margin-top:2rem">Failures, filed</h2>
+    ${S.failures.length ? S.failures.slice(0,30).map(f=>`
+      <div class="entry"><span class="when">${esc(prettyDate(f.on))}</span><p>${esc(f.text)}</p></div>`).join("")
+      : '<p class="empty">Nothing yet. An empty failure log this early usually means the goal is too small.</p>'}
+  `;
+}
+
+/* ── Reading (progress) ────────────────────────────────────────────────── */
+function stats(){
+  const keys = Object.keys(S.days).sort();
+  let imp = 0, leaps = 0, through = 0, back = 0, impDays = 0, swaps = 0, swapPoss = 0, fac = 0;
+  keys.forEach(k=>{
+    const d = S.days[k];
+    imp += d.imp.length;
+    if(d.imp.length) impDays++;
+    if(d.leap) leaps++;
+    if(d.faculty) fac++;
+    if(d.terror){ d.terror.crossed ? through++ : back++; }
+    d.swaps.forEach(x=>{ if(x) swaps++; });
+    swapPoss += 3;
+  });
+  // streak of consecutive days with at least one impression, counting back from today
+  let streak = 0;
+  for(let i=0;i<400;i++){
+    const k = shiftDays(today(), -i);
+    const d = S.days[k];
+    if(d && d.imp.length) streak++;
+    else if(i > 0) break;
+    else if(!d || !d.imp.length) continue; // today not yet done does not break it
+  }
+  let best = 0, run = 0, prev = null;
+  keys.forEach(k=>{
+    if(!S.days[k].imp.length){ run = 0; prev = k; return; }
+    run = (prev && daysBetween(prev,k) === 1 && S.days[prev] && S.days[prev].imp.length) ? run+1 : 1;
+    best = Math.max(best, run); prev = k;
+  });
+
+  const n = (S.shift && S.shift.slots) || S.slots;
+  // Measure adherence over the program so far, capped at a 14-day lookback.
+  // A fixed 14-day window would score a flawless day one at 7%, which is a lie.
+  const win = Math.max(1, Math.min(14, programDay()));
+  let impWin = 0, leapWin = 0;
+  for(let i=0;i<win;i++){
+    const d = S.days[shiftDays(today(), -i)];
+    if(!d) continue;
+    impWin += Math.min(d.imp.length, n);
+    if(d.leap) leapWin++;
+  }
+  const inner = Math.min(1, impWin / (n*win));
+  const outer = Math.min(1, leapWin / win);
+  const strength = Math.round(100 * Math.sqrt(inner*outer));
+  return { imp, leaps, through, back, impDays, swaps, swapPoss, fac, streak, best, inner, outer, strength, n, win };
+}
+
+function renderProgress(){
+  if(!S.shift){ go("build"); return; }
+  const s = stats();
+  el("prog-day").textContent = "Day " + programDay();
+
+  let verdict;
+  if(s.inner === 0 && s.outer === 0) verdict = "Nothing is running. The paradigm you have is the one you will keep.";
+  else if(s.outer === 0) verdict = "Impressions without a single out-of-character act. That is rehearsal — you are memorising a sentence, not changing anything. Do the daily act today.";
+  else if(s.inner === 0) verdict = "Action with no impression. It will snap back the first hard week, because the subconscious never got the new instruction. Strike the statement today.";
+  else if(s.inner < 0.4) verdict = "The inside is the weak side. Repetition is thin — the old paradigm is still winning the argument by volume.";
+  else if(s.outer < 0.4) verdict = "The outside is the weak side. You are impressing it well and behaving like the old person. Behaviour is the faster of the two levers.";
+  else if(s.strength < 75) verdict = "Both sides running. Hold it. Displacement happens on the boring days, not the inspired ones.";
+  else verdict = "Both sides running hard. Expect the terror barrier soon — that is the signal it is working, not a reason to slow down.";
+
+  el("prog-body").innerHTML = `
+    <div class="plate">
+      <div class="spread" style="margin-bottom:.6rem">
+        <p class="eyebrow" style="margin:0">Paradigm displacement</p>
+        <span class="tally-meta">${s.strength}%</span>
+      </div>
+      <div class="gauge"><i style="width:${s.strength}%"></i></div>
+      <div class="axis"><span>Inside ${Math.round(s.inner*100)}%</span><span>${s.win} day${s.win===1?"":"s"}</span><span>Outside ${Math.round(s.outer*100)}%</span></div>
+      <p class="note" style="margin-top:.8rem;color:var(--text)">${esc(verdict)}</p>
+      <p class="note">The two sides multiply, they do not add. Either one at zero puts the whole figure at zero, which is the honest reading.</p>
+    </div>
+
+    <div class="metrics">
+      <div class="metric cop"><span class="k">Impressions</span><span class="v">${s.imp}</span></div>
+      <div class="metric"><span class="k">Days impressed</span><span class="v">${s.impDays}<small> / 90</small></span></div>
+      <div class="metric"><span class="k">Streak</span><span class="v">${s.streak}<small> best ${s.best}</small></span></div>
+      <div class="metric cop"><span class="k">Out of character</span><span class="v">${s.leaps}</span></div>
+      <div class="metric pat"><span class="k">Wall crossed</span><span class="v">${s.through}</span></div>
+      <div class="metric ret"><span class="k">Retreated</span><span class="v">${s.back}</span></div>
+      <div class="metric"><span class="k">Swaps executed</span><span class="v">${s.swaps}</span></div>
+      <div class="metric"><span class="k">Faculty drills</span><span class="v">${s.fac}</span></div>
+    </div>
+
+    <div class="plate" style="margin-top:1rem">
+      <p class="eyebrow">Out-of-character acts, last 21 days</p>
+      ${stepChart()}
+      <p class="note">Drawn as steps on purpose. The change is discontinuous — you do not slope into a new paradigm, you jump and then hold the new level. <span class="src">Pritchett · You²</span></p>
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">Milestones</p>
+      ${milestone(s.impDays, 30, "Thirty days impressed. The statement should be answering before the old one does. If it is not, the repetition is too passive — add feeling, not volume.")}
+      ${milestone(s.impDays, 60, "Sixty days. Check the printout: results, not mood. Mood lies early and results lie never.")}
+      ${milestone(s.impDays, 90, "Ninety days. If the results have not moved at all, the statement is aimed at the wrong paradigm. Go back to step one and read the printout again.")}
+    </div>
+
+    <div class="plate">
+      <p class="eyebrow">Data</p>
+      <p class="lede" style="margin-bottom:.9rem">Everything lives in this browser only. Nothing is sent anywhere. Clearing site data wipes it, so keep a backup.</p>
+      <div class="row wrap">
+        <button class="btn sm" data-act="export" type="button">Export backup</button>
+        <button class="btn sm" data-act="import" type="button">Import</button>
+        <button class="btn ghost sm" data-act="revise" type="button">Revise the shift</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json" class="hidden">
+    </div>
+  `;
+}
+
+function milestone(v, mark, text){
+  const hit = v >= mark;
+  return `<div class="task">
+    <span class="tick${hit?" on":""}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></span>
+    <div class="task-body">
+      <div class="task-title${hit?"":""}" style="${hit?"":"color:var(--text-faint)"}">${mark} days · ${v}/${mark}</div>
+      <div class="task-sub">${esc(text)}</div>
+    </div></div>`;
+}
+
+function stepChart(){
+  const W = 320, H = 100, pad = 6;
+  const days = 21;
+  const vals = [];
+  let run = 0;
+  for(let i = days-1; i >= 0; i--){
+    const d = S.days[shiftDays(today(), -i)];
+    if(d && d.leap) run++;
+    vals.push(run);
+  }
+  const max = Math.max(1, run);
+  const x = i => pad + (i * (W - pad*2) / (days-1));
+  const y = v => H - pad - (v/max) * (H - pad*2);
+  let dstr = `M ${x(0)} ${y(vals[0])}`;
+  for(let i=1;i<vals.length;i++){ dstr += ` L ${x(i)} ${y(vals[i-1])} L ${x(i)} ${y(vals[i])}`; }
+  const grid = [0,.5,1].map(f=>`<line class="grid" x1="${pad}" y1="${pad + f*(H-pad*2)}" x2="${W-pad}" y2="${pad + f*(H-pad*2)}"/>`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Cumulative out-of-character acts over the last 21 days: ${run} total">
+    ${grid}<path class="line" d="${dstr}"/>
+    <circle class="cap" cx="${x(days-1)}" cy="${y(run)}" r="3"/></svg>`;
+}
+
+/* ── The Law (library) ─────────────────────────────────────────────────── */
+const LIB = [
+  { g:"Bob Proctor", items:[
+    { t:"Results are the printout",
+      p:"Whatever you are getting is an exact readout of the paradigm you are running. Not a measure of effort, luck, or market. This is good news: it means the results are diagnostic — you can read the paradigm off them.",
+      a:"Stop treating a bad week as a motivation problem. Read it as data about what you believe." },
+    { t:"The three parts",
+      p:"Conscious mind thinks and can accept or reject. Subconscious accepts everything it is handed and cannot reject anything. The body just carries out the orders. This is why an idea repeated with feeling becomes behaviour whether you approve of it or not.",
+      a:"Guard what you hand the subconscious. It has no filter, and it never argues." },
+    { t:"Two doors in",
+      p:"A paradigm changes one of two ways: an emotional impact, or constant spaced repetition of an idea. You cannot schedule the first. The second is entirely within your control, which is why it is the whole method here.",
+      a:"Five impressions a day, spaced. Not one long sitting." },
+    { t:"Feeling is the carrier",
+      p:"Repetition without emotion is recitation, and recitation does nothing. The feeling is what makes the idea stick — an emotionalised thought is what moves into the subconscious and then into behaviour.",
+      a:"If saying it produces no feeling, the statement is wrong. Rewrite it until it does." },
+    { t:"The terror barrier",
+      p:"When you move toward the new paradigm you hit anxiety — a wall of it. That wall is not a warning about the decision. It is the boundary of the old paradigm, and it appears precisely because the change is working. Most people feel it and retreat into what they call being realistic.",
+      a:"When the fear spikes, note that you have found the edge. Cross it, then log it." },
+    { t:"The six faculties",
+      p:"Imagination, will, perception, reason, memory, intuition. These are the tools that build a new paradigm, and most adults have not deliberately used any of them since childhood — they run on the five senses and react to whatever the environment hands them.",
+      a:"One drill a day, on rotation. Three minutes." },
+    { t:"A, B and C goals",
+      p:"A-goals are what you already know how to do. B-goals are what you think you can do. Only a C-goal — the one you have no idea how to reach — requires a different you, which is the entire point of setting one.",
+      a:"If you can see the whole path, the goal is too small to change anything." },
+    { t:"You get what you are",
+      p:"Not what you want. Wanting is a conscious activity and the subconscious does not take orders from wanting. The paradigm sets the level, and results track the paradigm the way water finds its level.",
+      a:"Change the level, not the effort." }
+  ]},
+  { g:"Price Pritchett · You²", items:[
+    { t:"Quantum leap, not increment",
+      p:"The move is discontinuous. You do not grind your way to a different order of results with the same method applied harder — you change methods and land somewhere the old approach could not reach in any amount of time.",
+      a:"When you catch yourself planning to try harder, stop. Ask what a different method would look like." },
+    { t:"The bigger goal is the easier one",
+      p:"A modest target lets the current approach survive, so you keep it and get modest results. An outrageous target makes the current approach obviously useless, which forces the new method into existence. Difficulty and size are not the same axis.",
+      a:"Raise the target until the old plan is visibly absurd." },
+    { t:"The how comes after",
+      p:"Waiting for a complete plan is the most respectable form of not starting. Commitment first; the route reveals itself as you move, and mostly could not have been seen from the starting point anyway.",
+      a:"Commit to the outcome before you can defend the method." },
+    { t:"Behave your way in",
+      p:"Acting your way into new thinking is faster than thinking your way into new acting. Behaviour is directly under your control right now; belief is not. Do the thing the new person does and the belief follows the evidence.",
+      a:"One out-of-character act, today, before you feel ready." },
+    { t:"Failure is the toll, not the verdict",
+      p:"Going for a leap guarantees more failure, faster. That is the cost structure of the method, not a sign of choosing wrong. The only expensive failure is the slow one you did not learn from.",
+      a:"Fail faster and file what it taught you inside the hour." },
+    { t:"Drop 'trying'",
+      p:"Trying is the built-in excuse: it describes effort while leaving the outcome optional. Commitment removes the exit and, in doing so, changes what you actually do.",
+      a:"Delete 'try' from how you state anything you intend." },
+    { t:"Speed is a strategy",
+      p:"Urgency compresses the timeline and shakes loose help, luck and information that a leisurely pace never encounters. Moving fast is not recklessness — slowness is where most of the risk actually lives.",
+      a:"Do it today at 70% rather than next week at 100%." }
+  ]},
+  { g:"Change Your Paradigm, Change Your Life", items:[
+    { t:"The self-image ceiling",
+      p:"You will not sustain results that contradict the picture you hold of yourself. Exceed it and something quietly restores order — a fumbled opportunity, a fade, a self-inflicted setback. The picture has to move first.",
+      a:"When you sabotage a win, do not moralise. Note the ceiling and go back to the statement." },
+    { t:"The money paradigm is inherited",
+      p:"Most attitudes about money were set before age seven by people who were not consulted on whether they were right. They were absorbed, not chosen, and they run unexamined for decades.",
+      a:"Write the money rule you grew up with. Then look at your results and see whether you are still obeying it." },
+    { t:"Association is impression",
+      p:"The environment impresses whether or not you are paying attention. The people you are around most set the ambient paradigm, and it goes in the same door your affirmations use.",
+      a:"Add one person operating in the paradigm you want. Reduce time with the loudest voice for the old one." },
+    { t:"Repetition beats intensity",
+      p:"A short impression many times a day, sustained over months, does what a weekend of intensity cannot. Displacement is a slow structural change, and the boring days are where it happens.",
+      a:"Never skip two days running. One skipped day is nothing; two is a pattern re-forming." },
+    { t:"Accountability is external memory",
+      p:"The paradigm is very good at renegotiating with you privately. Stated out loud to someone who will ask, it loses that option.",
+      a:"Tell one person your C-goal and the date this week." }
+  ]}
+];
+
+function renderLibrary(){
+  el("lib-body").innerHTML = LIB.map(g=>`
+    <p class="grouphead">${esc(g.g)}</p>
+    ${g.items.map(i=>`
+      <div class="card">
+        <h3>${esc(i.t)}</h3>
+        <p>${esc(i.p)}</p>
+        <p class="apply">${esc(i.a)}</p>
+      </div>`).join("")}
+  `).join("") + `
+  <div class="plate" style="margin-top:2rem">
+    <p class="eyebrow">On the sources</p>
+    <p class="note">These are the working principles restated in plain language, not quotations. Read the originals — Bob Proctor's lectures and <em>Change Your Paradigm, Change Your Life</em>, and Price Pritchett's <em>You²</em>. This engine is the practice, not a substitute for the material.</p>
+  </div>`;
+}
+
+/* ── Navigation ────────────────────────────────────────────────────────── */
+function go(v){
+  S.view = v; save();
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  el("screen-" + v).classList.add("on");
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.go === v));
+  window.scrollTo(0,0);
+  render();
+}
+function render(){
+  if(S.view === "build") renderBuild();
+  else if(S.view === "today") renderToday();
+  else if(S.view === "log") renderLog();
+  else if(S.view === "progress") renderProgress();
+  else if(S.view === "library") renderLibrary();
+}
+
+/* ── Events ────────────────────────────────────────────────────────────── */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-go],[data-nav],[data-act],[data-chip],[data-toggle]");
+  if(!t) return;
+
+  if(t.dataset.go){ go(t.dataset.go); return; }
+
+  if(t.dataset.chip){
+    const f = t.dataset.chip;
+    S.draft[f] = (S.draft[f] === t.dataset.val) ? "" : t.dataset.val;
+    save(); renderBuild(); return;
+  }
+
+  if(t.dataset.toggle){
+    const d = day();
+    if(t.dataset.toggle === "leap") d.leap = !d.leap;
+    if(t.dataset.toggle === "faculty") d.faculty = !d.faculty;
+    if(t.dataset.toggle === "swap"){ const i = +t.dataset.i; d.swaps[i] = !d.swaps[i]; }
+    save(); renderToday(); return;
+  }
+
+  const nav = t.dataset.nav;
+  if(nav === "back"){ S.step = Math.max(0, S.step-1); save(); renderBuild(); return; }
+  if(nav === "next"){ S.step = Math.min(STEPS.length, S.step+1); save(); renderBuild(); return; }
+  if(nav === "commit"){ commit(); return; }
+  if(nav === "export"){ doExport(); return; }
+
+  const act = t.dataset.act;
+  if(act === "session"){ openSession(); return; }
+  if(act === "terror"){
+    const d = day();
+    const note = (el("terror-note") && el("terror-note").value.trim()) || "";
+    if(t.dataset.crossed === "none") d.terror = { crossed:true, note: note || "Did not reach the edge today. Worth asking whether the day was safe by accident or by design." };
+    else d.terror = { crossed: t.dataset.crossed === "1", note };
+    save(); renderToday(); return;
+  }
+  if(act === "terror-clear"){ day().terror = null; save(); renderToday(); return; }
+  if(act === "evi-add"){
+    const v = el("evi-in").value.trim();
+    if(v){ S.evidence.unshift({ text:v, on: today() }); save(); renderLog(); }
+    return;
+  }
+  if(act === "fail-add"){
+    const v = el("fail-in").value.trim();
+    if(v){ S.failures.unshift({ text:v, on: today() }); save(); renderLog(); }
+    return;
+  }
+  if(act === "export"){ doExport(); return; }
+  if(act === "import"){ el("import-file").click(); return; }
+  if(act === "revise"){ S.step = 0; go("build"); return; }
+});
+
+/* Inputs: builder fields write to draft, day fields write to the day record */
+document.addEventListener("input", e => {
+  const f = e.target.dataset.f;
+  if(!f) return;
+
+  if(e.target.dataset.save === "day"){
+    if(f === "leapNote"){ day().leapNote = e.target.value; save(); }
+    return;
+  }
+  const d = S.draft;
+  if(/^habit(\d)$/.test(f)){
+    const i = +f.slice(5);
+    d.habits = d.habits || ["","",""];
+    d.habits[i] = e.target.value;
+  } else if(/^swap(\d)(trigger|new)$/.test(f)){
+    const m = f.match(/^swap(\d)(trigger|new)$/);
+    d.swaps = d.swaps || [{},{},{}];
+    d.swaps[+m[1]] = d.swaps[+m[1]] || {};
+    d.swaps[+m[1]][m[2] === "trigger" ? "trigger" : "now"] = e.target.value;
+  } else if(f === "slots"){
+    S.slots = +e.target.value;
+    if(S.shift) S.shift.slots = S.slots;
+  } else {
+    d[f] = e.target.value;
+  }
+  save();
+
+  // live-validate the two authored fields without stealing focus
+  if(f === "statement" || f === "goal"){
+    const list = document.querySelector(".checks");
+    if(list){
+      const checks = f === "statement" ? checkStatement(e.target.value) : checkGoal(e.target.value);
+      list.innerHTML = checks.map(c=>`<li class="${c.ok?"ok":""}">${esc(c.msg)}</li>`).join("");
+    }
+  }
+  const btn = document.querySelector('[data-nav="next"]');
+  if(btn && S.step < STEPS.length) btn.disabled = !STEPS[S.step].valid(S.draft);
+});
+
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && el("session").classList.contains("on")) closeSession(false);
+});
+el("s-done").addEventListener("click", () => closeSession(true));
+el("s-close").addEventListener("click", () => closeSession(false));
+
+/* ── Commit / data ─────────────────────────────────────────────────────── */
+function commit(){
+  const d = S.draft;
+  const first = !S.shift;
+  S.shift = {
+    arena:d.arena, results:d.results, belief:d.belief, habits:d.habits,
+    statement:d.statement.trim(), goal:d.goal.trim(), goalDate:d.goalDate,
+    swaps:d.swaps, leap:d.leap.trim(), slots:S.slots,
+    committedAt: first ? today() : S.shift.committedAt
+  };
+  save();
+  go("today");
+}
+function doExport(){
+  const blob = new Blob([JSON.stringify(S,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "impression-engine-" + today() + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+document.addEventListener("change", e => {
+  if(e.target.id !== "import-file") return;
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const inc = JSON.parse(r.result);
+      if(!inc || typeof inc !== "object") throw new Error("bad file");
+      S = Object.assign(clone(BLANK), inc);
+      save(); go(S.shift ? "today" : "build");
+    }catch(err){
+      alert("That file could not be read as a backup. Pick the JSON file the export produced.");
+    }
+  };
+  r.readAsText(file);
+});
+
+/* ── Boot ──────────────────────────────────────────────────────────────── */
+(function boot(){
+  if(S.shift && S.view === "build" && S.step === 0) S.view = "today";
+  if(!S.shift) S.view = "build";
+  go(S.view);
+})();
+</script>
+</body>
+</html>
