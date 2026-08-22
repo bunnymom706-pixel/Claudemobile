@@ -1,37 +1,62 @@
 # The Impression Engine
 
-A single-file app for changing one paradigm on purpose.
+A single-file app for changing a paradigm on purpose, and for shifting your state on demand when the old one flares up.
 
-Open `index.html` in any browser. No build step, no server, no dependencies, no account. Everything you enter stays in that browser's local storage and is never sent anywhere. On a phone, add it to the home screen and it behaves like an app.
+No build step, no server, no dependencies, no account, no network calls. Everything you enter stays in your own browser and is never sent anywhere — including not into this public repository.
+
+## Getting it on your home screen
+
+**iPhone.** Open the Pages URL in **Safari** (it must be Safari, not Chrome), tap the share button, then **Add to Home Screen**. It launches full screen with no browser chrome and works with no signal.
+
+**Android.** Open it in Chrome, then **Install app** from the menu.
+
+**Anywhere.** `index.html` also runs by double-clicking it. Everything works except offline caching, which needs a real https origin.
+
+To publish the Pages URL: in the repository's **Settings → Pages**, set **Source** to **GitHub Actions**. The workflow in `.github/workflows/pages.yml` deploys the `paradigm/` folder on every push to `main`, and the URL will be `https://<owner>.github.io/Claudemobile/`.
 
 ## What it is
 
-Three sources, implemented as a daily mechanism rather than a reading list:
+Three bodies of work, implemented as a mechanism rather than a reading list:
 
-- **Bob Proctor** — a paradigm is a bundle of habits held in the subconscious, and results are its printout. There are two ways in: an emotional impact you cannot schedule, or constant spaced repetition you can.
-- **Price Pritchett, _You²_** — the change is a discontinuous leap, not a ramp. You behave your way into the new thinking, and the method arrives after the commitment, not before it.
-- **_Change Your Paradigm, Change Your Life_** — the self-image sets a ceiling, the terror barrier marks the edge of the old paradigm, and displacement happens on boring days.
+- **Bob Proctor** — a paradigm is a bundle of subconscious habits, mostly installed before age seven, running roughly 95% of behaviour. Results are its printout. Two ways in: an emotional impact you cannot schedule, or spaced repetition you can. Feeling is your conscious awareness of the vibration you are in.
+- **Napoleon Hill** — exact amount, what you give in return, definite date, begin at once ready or not, written statement read aloud twice daily. Proctor taught these for fifty years.
+- **Price Pritchett, _You²_** — the change is a discontinuous leap, not a ramp. You behave your way into it, and the method arrives after the commitment.
 
-The library inside the app restates the working principles in plain language with the source attached. It is not a substitute for reading the originals.
+And then, where the evidence contradicts the naive version of that practice, the evidence wins. Full citations in `RESEARCH.md`.
 
-## The one idea the app is built around
+## The two ideas the app is built on
 
-Repetition and behaviour **multiply**. They do not add.
+**One. Repetition and behaviour multiply — they do not add.** Impressions with no out-of-character act is rehearsal. Action with no impression snaps back the first hard week. So the displacement figure is a geometric mean: either side at zero puts the whole number at zero, and the app names which side is weak instead of averaging the failure away.
 
-- Impressions with no out-of-character action is rehearsal. You memorise a sentence and change nothing.
-- Action with no impression snaps back the first hard week, because the subconscious never got the new instruction.
+**Two. Visualising the outcome on its own makes things worse.** Oettingen found vivid positive fantasy predicted *less* weight lost, slower recovery and lower starting salaries — the mind treats the imagined result as partly achieved and stands down. So no picture step in this app runs without an obstacle step immediately after it, and every one closes on an if-then plan.
 
-So the displacement figure on the Reading screen is a geometric mean of the two sides. Either one at zero puts the whole number at zero, and the app says which side is weak rather than congratulating you on the other.
+## The screens
 
-## How to use it
+**Shift me now** — always on screen, on every tab. A ninety-second protocol for when the old paradigm flares: *locate* the feeling (naming it is what starts it moving), *breathe to neutral* with five rounds of cyclic sighing, *choose the image*, *name the obstacle*, *commit an if-then move*, then re-rate yourself. Every run is logged with its before-and-after, so the Record tab can tell you whether it actually works for you.
 
-1. **Shift** — a six-step build. Read your results, name the paradigm behind them, list the three habits it wears, write the replacement statement, set a C-goal, and define the swaps plus one daily out-of-character act. The statement is validated against five ways affirmations fail (future tense, negatives, no feeling word, too long to hold, too thin to picture). The C-goal is checked for incremental language, because an A-goal keeps the old method alive.
-2. **Today** — strike the statement five times a day from six rotating angles: speak it, see it, feel it, write it from memory, prove it from the last 24 hours, seal it before sleep. Then the daily act, the habit swaps, one faculty drill, and the terror barrier check.
-3. **Record** — evidence, wall crossings and retreats, and filed failures. A retreat is logged, never scolded: it marks where the edge sits.
-4. **Reading** — displacement figure, streaks, milestones at 30 / 60 / 90 days, and a stepped chart of out-of-character acts. Stepped on purpose — the change is discontinuous.
+**Today** — strike the statement several times a day from six rotating angles: speak it, contrast it, feel it, write it from memory, prove it from the last 24 hours, seal it before sleep. Then the daily out-of-character act, the habit swaps, one faculty drill, and the terror-barrier check.
+
+**Paradigms** — run several, switch the active one, archive the finished. Holds the money-roots module and the number.
+
+- *Money roots* — eight items scoring the four Klontz money scripts, then the inherited rule and the counter-rule you choose instead. It asks what rule you were handed. It never asks what happened, and there is no field for it.
+- *The number* — target income divided by average rent and commission into leases, then into conversations, then into a count you can do before lunch.
+
+**Record** — instant shifts with their average movement, evidence, wall crossings and retreats, filed failures.
+
+**Reading** — displacement score, streaks, 30/60/90 milestones, and out-of-character acts drawn as a step chart, because the change is discontinuous.
+
+**Law** — every principle in plain language with its source, including the six findings that correct the practice.
+
+## Believability, and why it matters
+
+Wood, Perunovic & Lee found that people repeating "I am a lovable person" felt **worse** afterwards if they had low self-esteem, and better only if they already had high self-esteem. An affirmation collides with what you actually believe, and the collision goes to the incumbent.
+
+So the builder asks you to rate the statement 1–10 for how true it feels when you say it out loud. Below 5, it routes you to a bridge statement you can actually accept — including the interrogative "Will I…?" form, which outperforms the declarative on real behaviour — and promotes you to the full statement only once you have logged ten pieces of evidence for it.
 
 ## Data
 
-Local storage only, tied to the one browser. Clearing site data or switching phones wipes it.
+Local storage only, tied to that one browser. Clearing site data or switching phones wipes it. **Back up** on the Paradigms tab gives you the JSON two ways: copy the text, which always works, or save it as a file. **Restore** takes pasted text or a file. Do it before switching phones.
 
-**Back up** on the Reading screen gives you the JSON two ways: copy the text, or save it as a file. Copying is the one that always works — saving a file needs a host that allows it, which the published page asks the viewer for and a local file handles itself. **Restore** takes pasted text or a file, and replaces everything currently stored.
+## Boundary
+
+This is belief and behaviour work. It is not treatment for trauma and does not substitute for it. If the childhood material itself becomes the loud part — not the money rule, the memory — that is a different track and it needs a qualified person.

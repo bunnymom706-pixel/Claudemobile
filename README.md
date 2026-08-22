@@ -10,6 +10,6 @@ Three skills, in order of how often they get used:
 
 ## The app
 
-- **`paradigm/index.html`** — The Impression Engine. A single-file app for changing one paradigm deliberately, built on Bob Proctor's mechanism, Price Pritchett's `You²`, and `Change Your Paradigm, Change Your Life`. Open it in a browser, no build step. Details in `paradigm/README.md`.
+- **`paradigm/`** — The Impression Engine. An installable single-file app for changing a paradigm on purpose, and for shifting state on demand when the old one flares. Built on Bob Proctor's mechanism, Napoleon Hill's six steps and Price Pritchett's `You²`, corrected where the evidence says the naive version of that practice backfires. Add it to a phone home screen from the Pages URL; it runs offline. Usage in `paradigm/README.md`, citations in `paradigm/RESEARCH.md`.
 
 Operating principles live in `CLAUDE.md`. Private numbers and personal context live in `context.local.md`, which is gitignored.
