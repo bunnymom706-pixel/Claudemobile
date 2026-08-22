@@ -1,5 +1,7 @@
 # The Impression Engine
 
+> Looking for the simple one? [`mirror/`](mirror/) is the **Paradigm Mirror** — a two-minute scan that shows which paradigms are running you, what each costs, and the one move that changes it. No program, no streak. Start there if you are not sure what to point this at.
+
 A single-file app for changing a paradigm on purpose, and for shifting your state on demand when the old one flares up.
 
 No build step, no server, no dependencies, no account, no network calls. Everything you enter stays in your own browser and is never sent anywhere — including not into this public repository.
