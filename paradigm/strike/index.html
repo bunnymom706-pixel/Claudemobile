@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Strike">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<title>Strike</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────────────
+   Dark-first, one ember spent on one ring. Light is designed, not
+   inverted: bare :root carries the complete dark palette; light overrides
+   the tokens under prefers-color-scheme:light and [data-theme=light]. */
+:root{
+  --ground:#0B0D12; --card:#151926; --raised:#1C2233; --sunk:#070910;
+  --line:#252B3D; --line-soft:#1B2030;
+  --ink:#F2F4F8; --dim:#98A0B3; --faint:#5F6678;
+  --ember-a:#FF7A4D; --ember-b:#FF4D7D; --ember:#FF6247;
+  --ember-wash:rgba(255,98,71,.12); --ember-line:rgba(255,98,71,.4);
+  --mint:#3EE6A8; --mint-wash:rgba(62,230,168,.1);
+  --on-ember:#1A0B08;
+  --shadow:0 8px 30px rgba(0,0,0,.45);
+  --glow:0 0 24px rgba(255,98,71,.25);
+  --ui:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --spring:cubic-bezier(.34,1.4,.5,1);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --ground:#F7F6F3; --card:#FFFFFF; --raised:#FFFFFF; --sunk:#EDECE7;
+    --line:#E2E0D8; --line-soft:#ECEAE3;
+    --ink:#191C24; --dim:#5B6170; --faint:#9BA0AD;
+    --ember-a:#F5603A; --ember-b:#E8386B; --ember:#EA4E38;
+    --ember-wash:rgba(234,78,56,.09); --ember-line:rgba(234,78,56,.35);
+    --mint:#0FA671; --mint-wash:rgba(15,166,113,.1);
+    --on-ember:#FFFFFF;
+    --shadow:0 6px 24px rgba(25,28,36,.08);
+    --glow:0 0 24px rgba(234,78,56,.18);
+  }
+}
+:root[data-theme="light"]{
+  --ground:#F7F6F3; --card:#FFFFFF; --raised:#FFFFFF; --sunk:#EDECE7;
+  --line:#E2E0D8; --line-soft:#ECEAE3;
+  --ink:#191C24; --dim:#5B6170; --faint:#9BA0AD;
+  --ember-a:#F5603A; --ember-b:#E8386B; --ember:#EA4E38;
+  --ember-wash:rgba(234,78,56,.09); --ember-line:rgba(234,78,56,.35);
+  --mint:#0FA671; --mint-wash:rgba(15,166,113,.1);
+  --on-ember:#FFFFFF;
+  --shadow:0 6px 24px rgba(25,28,36,.08);
+  --glow:0 0 24px rgba(234,78,56,.18);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);
+  font-size:16.5px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(2rem + env(safe-area-inset-bottom))}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ember);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:26.5rem;margin:0 auto;padding:0 1.2rem}
+.screen{display:none}
+.screen.on{display:block;animation:in .3s var(--spring)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.top{display:flex;align-items:center;justify-content:space-between;
+  padding:1.4rem 0 .4rem}
+.top .brand{font-weight:800;font-size:1.02rem;letter-spacing:.01em}
+.top .brand i{font-style:normal;background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.top .day{font-family:var(--mono);font-size:.7rem;color:var(--faint);
+  font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
+h1.hero{font-weight:800;font-size:1.9rem;line-height:1.12;letter-spacing:-.025em;
+  margin:.6rem 0 .5rem;text-wrap:balance}
+p.sub{color:var(--dim);margin:0 0 1.3rem;font-size:.95rem;line-height:1.55}
+.lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 .45rem;font-weight:600}
+p.tiny{color:var(--faint);font-size:.8rem;line-height:1.5;margin:.55rem 0 0}
+
+.card{background:var(--card);border:1px solid var(--line-soft);border-radius:20px;
+  box-shadow:var(--shadow);padding:1.25rem 1.3rem;margin-bottom:.9rem}
+.card.flat{box-shadow:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;width:100%;
+  border:0;border-radius:16px;padding:1rem 1.2rem;cursor:pointer;
+  font-weight:700;font-size:1rem;letter-spacing:.005em;
+  background:var(--raised);color:var(--ink);border:1px solid var(--line);
+  transition:transform .12s var(--spring),filter .15s ease}
+.btn:active{transform:scale(.975)}
+.btn.ember{background:linear-gradient(100deg,var(--ember-a),var(--ember-b));
+  border:0;color:var(--on-ember);box-shadow:var(--glow)}
+.btn.ember:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--dim);font-weight:500;
+  padding:.6rem;width:auto}
+.btn.ghost:hover{color:var(--ink)}
+.btn.sm{width:auto;padding:.55rem .9rem;font-size:.82rem;border-radius:12px;font-weight:600}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn.done{background:var(--mint-wash);border:1px solid transparent;color:var(--mint);cursor:default}
+
+textarea,input[type=text],input[type=date],input[type=number],select{
+  width:100%;background:var(--sunk);border:1px solid var(--line);border-radius:14px;
+  padding:.85rem 1rem;font-size:1rem;line-height:1.5}
+textarea{resize:vertical;min-height:5rem}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea:focus,input:focus,select:focus{border-color:var(--ember)}
+.field{margin-bottom:1.05rem}
+
+/* ── The ring ──────────────────────────────────────────────────────────── */
+.ringwrap{display:grid;place-items:center;padding:.4rem 0 .9rem;position:relative}
+.ring{transform:rotate(-90deg)}
+.ring .seg{fill:none;stroke-width:11;stroke-linecap:round;transition:stroke .3s ease}
+.ring .track{stroke:var(--line)}
+.ringcenter{position:absolute;text-align:center}
+.ringcenter .big{font-weight:800;font-size:2.1rem;letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.ringcenter .cap{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin-top:.25rem}
+
+.stmt{font-weight:700;font-size:1.28rem;line-height:1.3;letter-spacing:-.015em;
+  text-wrap:balance;margin:0}
+.stmt-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ember);display:block;margin-bottom:.5rem;font-weight:600}
+
+.rowline{display:flex;align-items:center;gap:.8rem;padding:.7rem 0}
+.tickbig{flex:0 0 30px;width:30px;height:30px;border-radius:10px;background:var(--sunk);
+  border:1.5px solid var(--line);cursor:pointer;display:grid;place-items:center;padding:0;
+  transition:all .18s var(--spring)}
+.tickbig svg{width:16px;height:16px;stroke:var(--mint);stroke-width:2.6;fill:none;opacity:0;
+  stroke-linecap:round;stroke-linejoin:round;transition:opacity .15s ease}
+.tickbig.on{background:var(--mint-wash);border-color:var(--mint)}
+.tickbig.on svg{opacity:1}
+.rowline .txt{flex:1;font-size:.95rem;line-height:1.4}
+.rowline .txt.off{color:var(--faint);text-decoration:line-through}
+
+/* ── Stats strip + dot grid ────────────────────────────────────────────── */
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.9rem}
+.stat{background:var(--card);border:1px solid var(--line-soft);border-radius:16px;
+  padding:.75rem .5rem;text-align:center}
+.stat .v{font-weight:800;font-size:1.35rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .k{font-family:var(--mono);font-size:.56rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--faint);margin-top:.2rem}
+.stat.hot .v{background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.dots{display:grid;grid-template-columns:repeat(14,1fr);gap:.45rem;padding:.3rem 0 .1rem}
+.dot{aspect-ratio:1;border-radius:50%;background:var(--sunk);border:1px solid var(--line-soft);
+  position:relative}
+.dot.d1{background:var(--ember-wash);border-color:var(--ember-line)}
+.dot.d2{background:var(--ember);border-color:var(--ember);opacity:.55}
+.dot.d3{background:linear-gradient(120deg,var(--ember-a),var(--ember-b));border-color:transparent}
+.dot.act::after{content:"";position:absolute;inset:-3.5px;border:1.5px solid var(--mint);
+  border-radius:50%}
+.gauge{height:8px;background:var(--sunk);border:1px solid var(--line-soft);border-radius:5px;overflow:hidden}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--ember-a),var(--ember-b))}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.6rem;
+  color:var(--faint);margin-top:.35rem;letter-spacing:.06em}
+
+/* ── Runner + setup overlays ───────────────────────────────────────────── */
+.sheet{position:fixed;inset:0;background:var(--ground);z-index:50;display:none;
+  overflow-y:auto;padding:1.3rem;padding-bottom:calc(1.3rem + env(safe-area-inset-bottom))}
+.sheet.on{display:flex;animation:in .28s var(--spring)}
+.sheet-inner{max-width:26.5rem;margin:auto;width:100%;display:flex;flex-direction:column;gap:1.1rem}
+.angle{font-weight:800;font-size:2.3rem;letter-spacing:-.03em;line-height:1;margin:0;
+  background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hold{display:grid;place-items:center;position:relative;padding:.6rem 0}
+.hold .num{position:absolute;font-family:var(--mono);font-weight:600;font-size:1.15rem;
+  font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem}
+.chip{background:var(--raised);border:1px solid var(--line);border-radius:100px;
+  padding:.45rem .85rem;font-size:.85rem;cursor:pointer;color:var(--dim);font-weight:500}
+.chip:hover{border-color:var(--ember);color:var(--ink)}
+.chip.on{background:var(--ember-wash);border-color:var(--ember);color:var(--ink)}
+.checks{list-style:none;margin:.6rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.35rem}
+.checks li{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;padding:.28rem .6rem;
+  border-radius:100px;border:1px solid var(--line);color:var(--faint)}
+.checks li.ok{border-color:var(--mint);color:var(--mint);background:var(--mint-wash)}
+.scale{display:flex;gap:.28rem}
+.scale button{flex:1;padding:.6rem .1rem;background:var(--sunk);border:1px solid var(--line);
+  border-radius:10px;cursor:pointer;font-family:var(--mono);font-size:.8rem;color:var(--dim)}
+.scale button.on{background:linear-gradient(120deg,var(--ember-a),var(--ember-b));
+  border-color:transparent;color:var(--on-ember);font-weight:600}
+.scale-ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.58rem;
+  color:var(--faint);letter-spacing:.07em;margin-top:.3rem}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.steps{display:flex;gap:4px;margin:.2rem 0 .6rem}
+.steps i{flex:1;height:3px;border-radius:2px;background:var(--line)}
+.steps i.on{background:linear-gradient(90deg,var(--ember-a),var(--ember-b))}
+
+.banner{border:1px solid var(--ember-line);background:var(--ember-wash);border-radius:16px;
+  padding:.9rem 1.05rem;margin-bottom:.9rem;font-size:.9rem;line-height:1.5}
+.hr{border:0;border-top:1px solid var(--line-soft);margin:1.2rem 0}
+.linkrow{display:flex;flex-wrap:wrap;gap:.2rem .9rem;justify-content:center;padding-top:.4rem}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ══ RUNNER: one visit = one ~45s run ═════════════════════════════════ -->
+<div class="sheet" id="run" role="dialog" aria-modal="true">
+  <div class="sheet-inner">
+    <div class="spread">
+      <span class="lbl" id="r-step" style="margin:0">Strike</span>
+      <button class="btn ghost sm" id="r-quit" type="button">Leave</button>
+    </div>
+    <div id="r-body"></div>
+  </div>
+</div>
+
+<!-- ══ SETUP: 3 steps ═══════════════════════════════════════════════════ -->
+<div class="sheet" id="setup" role="dialog" aria-modal="true">
+  <div class="sheet-inner">
+    <div class="spread">
+      <span class="lbl" id="su-step" style="margin:0">Set up</span>
+      <button class="btn ghost sm" id="su-quit" type="button">Cancel</button>
+    </div>
+    <div class="steps" id="su-rail"></div>
+    <div id="su-body"></div>
+  </div>
+</div>
+
+<!-- ══ HOME: the only screen ════════════════════════════════════════════ -->
+<section class="screen" id="home"><div class="wrap">
+  <div class="top">
+    <span class="brand">Str<i>ike</i></span>
+    <span class="day" id="daylabel"></span>
+  </div>
+  <div id="home-body"></div>
+</div></section>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   STRIKE — the Impression Engine's mechanism, rebuilt for speed.
+
+   One screen. Each open of the app is one ~45-second run: a single
+   impression from a rotating angle, then a quick board. The ring fills
+   across the day's visits. Deliberately no way to binge all the
+   impressions at once — spaced repetition is the method, and massed
+   repetition is its junk-food substitute.
+
+   Kept from the research: statement validation, the believability gate
+   with bridges (affirmations backfire at low self-worth), mental contrast
+   baked into the See angle, evidence as the ladder, and the displacement
+   score as a geometric mean — repetition × behaviour, either at zero
+   reads zero.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const KEY = "strike.v1";
+const clone = o => (typeof structuredClone === "function" ? structuredClone(o) : JSON.parse(JSON.stringify(o)));
+const BLANK = { v:1, shift:null, days:{}, evidence:[], draft:null };
+let S = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return clone(BLANK);
+    return Object.assign(clone(BLANK), JSON.parse(raw));
+  }catch(e){ return clone(BLANK); }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+function key(d){ const x = d || new Date();
+  return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); }
+function shiftDays(k,n){ const p=k.split("-").map(Number); return key(new Date(p[0],p[1]-1,p[2]+n)); }
+function daysBetween(a,b){ const pa=a.split("-").map(Number), pb=b.split("-").map(Number);
+  return Math.round((Date.UTC(pb[0],pb[1]-1,pb[2])-Date.UTC(pa[0],pa[1]-1,pa[2]))/86400000); }
+function today(){ return key(); }
+function day(k){
+  const kk = k || today();
+  if(!S.days[kk]) S.days[kk] = { imp:0, act:false, wall:null };
+  return S.days[kk];
+}
+function programDay(){ return S.shift ? daysBetween(S.shift.committedAt, today())+1 : 0; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function el(id){ return document.getElementById(id); }
+function words(s){ return String(s||"").trim().split(/\s+/).filter(Boolean); }
+function liveText(){ const s = S.shift; return s ? ((s.useBridge && s.bridge) ? s.bridge : s.statement) : ""; }
+function totalImp(){ return Object.keys(S.days).reduce((n,k)=>n+S.days[k].imp,0); }
+
+/* ── Validation (compact pill form of the Engine's five checks) ────────── */
+function checkStatement(t){
+  const s = String(t||"").trim(); if(!s) return [];
+  const lower = " " + s.toLowerCase() + " ";
+  const w = words(s).length;
+  return [
+    { ok:/\bi\s+(am|have|earn|attract|close|serve|give|do|move|live|feel|choose|help|make|hold|receive)\b/i.test(s), t:"present tense" },
+    { ok:!/\b(will|going to|want to|hope|wish|someday|try|trying|plan to|intend)\b/.test(lower), t:"not future" },
+    { ok:!/\b(not|never|no longer|don't|dont|doesn't|stop|quit|less|without|struggle|debt|broke|fail)\b/.test(lower), t:"no negatives" },
+    { ok:/\b(grateful|thankful|happy|thrilled|love|joy|calm|free|proud|easy|easily|excited|peaceful|certain|safe)\b/.test(lower), t:"has feeling" },
+    { ok:w >= 8 && w <= 40, t:"8–40 words" }
+  ];
+}
+function bridges(stmt){
+  const s = String(stmt||"").trim().replace(/[.!]+$/,"");
+  const core = s.replace(/^i am so happy and grateful now that\s+/i,"").replace(/^\s*i\s+/i,"").replace(/[.!]+$/,"");
+  return [
+    "I am becoming someone who can say this and mean it: " + s + ".",
+    "Will I " + (core || "do this") + "?",
+    "I take one real action toward this every day, and I have the log to prove it."
+  ];
+}
+
+/* ── The four angles, 30 seconds or one typed line ─────────────────────── */
+const ANGLES = [
+  { id:"speak", name:"Speak", secs:30,
+    tell:"Out loud, three times, slowly. You have to hear it in your own voice, in the room, as a fact you are reporting." },
+  { id:"see", name:"See", secs:30,
+    tell:"One ordinary scene inside it — a Tuesday, not a highlight reel. Then, before the timer ends, name the one thing in you that is in the way. The picture without the obstacle is the version that backfires." },
+  { id:"feel", name:"Feel", secs:30,
+    tell:"Find where it lands in your body and stay there. The feeling is the part that goes in — without it this is recitation, and recitation does nothing." },
+  { id:"prove", name:"Prove", secs:0,
+    tell:"One thing from the last 24 hours that fits the new paradigm. Small counts — especially small. This is what raises what you can believe.",
+    ph:"What happened that fits?" }
+];
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HOME
+   ═══════════════════════════════════════════════════════════════════════ */
+function stats(){
+  const n = S.shift.slots, keys = Object.keys(S.days).sort();
+  let imp=0, acts=0, impDays=0;
+  keys.forEach(k => { const d=S.days[k]; imp+=d.imp; if(d.imp) impDays++; if(d.act) acts++; });
+  let streak=0;
+  for(let i=0;i<400;i++){
+    const d = S.days[shiftDays(today(),-i)];
+    if(d && d.imp) streak++;
+    else if(i>0) break;
+  }
+  const win = Math.max(1, Math.min(14, programDay()));
+  let iw=0, aw=0;
+  for(let i=0;i<win;i++){
+    const d = S.days[shiftDays(today(),-i)];
+    if(!d) continue;
+    iw += Math.min(d.imp, n);
+    if(d.act) aw++;
+  }
+  const inner = Math.min(1, iw/(n*win)), outer = Math.min(1, aw/win);
+  return { imp, acts, impDays, streak, inner, outer,
+           disp: Math.round(100*Math.sqrt(inner*outer)), win };
+}
+function ringSVG(done, n){
+  const R=64, C=2*Math.PI*R, size=170;
+  const gap = C*0.025, seg = (C - gap*n)/n;
+  let out = `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-label="${done} of ${n} impressions today">
+    <defs><linearGradient id="emb" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="var(--ember-a)"/><stop offset="1" stop-color="var(--ember-b)"/>
+    </linearGradient></defs>`;
+  for(let i=0;i<n;i++){
+    const off = -(i*(seg+gap));
+    out += `<circle class="seg ${i<done?"":"track"}" cx="${size/2}" cy="${size/2}" r="${R}"
+      ${i<done?'stroke="url(#emb)"':''} stroke-dasharray="${seg} ${C-seg}" stroke-dashoffset="${off}"></circle>`;
+  }
+  return out + "</svg>";
+}
+function dotGrid(){
+  const cells=[];
+  const n = S.shift.slots;
+  for(let i=27;i>=0;i--){
+    const k = shiftDays(today(),-i);
+    const d = S.days[k];
+    const f = d ? d.imp/n : 0;
+    const cls = !d||!d.imp ? "" : f>=1 ? "d3" : f>=0.5 ? "d2" : "d1";
+    cells.push(`<span class="dot ${cls}${d&&d.act?" act":""}" title="${k}"></span>`);
+  }
+  return `<div class="dots">${cells.join("")}</div>`;
+}
+function renderHome(){
+  el("daylabel").textContent = S.shift ? "Day " + programDay() : "";
+  if(!S.shift){
+    el("home-body").innerHTML = `
+      <h1 class="hero">One paradigm. Struck daily. Nothing else.</h1>
+      <p class="sub">The Impression Engine's mechanism with the friction machined off. Each open of this app is one 45-second run — one impression, one check on the daily act, done. The ring fills as the day goes.</p>
+      <button class="btn ember" data-act="setup" type="button">Set it up — 2 minutes</button>
+      <p class="tiny" style="text-align:center">Already running the Impression Engine? Setup can import your backup so nothing gets retyped.</p>`;
+    return;
+  }
+  const d = day(), n = S.shift.slots, st = stats();
+  const evi = S.evidence.length;
+  const ladder = S.shift.useBridge && evi >= 10;
+  el("home-body").innerHTML = `
+    ${ladder ? `<div class="banner"><strong>${evi} pieces of evidence.</strong> That is what belief is built from — say the real statement out loud and see where it lands now.
+      <div style="display:flex;gap:.5rem;margin-top:.6rem">
+        <button class="btn sm ember" data-act="ladder-up" type="button">Move up</button>
+        <button class="btn sm" data-act="ladder-later" type="button">Not yet</button></div></div>` : ""}
+    <div class="ringwrap">
+      ${ringSVG(Math.min(d.imp,n), n)}
+      <div class="ringcenter">
+        <div class="big">${d.imp}<span style="color:var(--faint)">/${n}</span></div>
+        <div class="cap">${d.imp>=n?"struck":"today"}</div>
+      </div>
+    </div>
+    ${d.imp >= n
+      ? `<button class="btn done" type="button">All ${n} struck — spaced, the way it works</button>
+         <button class="btn ghost" data-act="strike" style="width:100%" type="button">One more anyway</button>`
+      : `<button class="btn ember" data-act="strike" type="button">Strike — ${esc(ANGLES[totalImp()%ANGLES.length].name)} · ~45s</button>`}
+    <div class="card" style="margin-top:.9rem">
+      <span class="stmt-tag">${S.shift.useBridge?"Bridge — evidence "+evi+"/10":"Your paradigm"}</span>
+      <p class="stmt">${esc(liveText())}</p>
+    </div>
+    <div class="card flat">
+      <div class="rowline" style="padding:.2rem 0">
+        <button class="tickbig${d.act?" on":""}" data-act="toggle-act" aria-label="Daily act done" type="button"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
+        <span class="txt${d.act?" off":""}">${esc(S.shift.act)}</span>
+      </div>
+      <p class="tiny">Repetition without this is rehearsal. This is the half that makes it real.</p>
+    </div>
+    <div class="strip">
+      <div class="stat hot"><div class="v">${st.disp}%</div><div class="k">displaced</div></div>
+      <div class="stat"><div class="v">${st.streak}</div><div class="k">day streak</div></div>
+      <div class="stat"><div class="v">${st.acts}</div><div class="k">acts done</div></div>
+    </div>
+    <div class="card flat">
+      <p class="lbl">Last 28 days · ring = act done</p>
+      ${dotGrid()}
+      <div class="gauge" style="margin-top:.9rem"><i style="width:${st.disp}%"></i></div>
+      <div class="axis"><span>inside ${Math.round(st.inner*100)}%</span><span>×</span><span>outside ${Math.round(st.outer*100)}%</span></div>
+      <p class="tiny">${
+        st.inner===0&&st.outer===0 ? "Nothing running yet. The paradigm you have is the one you keep." :
+        st.outer===0 ? "Strikes without the act is rehearsal — memorising a sentence. Do the act today." :
+        st.inner===0 ? "Action with no impressions snaps back the first hard week. Strike today." :
+        "The two sides multiply, they don't add. Either at zero reads zero — that is the honest score."}</p>
+    </div>
+    <div class="card flat">
+      <p class="lbl">Goal · ${esc(S.shift.goalDate||"")}</p>
+      <p style="margin:0;font-size:.95rem">${esc(S.shift.goal)}</p>
+      <p class="tiny">${goalNote()}</p>
+    </div>
+    <div class="linkrow">
+      <button class="btn ghost sm" data-act="setup-edit" type="button">Edit</button>
+      <button class="btn ghost sm" data-act="io-export" type="button">Back up</button>
+      <button class="btn ghost sm" data-act="io-import" type="button">Restore</button>
+    </div>
+    <div id="io" class="card flat hidden" style="margin-top:.6rem"></div>`;
+}
+function goalNote(){
+  if(!S.shift.goalDate) return "";
+  const n = daysBetween(today(), S.shift.goalDate);
+  if(n > 1) return n + " days. You still don't know how — correct. The method shows up en route.";
+  if(n >= 0) return n === 0 ? "Today is the date." : "Tomorrow.";
+  return Math.abs(n) + " days past. Score it honestly, then set the next one bigger.";
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RUNNER — one impression, then the quick board
+   ═══════════════════════════════════════════════════════════════════════ */
+let run = null, runTimer = null;
+function startRun(){
+  const angle = ANGLES[totalImp() % ANGLES.length];
+  run = { angle, phase:"angle", left:angle.secs };
+  el("run").classList.add("on");
+  renderRun();
+}
+function endRun(commit){
+  if(runTimer){ clearInterval(runTimer); runTimer = null; }
+  run = null;
+  el("run").classList.remove("on");
+  if(commit) renderHome();
+}
+function renderRun(){
+  const a = run.angle;
+  if(run.phase === "angle"){
+    el("r-step").textContent = "Impression " + (day().imp + 1);
+    el("r-body").innerHTML = `
+      <h2 class="angle">${esc(a.name)}</h2>
+      <p class="sub" style="margin-bottom:.9rem">${esc(a.tell)}</p>
+      <div class="card"><span class="stmt-tag">${S.shift.useBridge?"Bridge":"Hold this"}</span>
+        <p class="stmt">${esc(liveText())}</p></div>
+      ${a.secs ? `<div class="hold">
+          <svg class="ring" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="seg track" cx="60" cy="60" r="50" stroke-dasharray="314 0"></circle>
+            <circle class="seg" cx="60" cy="60" r="50" stroke="url(#emb2)" id="r-prog"
+              stroke-dasharray="314 314" stroke-dashoffset="0"></circle>
+            <defs><linearGradient id="emb2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--ember-a)"/><stop offset="1" stop-color="var(--ember-b)"/>
+            </linearGradient></defs>
+          </svg>
+          <span class="num" id="r-num">${a.secs}</span>
+        </div>`
+      : `<textarea id="r-input" rows="3" placeholder="${esc(a.ph)}"></textarea>`}
+      <button class="btn ember" id="r-done" type="button" ${a.secs?"disabled":"disabled"}>Struck</button>`;
+    if(a.secs){
+      const C = 2*Math.PI*50;
+      const prog = el("r-prog");
+      prog.style.strokeDasharray = C + " " + C;
+      prog.style.strokeDashoffset = C;
+      runTimer = setInterval(() => {
+        const num = el("r-num"), btn = el("r-done");
+        if(!run || !num){ clearInterval(runTimer); runTimer = null; return; }
+        run.left--;
+        num.textContent = Math.max(0, run.left);
+        prog.style.strokeDashoffset = C * (run.left / a.secs);
+        if(run.left <= 0){
+          clearInterval(runTimer); runTimer = null;
+          if(btn) btn.disabled = false;
+        }
+      }, 1000);
+    } else {
+      const ta = el("r-input");
+      ta.oninput = () => { el("r-done").disabled = words(ta.value).length < 4; };
+      setTimeout(() => ta.focus(), 120);
+    }
+    el("r-done").onclick = () => {
+      if(runTimer){ clearInterval(runTimer); runTimer = null; }
+      if(a.id === "prove"){
+        const v = el("r-input").value.trim();
+        if(v) S.evidence.unshift({ text:v, on:today() });
+      }
+      day().imp++;
+      save();
+      run.phase = "board";
+      renderRun();
+    };
+    return;
+  }
+  /* the board: 10 seconds of honest bookkeeping, then out */
+  const d = day();
+  el("r-step").textContent = "Quick board";
+  el("r-body").innerHTML = `
+    <h2 class="angle" style="font-size:1.7rem">Struck.</h2>
+    <p class="sub" style="margin-bottom:.6rem">Ten more seconds of honesty, then go.</p>
+    <div class="card flat">
+      <div class="rowline" style="padding:.2rem 0">
+        <button class="tickbig${d.act?" on":""}" data-run="act" type="button" aria-label="Daily act done"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
+        <span class="txt${d.act?" off":""}">${esc(S.shift.act)}</span>
+      </div>
+    </div>
+    <div class="card flat">
+      <p class="lbl">Hit the wall today? The fear at the edge means it's working.</p>
+      <div class="chips">
+        <button class="chip${d.wall==="through"?" on":""}" data-run="wall-through" type="button">Went through</button>
+        <button class="chip${d.wall==="back"?" on":""}" data-run="wall-back" type="button">Went back</button>
+        <button class="chip${d.wall===null?" on":""}" data-run="wall-none" type="button">Didn't reach it</button>
+      </div>
+    </div>
+    <button class="btn ember" id="r-close" type="button">Done — back at it</button>
+    <p class="tiny" style="text-align:center">Next strike in an hour or three. Spaced beats massed — that is the whole method.</p>`;
+  el("r-close").onclick = () => endRun(true);
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-run]");
+  if(!t || !run) return;
+  const d = day();
+  const r = t.dataset.run;
+  if(r === "act") d.act = !d.act;
+  if(r === "wall-through") d.wall = d.wall === "through" ? null : "through";
+  if(r === "wall-back") d.wall = d.wall === "back" ? null : "back";
+  if(r === "wall-none") d.wall = null;
+  save(); renderRun();
+});
+el("r-quit").addEventListener("click", () => endRun(true));
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SETUP — three steps, or one paste
+   ═══════════════════════════════════════════════════════════════════════ */
+let su = null;
+function startSetup(editing){
+  const sh = editing && S.shift ? S.shift : {};
+  su = { step:0, d:{
+    belief: sh.belief || "", statement: sh.statement || "",
+    believability: editing ? (sh.believability ?? null) : null,
+    bridge: sh.bridge || "",
+    goal: sh.goal || "", goalDate: sh.goalDate || "", act: sh.act || "",
+    slots: sh.slots || 4
+  }, editing: !!(editing && S.shift), importOpen:false };
+  el("setup").classList.add("on");
+  renderSetup();
+}
+function endSetup(){ su = null; el("setup").classList.remove("on"); renderHome(); }
+function suOk(){
+  const d = su.d;
+  if(su.step === 0) return checkStatement(d.statement).every(c => c.ok);
+  if(su.step === 1) return d.believability != null && (d.believability >= 5 || words(d.bridge).length >= 4);
+  return words(d.goal).length >= 4 && /\d/.test(d.goal) && !!d.goalDate && words(d.act).length >= 3;
+}
+function renderSetup(){
+  const d = su.d;
+  el("su-step").textContent = su.editing ? "Edit" : "Set up";
+  el("su-rail").innerHTML = [0,1,2].map(i => `<i class="${i<=su.step?"on":""}"></i>`).join("");
+  let body = "";
+  if(su.step === 0){
+    const checks = checkStatement(d.statement);
+    body = `
+      <h1 class="hero" style="font-size:1.55rem">The old rule, and its replacement.</h1>
+      <div class="field"><p class="lbl">The belief running you now — the ugly version</p>
+        <input type="text" data-su="belief" value="${esc(d.belief)}" placeholder="e.g. People like me don't get that"></div>
+      <div class="field" style="margin-bottom:.4rem"><p class="lbl">The new paradigm — present tense, with a feeling in it</p>
+        <textarea data-su="statement" rows="3" placeholder="I am so happy and grateful now that…">${esc(d.statement)}</textarea>
+        <ul class="checks">${checks.length ? checks.map(c=>`<li class="${c.ok?"ok":""}">${esc(c.t)}</li>`).join("")
+          : '<li>present tense</li><li>not future</li><li>no negatives</li><li>has feeling</li><li>8–40 words</li>'}</ul></div>
+      ${su.editing ? "" : `<button class="btn ghost sm" data-suact="import-toggle" type="button">Import an Impression Engine backup instead</button>
+      ${su.importOpen ? `<div class="field" style="margin-top:.5rem">
+        <textarea id="su-import" rows="3" placeholder="Paste the backup JSON here."></textarea>
+        <button class="btn sm" data-suact="import-go" style="margin-top:.5rem" type="button">Import</button>
+        <p class="tiny" id="su-import-msg"></p></div>` : ""}`}`;
+  } else if(su.step === 1){
+    const b = d.believability;
+    body = `
+      <h1 class="hero" style="font-size:1.55rem">Say it out loud. How true does it feel?</h1>
+      <p class="sub">Repeating a statement you can't accept makes low self-worth measurably worse. Under five, we run a bridge and let logged evidence raise you to the real one.</p>
+      <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" data-subscale="${n}" class="${b===n?"on":""}">${n}</button>`).join("")}</div>
+      <div class="scale-ends"><span>a lie</span><span>a fact</span></div>
+      ${b != null && b >= 5 ? `<div class="banner" style="margin-top:1rem">Clear to run the real statement. No bridge needed.</div>` : ""}
+      ${b != null && b < 5 ? `<div style="margin-top:1rem">
+        <p class="lbl">Pick a bridge, then edit it until it sounds like you</p>
+        <div class="chips" style="margin-bottom:.6rem">${bridges(d.statement).map(x=>`<button type="button" class="chip${d.bridge===x?" on":""}" data-subridge="${esc(x)}">${esc(x.length>46?x.slice(0,46)+"…":x)}</button>`).join("")}</div>
+        <textarea data-su="bridge" rows="3" placeholder="The version you can actually say and mean.">${esc(d.bridge)}</textarea></div>` : ""}`;
+  } else {
+    body = `
+      <h1 class="hero" style="font-size:1.55rem">The pull, and the daily act.</h1>
+      <div class="field"><p class="lbl">The goal you don't know how to reach — with a number</p>
+        <textarea data-su="goal" rows="2" placeholder="e.g. I close 12 leases in a single month">${esc(d.goal)}</textarea></div>
+      <div class="field"><p class="lbl">By when</p>
+        <input type="date" data-su="goalDate" value="${esc(d.goalDate)}"></div>
+      <div class="field"><p class="lbl">The daily out-of-character act</p>
+        <textarea data-su="act" rows="2" placeholder="One thing the new person does every day that the old one avoids.">${esc(d.act)}</textarea></div>
+      <div class="field"><p class="lbl">Strikes per day</p>
+        <select data-su="slots">${[3,4,5].map(n=>`<option value="${n}"${d.slots===n?" selected":""}>${n}${n===4?" — recommended":""}</option>`).join("")}</select></div>`;
+  }
+  el("su-body").innerHTML = body + `
+    <div style="display:flex;gap:.6rem;margin-top:1.1rem">
+      ${su.step>0?'<button class="btn sm" data-suact="back" type="button" style="width:auto">Back</button>':""}
+      <button class="btn ember" id="su-next" data-suact="next" type="button" style="flex:1" ${suOk()?"":"disabled"}>${su.step===2?(su.editing?"Save":"Commit — day one"):"Continue"}</button>
+    </div>`;
+}
+function commitSetup(){
+  const d = su.d;
+  const prev = su.editing ? S.shift : null;
+  S.shift = {
+    belief:d.belief.trim(), statement:d.statement.trim(),
+    believability:d.believability,
+    bridge:d.bridge.trim(),
+    useBridge: d.believability != null && d.believability < 5 && words(d.bridge).length >= 4,
+    goal:d.goal.trim(), goalDate:d.goalDate, act:d.act.trim(),
+    slots:+d.slots || 4,
+    committedAt: prev ? prev.committedAt : today()
+  };
+  save(); endSetup();
+}
+/* Import: accepts a Strike backup, or an Impression Engine backup (v1 flat
+   or v2 multi-shift) and maps its active shift across. */
+function importFrom(text, msgEl){
+  let j;
+  try{ j = JSON.parse(text); }catch(e){ if(msgEl) msgEl.textContent = "That is not JSON. Paste the whole backup, starting with {."; return false; }
+  if(!j || typeof j !== "object"){ if(msgEl) msgEl.textContent = "That is not a backup."; return false; }
+  let eng = null;
+  if(Array.isArray(j.shifts)) eng = j.shifts.find(x => x.id === j.activeId) || j.shifts.filter(x => !x.archivedAt)[0];
+  else if(j.shift && typeof j.shift === "object") eng = j.shift;
+  if(!eng){ if(msgEl) msgEl.textContent = "No shift found in that backup."; return false; }
+  su.d.belief = eng.belief || "";
+  su.d.statement = eng.statement || "";
+  su.d.believability = eng.believability ?? null;
+  su.d.bridge = eng.bridge || "";
+  su.d.goal = eng.goal || "";
+  su.d.goalDate = eng.goalDate || "";
+  su.d.act = eng.leap || eng.act || "";
+  su.d.slots = Math.min(5, Math.max(3, eng.slots || 4));
+  su.importOpen = false;
+  if(msgEl) msgEl.textContent = "";
+  renderSetup();
+  return true;
+}
+function KEYLIKE(j){ return "evidence" in j && "days" in j && "shift" in j; }
+
+/* ── Backup ────────────────────────────────────────────────────────────── */
+function ioPanel(html){ const b = el("io"); if(b){ b.innerHTML = html; b.classList.remove("hidden"); } }
+async function copyText(v, btn){
+  try{ await navigator.clipboard.writeText(v); if(btn) btn.textContent = "Copied"; }
+  catch(e){ if(btn) btn.textContent = "Copy blocked — select it by hand"; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EVENTS
+   ═══════════════════════════════════════════════════════════════════════ */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act],[data-suact],[data-subscale],[data-subridge]");
+  if(!t) return;
+
+  if(t.dataset.subscale){ su.d.believability = +t.dataset.subscale; renderSetup(); return; }
+  if(t.dataset.subridge){
+    su.d.bridge = su.d.bridge === t.dataset.subridge ? "" : t.dataset.subridge;
+    renderSetup(); return;
+  }
+  const sa = t.dataset.suact;
+  if(sa === "back"){ su.step = Math.max(0, su.step-1); renderSetup(); return; }
+  if(sa === "next"){
+    if(!suOk()) return;
+    if(su.step === 2) commitSetup();
+    else { su.step++; renderSetup(); }
+    return;
+  }
+  if(sa === "import-toggle"){ su.importOpen = !su.importOpen; renderSetup(); return; }
+  if(sa === "import-go"){ importFrom(el("su-import").value.trim(), el("su-import-msg")); return; }
+
+  const a = t.dataset.act;
+  if(a === "setup"){ startSetup(false); return; }
+  if(a === "setup-edit"){ startSetup(true); return; }
+  if(a === "strike"){ startRun(); return; }
+  if(a === "toggle-act"){ const d = day(); d.act = !d.act; save(); renderHome(); return; }
+  if(a === "ladder-up"){ S.shift.useBridge = false; save(); renderHome(); return; }
+  if(a === "ladder-later"){ S.evidence.unshift({ text:"Chose to stay on the bridge. No hurry.", on:today(), sys:true }); save(); renderHome(); return; }
+  if(a === "io-export"){
+    const v = JSON.stringify(S, null, 2);
+    ioPanel(`<p class="lbl">Your backup</p><textarea id="io-t" rows="4" readonly>${esc(v)}</textarea>
+      <button class="btn sm" data-act="io-copy" style="margin-top:.6rem" type="button">Copy</button>
+      <p class="tiny">Paste it somewhere you will still have in a year. Local storage dies with the browser.</p>`);
+    return;
+  }
+  if(a === "io-copy"){ copyText(el("io-t").value, t); return; }
+  if(a === "io-import"){
+    ioPanel(`<p class="lbl">Paste a backup — Strike's, or the Impression Engine's</p>
+      <textarea id="io-t" rows="4" placeholder="Paste the JSON."></textarea>
+      <button class="btn sm" data-act="io-restore" style="margin-top:.6rem" type="button">Restore</button>
+      <p class="tiny" id="io-msg">A Strike backup replaces everything here. An Engine backup opens setup with its shift filled in.</p>`);
+    return;
+  }
+  if(a === "io-restore"){
+    const raw = el("io-t").value.trim();
+    let j = null;
+    try{ j = JSON.parse(raw); }catch(err){ el("io-msg").textContent = "Not JSON. Paste the whole backup, starting with {."; return; }
+    if(j && KEYLIKE(j) && !Array.isArray(j.shifts)){
+      S = Object.assign(clone(BLANK), j); save(); renderHome(); return;
+    }
+    startSetup(false);
+    if(!importFrom(raw, null)){ endSetup(); el("io-msg").textContent = "No shift found in that backup."; }
+    return;
+  }
+});
+document.addEventListener("input", e => {
+  const f = e.target.dataset && e.target.dataset.su;
+  if(!f || !su) return;
+  su.d[f] = f === "slots" ? +e.target.value : e.target.value;
+  if(f === "statement"){ su.d.believability = null; su.d.bridge = ""; }
+  if(f === "statement" || f === "bridge"){
+    if(f === "statement"){
+      const list = document.querySelector("#su-body .checks");
+      if(list){
+        const checks = checkStatement(e.target.value);
+        list.innerHTML = checks.length ? checks.map(c=>`<li class="${c.ok?"ok":""}">${esc(c.t)}</li>`).join("")
+          : '<li>present tense</li><li>not future</li><li>no negatives</li><li>has feeling</li><li>8–40 words</li>';
+      }
+    }
+  }
+  const nx = el("su-next");
+  if(nx) nx.disabled = !suOk();
+});
+el("su-quit").addEventListener("click", endSetup);
+document.addEventListener("keydown", e => {
+  if(e.key !== "Escape") return;
+  if(el("run").classList.contains("on")) endRun(true);
+  else if(el("setup").classList.contains("on")) endSetup();
+});
+
+/* ── Boot ──────────────────────────────────────────────────────────────── */
+(function boot(){
+  el("home").classList.add("on");
+  renderHome();
+  const secure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if("serviceWorker" in navigator && secure) navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+</body>
+</html>

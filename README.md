@@ -11,6 +11,7 @@ Three skills, in order of how often they get used:
 ## The app
 
 - **`paradigm/`** — The Impression Engine. An installable single-file app for changing a paradigm on purpose, and for shifting state on demand when the old one flares. Built on Bob Proctor's mechanism, Napoleon Hill's six steps and Price Pritchett's `You²`, corrected where the evidence says the naive version of that practice backfires. Add it to a phone home screen from the Pages URL; it runs offline. Usage in `paradigm/README.md`, citations in `paradigm/RESEARCH.md`.
+- **`paradigm/strike/`** — Strike. The Engine's daily practice machined down to one 45-second run per visit: one impression from a rotating angle, a ten-second board, an ember ring that fills through the day. Three-step setup, imports an Engine backup in one paste, refuses to let impressions be binged because spaced beats massed.
 - **`paradigm/mirror/`** — Paradigm Mirror. The simple companion: type what is actually happening in your own words and it names the paradigm underneath, highlighting the exact phrases in your sentence that gave it away, then gives the tell, one when-then move, and the line to say instead. Awareness only, no program.
 
 Operating principles live in `CLAUDE.md`. Private numbers and personal context live in `context.local.md`, which is gitignored.

@@ -1,5 +1,7 @@
 # The Impression Engine
 
+> Want the fast daily driver? [`strike/`](strike/) is **Strike** — this app's mechanism at one 45-second run per visit, one screen, three-step setup, and it imports your backup from here in one paste.
+>
 > Looking for the simple one? [`mirror/`](mirror/) is the **Paradigm Mirror** — type what is happening and it names the paradigm underneath, highlighting the words in your own sentence that gave it away. No program, no streak. Start there if you are not sure what to point this at.
 
 A single-file app for changing a paradigm on purpose, and for shifting your state on demand when the old one flares up.
