@@ -22,6 +22,12 @@ You get back:
 
 If it reads you wrong, tap the right one. That is not a failure of the app — naming it yourself is the stronger version of the same move.
 
+## Explore — any situation, not just the eight
+
+When your situation is bigger or stranger than the eight patterns — or you just want to go deeper — **Explore** walks it through step by step: the situation in full, what you did, the sentence in your head, the rule that would make that behaviour natural, what a year of it costs, the last moment you could have caught it, and the when-then move. Your answers become a **paradigm of your own** with the same full reading as the built-in eight. It joins the chart, and future entries match it using your own vocabulary.
+
+Every reading also has **Copy a prompt for Claude** — it packs the whole reading into a prompt so a Claude conversation can pick the exploration up mid-thought and go deeper than any offline app can, one question at a time.
+
 ## The eight
 
 Never Enough · I Don't Deserve It · It Has To Hurt · Be Liked First · Not Ready Yet · Stay Small · I Always Fade · It Gets Taken

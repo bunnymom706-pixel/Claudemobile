@@ -93,6 +93,13 @@ p.small{color:var(--ink-3);font-size:.85rem;line-height:1.55;margin:.6rem 0 0}
 .card{background:var(--card);border:1px solid var(--line-soft);border-radius:8px;
   box-shadow:var(--shadow);padding:1.35rem;margin-bottom:1.1rem}
 
+.progress{height:2px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:1.8rem}
+.progress i{display:block;height:100%;background:var(--teal);transition:width .3s ease}
+input.line{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;
+  padding:.75rem .9rem;font-size:1rem;box-shadow:var(--shadow)}
+input.line::placeholder{color:var(--ink-3)}
+input.line:focus{border-color:var(--teal)}
+
 /* ── The box ───────────────────────────────────────────────────────────── */
 textarea.box{width:100%;min-height:9.5rem;background:var(--card);border:1px solid var(--line);
   border-radius:8px;padding:1.05rem 1.1rem;font-size:1.06rem;line-height:1.5;resize:vertical;
@@ -141,7 +148,7 @@ ul.costs li{margin-bottom:.4rem;color:var(--ink-2)}
 .chart li:last-child{border-bottom:0}
 .chart button{width:100%;background:none;border:0;padding:.85rem 0;cursor:pointer;
   display:flex;align-items:baseline;justify-content:space-between;gap:1rem;text-align:left}
-.chart .nm{font-family:var(--slab);font-weight:700;line-height:1.1;letter-spacing:-.02em;color:var(--ink)}
+.chart .nm{font-family:var(--slab);font-weight:700;line-height:1.1;letter-spacing:-.02em;color:var(--ink);font-size:.88rem}
 .chart .pc{font-size:.76rem;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
 .chart .r1 .nm{font-size:2.4rem}.chart .r2 .nm{font-size:2rem}.chart .r3 .nm{font-size:1.66rem}
 .chart .r4 .nm{font-size:1.4rem}.chart .r5 .nm{font-size:1.2rem}.chart .r6 .nm{font-size:1.05rem}
@@ -177,6 +184,13 @@ a.plain{color:var(--teal);text-decoration:underline;text-underline-offset:3px}
 <section class="view" id="v-result"><div class="wrap">
   <div class="top"><h1>Identified</h1><button class="btn quiet" data-act="new">Type another</button></div>
   <div id="result-body"></div>
+</div></section>
+
+<section class="view" id="v-explore"><div class="wrap">
+  <div class="top"><h1>Explore</h1><span class="meta" id="ex-count"></span></div>
+  <div class="progress"><i id="ex-prog"></i></div>
+  <div id="explore-body"></div>
+  <button class="btn quiet" data-act="explore-quit" style="margin-top:.6rem">Leave without saving</button>
 </div></section>
 
 <section class="view" id="v-read"><div class="wrap">
@@ -311,7 +325,7 @@ const P = [
     swap:"I am allowed to keep this, and I can get more."
   }
 ];
-function byId(id){ return P.find(x => x.id === id); }
+function byId(id){ return P.find(x => x.id === id) || (S.custom || []).find(x => x.id === id); }
 
 /* ── The matcher ────────────────────────────────────────────────────────
    Weighted phrase patterns over the user's own words. 3 = unmistakable,
@@ -430,11 +444,35 @@ Object.keys(SIG).forEach(k => {
   COMPILED[k] = SIG[k].map(r => [r[0], new RegExp("(?:^|[^a-z])(" + r[1] + ")", "gi")]);
 });
 
+function allP(){ return P.concat(S.custom || []); }
+function escRe(str){ return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+const STOP = new Set("the a an and or but if then that this those these i me my you your it its is are was were be been am do did does done have has had not no of in on at to for with about into from as so we they them their there here when what who how why will would could should just really very".split(" "));
+const PATCACHE = {};
+/* Custom paradigms match on their own distinctive words, plus the exact
+   sentence if it reappears. Weight 1 per word keeps them from shouting
+   over the tuned built-in patterns. */
+function patternsFor(p){
+  if(!p.custom) return COMPILED[p.id] || [];
+  if(!PATCACHE[p.id]){
+    const pats = [];
+    (p.voice || []).forEach(v => {
+      const t = String(v || "").trim();
+      if(t.length > 10) pats.push([3, new RegExp("(?:^|[^a-z])(" + escRe(t.toLowerCase()) + ")", "gi")]);
+    });
+    const seen = new Set();
+    ((p.voice || []).join(" ") + " " + (p.tell || "") + " " + (p.means || "")).toLowerCase()
+      .replace(/[^a-z\s']/g, " ").split(/\s+/)
+      .filter(w => w.length > 3 && !STOP.has(w))
+      .forEach(w => { if(!seen.has(w)){ seen.add(w); pats.push([1, new RegExp("(?:^|[^a-z])(" + escRe(w) + ")", "gi")]); } });
+    PATCACHE[p.id] = pats;
+  }
+  return PATCACHE[p.id];
+}
 function analyse(text){
-  const out = P.map(p => {
+  const out = allP().map(p => {
     let score = 0;
     const hits = [];
-    (COMPILED[p.id] || []).forEach(pair => {
+    patternsFor(p).forEach(pair => {
       const w = pair[0], re = new RegExp(pair[1].source, "gi");
       let m, found = false, guard = 0;
       while((m = re.exec(text)) !== null && guard++ < 200){
@@ -450,7 +488,7 @@ function analyse(text){
     });
     return { p, score, hits };
   });
-  out.sort((a,b) => b.score - a.score || P.indexOf(a.p) - P.indexOf(b.p));
+  out.sort((a,b) => b.score - a.score); // stable: ties keep allP() order
   return out;
 }
 function confidence(res){
@@ -479,7 +517,7 @@ function highlight(text, hits){
 }
 
 /* ── State ─────────────────────────────────────────────────────────────── */
-const BLANK = { v:2, entries:[], draft:"", view:"type", openId:null, lastId:null };
+const BLANK = { v:2, entries:[], draft:"", view:"type", openId:null, lastId:null, custom:[], explore:null };
 let S = load();
 function load(){
   try{
@@ -504,7 +542,7 @@ function pretty(k){
 }
 function counts(){
   const c = {};
-  P.forEach(p => c[p.id] = 0);
+  allP().forEach(p => c[p.id] = 0);
   S.entries.forEach(e => { if(c[e.id] != null) c[e.id]++; });
   return c;
 }
@@ -526,6 +564,7 @@ function renderType(){
     <p class="lede">Type it however it comes out. It names the paradigm underneath and shows you which of your words gave it away.</p>
     <textarea class="box" id="box" placeholder="I keep rewriting this message to the leasing office and I still haven't sent it…">${esc(S.draft||"")}</textarea>
     <button class="btn primary wide" data-act="identify" id="go" style="margin-top:.8rem" ${words(S.draft).length >= 3 ? "" : "disabled"}>Identify it</button>
+    <button class="btn quiet" data-act="explore-new" style="margin-top:.2rem">Or walk it through step by step</button>
     <p class="small">Nothing leaves this device. It works with no signal.</p>
     <p class="small" style="margin-top:1.6rem">Or start from one of these:</p>
     <div class="hintrow">${PROMPTS.map(t => `<button type="button" class="hint" data-prompt="${esc(t)}">${esc(t)}</button>`).join("")}</div>
@@ -551,7 +590,8 @@ function renderResult(){
   el("result-body").innerHTML = `
     ${conf.k === "none" ? `
       <h2 class="head">Nothing jumped out.</h2>
-      <p class="lede">Your wording did not match anything strongly, which happens — and is not a failure of yours. Read the eight and pick the one that lands. Recognising it yourself is worth more than the app guessing right.</p>
+      <p class="lede">Your wording did not match the usual patterns — which does not mean nothing is running. Walk it through step by step and it becomes a paradigm of your own, with the same full reading as the built-in eight. Or pick from the list below if one already lands.</p>
+      <button class="btn primary wide" data-act="explore-entry" style="margin-bottom:1.4rem">Explore it step by step</button>
     ` : `
       <p class="conf">${esc(conf.t)}</p>
       <h2 class="verdict">${esc(p.name)}</h2>
@@ -580,6 +620,7 @@ function renderResult(){
       <div class="alts">${alts.map(r => `<button type="button" data-correct="${r.p.id}">${esc(r.p.name)}</button>`).join("")}</div>
       <p class="small">Correcting it is not a failure of the app. Naming it yourself is the stronger version of the same move, and it teaches the pattern list what your language actually looks like.</p>
     </div>
+    ${conf.k === "none" ? "" : `<button class="btn wide" data-act="explore-entry" style="margin-top:.4rem">Go deeper — explore this one</button>`}
     <button class="btn primary wide" data-act="new" style="margin-top:.8rem">Type another</button>
     <button class="btn quiet" data-act="delete-last" style="margin-top:.4rem">Delete this entry</button>`;
 }
@@ -593,9 +634,10 @@ function renderRead(){
   el("read-body").innerHTML = `
     <h2 class="head">${esc(p.name)}</h2>
     <p class="lede">${esc(p.means)}</p>
+    ${p.custom && p.situation ? `<div class="section"><h4 class="lbl">Built from</h4><p>${esc(p.situation)}</p></div>` : ""}
     <div class="section"><h4 class="lbl">How it sounds in your head</h4>
       <div class="voice">${p.voice.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
-    <div class="section"><h4 class="lbl">Where it came from</h4><p>${esc(p.from)}</p></div>
+    ${p.from ? `<div class="section"><h4 class="lbl">Where it came from</h4><p>${esc(p.from)}</p></div>` : ""}
     <div class="section"><h4 class="lbl">What it is costing you</h4>
       <ul class="costs">${p.costs.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>
     <div class="section"><h4 class="lbl">The tell — how to catch it</h4>
@@ -603,10 +645,15 @@ function renderRead(){
     <div class="section"><h4 class="lbl">The one move</h4>
       <div class="move"><span class="when">When ${esc(p.when)}</span><p>${esc(p.move)}</p></div>
       <p class="small">One move, not a list. A list is something to read; this is something to do. It is written as when-then on purpose — deciding the trigger in advance is the difference between an intention and an action.</p></div>
-    <div class="section"><h4 class="lbl">Say this instead</h4>
-      <div class="swap"><p>${esc(p.swap)}</p></div></div>
+    ${p.swap ? `<div class="section"><h4 class="lbl">Say this instead</h4>
+      <div class="swap"><p>${esc(p.swap)}</p></div></div>` : ""}
     ${n ? `<p class="small">You have logged this one ${n} ${n===1?"time":"times"}.</p>` : ""}
-    <button class="btn quiet" data-act="back" style="margin-top:1rem">Back</button>`;
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.2rem">
+      <button class="btn sm" data-act="claude-copy" type="button">Copy a prompt for Claude</button>
+      ${p.custom ? '<button class="btn quiet sm" data-act="delete-custom" type="button">Delete this paradigm</button>' : ""}
+    </div>
+    <p class="small">The prompt carries everything on this page, so a Claude conversation can pick it up mid-thought and go as deep as you want — the one thing a mirror cannot do.</p>
+    <button class="btn quiet" data-act="back" style="margin-top:.8rem">Back</button>`;
 }
 
 /* ── Pattern ───────────────────────────────────────────────────────────── */
@@ -620,7 +667,7 @@ function renderPattern(){
       <button class="btn primary wide" data-go="type">Type something</button>`;
     return;
   }
-  const rank = P.map(p => ({ p, n:c[p.id] })).sort((a,b) => b.n - a.n);
+  const rank = allP().map(p => ({ p, n:c[p.id] })).sort((a,b) => b.n - a.n);
   const max = Math.max(1, rank[0].n);
   const top = rank[0];
   el("pattern-body").innerHTML = `
@@ -657,19 +704,136 @@ function renderAbout(){
     <p class="lede">Weighted pattern matching over your own language, running entirely on this device. It is a mirror, not a diagnosis, and it is deliberately loud about being unsure — when nothing matches strongly it says so and asks you to pick instead. Correcting it is the better version of the same move: recognising it yourself is the point.</p>
     <h4 class="lbl" style="margin-top:2rem">The eight</h4>
     <ul class="costs">${P.map(p => `<li><strong>${esc(p.name)}</strong> — ${esc(p.means.split(".")[0])}.</li>`).join("")}</ul>
+    <p class="lede" style="margin-top:1rem">The eight are starting points, not a ceiling. Any situation they do not fit, you walk through step by step — result, behaviour, the sentence in your head, the rule that would make it natural, cost, the catchable moment, the when-then move — and it becomes a paradigm of your own with the same full reading. It joins the chart, and future entries can match it. Every reading also has a copy-for-Claude button for going deeper than an app can.</p>
     <p class="small" style="margin-top:2rem">Built on Bob Proctor's model of paradigms and his order of operations, in which awareness moves first. If you want the doing side — impressing a replacement paradigm daily, the terror barrier, the goal arithmetic — that is <a class="plain" href="../index.html">The Impression Engine</a>. This app shows you what to point it at.</p>
     <p class="small">This is belief and behaviour work, not treatment for trauma. If the childhood material itself becomes the loud part rather than the pattern, that needs a person, not an app.</p>`;
 }
 
+/* ── Explore: build a paradigm from any situation ───────────────────────
+   When the eight do not fit — or a situation deserves more than a label —
+   this walks it through Proctor's back-chain: result → behaviour → the
+   sentence in your head → the rule that would make the behaviour natural →
+   cost → the catchable moment → the when-then move. The answers become a
+   paradigm of the user's own, with the same reading as the built-in eight,
+   and future entries can match it. */
+const EX_STEPS = [
+  { k:"situation", q:"What's the situation?",
+    why:"All of it, however complex and however messy. You can keep adding at any step — nothing here needs to be tidy.",
+    ph:"Everything that's going on…", rows:6, min:3 },
+  { k:"act", q:"What did you do — or avoid doing?",
+    why:"The camera version. Not what you felt — what you actually did, sent, said, or put off.",
+    ph:"I didn't send it. I said yes. I closed the laptop…", rows:3, min:2 },
+  { k:"sentence", q:"What sentence was running in your head?",
+    why:"The half-second before you acted. Say it the ugly way — the polite version is not the one that was running.",
+    ph:"The exact words…", rows:3, min:2,
+    extra:"feeling", extraLabel:"And the feeling, in a word or two", extraPh:"tight chest · dread · flat · numb" },
+  { k:"rule", q:"For that to be the natural move — what would have to be true?",
+    why:"Work backwards from what you did. The rule that makes the behaviour make sense IS the paradigm. Tap one if it fits, or write your own.",
+    ph:"The rule, in one sentence.", rows:3, min:3, chips:true },
+  { k:"cost", q:"If this rule runs for another year, what does it cost you?",
+    why:"Be concrete. Money, deals, people, days. A vague cost changes nothing.",
+    ph:"It costs me…", rows:3, min:3,
+    extra:"from", extraLabel:"Where do you know it from? Optional — a role is enough, never the story", extraPh:"Mom. School. Not sure." },
+  { k:"tell", q:"Rewind the scene. What was the last moment you could have caught it?",
+    why:"That moment is your tell. From now on it is the alarm, not the point of no return.",
+    ph:"Right when I…", rows:3, min:3 },
+  { k:"move", q:"When that moment comes — what will you do instead?",
+    why:"One physical act, small enough to do on a bad day. When-then wording is what turns an intention into an action.",
+    ph:"I will…", rows:3, min:2,
+    extra:"swap", extraLabel:"The line to say instead — optional", extraPh:"…",
+    extra2:"name", extra2Label:"Name this paradigm", extra2Ph:"Two or three words you'll recognise" }
+];
+function startExplore(text, entryKey){
+  S.explore = { step:0, fromEntry:entryKey || null, d:{ situation:String(text || "").trim() } };
+  save(); go("explore");
+}
+function exOk(){
+  const ex = S.explore; if(!ex) return false;
+  const st = EX_STEPS[ex.step];
+  if(words(ex.d[st.k]).length < st.min) return false;
+  if(st.extra2 && !words(ex.d[st.extra2]).length) return false;
+  return true;
+}
+function renderExplore(){
+  const ex = S.explore;
+  if(!ex){ go("type"); return; }
+  const st = EX_STEPS[ex.step];
+  el("ex-prog").style.width = Math.round(ex.step / EX_STEPS.length * 100) + "%";
+  el("ex-count").textContent = (ex.step + 1) + " / " + EX_STEPS.length;
+  const prior = EX_STEPS.slice(0, ex.step).map(x => ex.d[x.k]).filter(v => words(v).length);
+  el("explore-body").innerHTML = `
+    ${prior.length ? `<div class="voice" style="margin-bottom:1.5rem">${prior.slice(-3).map(t => `<p>${esc(t.length > 100 ? t.slice(0,100) + "…" : t)}</p>`).join("")}</div>` : ""}
+    <h2 class="head">${esc(st.q)}</h2>
+    <p class="lede">${esc(st.why)}</p>
+    ${st.chips ? `<div class="alts" style="margin:0 0 .9rem">${P.map(x => `<button type="button" data-exchip="${esc(x.voice[0])}">${esc(x.name)}</button>`).join("")}</div>` : ""}
+    <textarea class="box" style="min-height:0" id="ex-main" data-ex="${st.k}" rows="${st.rows}" placeholder="${esc(st.ph)}">${esc(ex.d[st.k]||"")}</textarea>
+    ${st.extra ? `<h4 class="lbl" style="margin-top:1.1rem">${esc(st.extraLabel)}</h4>
+      <input class="line" data-ex="${st.extra}" value="${esc(ex.d[st.extra]||"")}" placeholder="${esc(st.extraPh)}">` : ""}
+    ${st.extra2 ? `<h4 class="lbl" style="margin-top:1.1rem">${esc(st.extra2Label)}</h4>
+      <input class="line" data-ex="${st.extra2}" value="${esc(ex.d[st.extra2]||"")}" placeholder="${esc(st.extra2Ph)}">` : ""}
+    <div style="display:flex;gap:.6rem;margin-top:1.3rem">
+      ${ex.step > 0 ? '<button class="btn" data-act="ex-back" type="button">Back</button>' : ""}
+      <button class="btn primary" id="ex-next" data-act="ex-next" type="button" style="flex:1" ${exOk() ? "" : "disabled"}>${ex.step === EX_STEPS.length - 1 ? "Save it" : "Continue"}</button>
+    </div>
+    ${ex.step === EX_STEPS.length - 1 ? '<p class="small">This becomes a paradigm of your own. It gets the same full reading as the built-in eight, joins the chart, and future entries can match it.</p>' : ""}`;
+  setTimeout(() => { const m = el("ex-main"); if(m && !st.chips) m.focus(); }, 80);
+}
+function finishExplore(){
+  const d = S.explore.d;
+  const id = "c" + Date.now().toString(36);
+  const cp = {
+    id, custom:true,
+    name:d.name.trim(),
+    means:d.rule.trim(),
+    voice:[d.sentence, d.rule].map(x => String(x || "").trim()).filter(Boolean),
+    from:String(d.from || "").trim(),
+    costs:[String(d.cost || "").trim()],
+    tell:String(d.tell || "").trim(),
+    when:String(d.tell || "").trim().replace(/^right\s+/i, "").replace(/^when\s+/i, "").replace(/[.!]+$/, ""),
+    move:String(d.move || "").trim(),
+    swap:String(d.swap || "").trim(),
+    feeling:String(d.feeling || "").trim(),
+    act:String(d.act || "").trim(),
+    situation:String(d.situation || "").trim()
+  };
+  S.custom.push(cp);
+  const linked = S.explore.fromEntry ? S.entries.find(x => x.key === S.explore.fromEntry) : null;
+  if(linked){ linked.id = id; linked.corrected = true; }
+  else if(cp.situation){
+    const t = stamp();
+    S.entries.unshift({ key:"e" + Date.now().toString(36), on:t.on, at:t.at, text:cp.situation, id, corrected:true });
+  }
+  S.explore = null; S.openId = id; S.draft = "";
+  save(); go("read");
+}
+/* The honest ceiling of an offline mirror: real back-and-forth exploration
+   is a conversation. This packs everything the reading knows into a prompt
+   the user can paste into Claude. */
+function claudePrompt(p){
+  const L = [];
+  L.push("I found a paradigm running me and I want to explore it further. Ask me one question at a time, challenge the rule's evidence gently but honestly, and help me build a replacement I can genuinely believe — keep it believable, because affirmations backfire when belief is low.");
+  L.push("");
+  if(p.situation) L.push("The situation: " + p.situation);
+  if(p.act) L.push("What I did: " + p.act);
+  if(p.feeling) L.push("The feeling: " + p.feeling);
+  if(p.voice && p.voice[0]) L.push("The sentence in my head: " + p.voice[0]);
+  L.push("The rule underneath: " + p.means);
+  if(p.from) L.push("Where it may come from: " + p.from);
+  if(p.costs && p.costs[0]) L.push("What it costs me: " + p.costs[0]);
+  L.push("My tell: " + p.tell);
+  L.push("My planned move: " + p.move);
+  return L.join("\n");
+}
+
 /* ── Navigation ────────────────────────────────────────────────────────── */
-const VIEWS = ["type","result","read","pattern","about"];
+const VIEWS = ["type","result","read","pattern","about","explore"];
 function go(v){
   S.view = v; save();
   document.querySelectorAll(".view").forEach(x => x.classList.remove("on"));
   const t = el("v-" + v);
   if(t) t.classList.add("on");
   document.querySelectorAll(".dock button").forEach(b => b.classList.toggle("on",
-    b.dataset.go === v || (v === "result" && b.dataset.go === "type") || (v === "read" && b.dataset.go === "pattern")));
+    b.dataset.go === v || (v === "result" && b.dataset.go === "type") || (v === "explore" && b.dataset.go === "type") || (v === "read" && b.dataset.go === "pattern")));
   window.scrollTo(0,0);
   render();
 }
@@ -678,6 +842,7 @@ function render(){
   else if(S.view === "result") renderResult();
   else if(S.view === "read") renderRead();
   else if(S.view === "pattern") renderPattern();
+  else if(S.view === "explore") renderExplore();
   else if(S.view === "about") renderAbout();
 }
 
@@ -697,7 +862,7 @@ function identify(){
 }
 
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-go],[data-act],[data-open],[data-correct],[data-prompt]");
+  const t = e.target.closest("[data-go],[data-act],[data-open],[data-correct],[data-prompt],[data-exchip]");
   if(!t) return;
 
   if(t.dataset.go){ go(t.dataset.go); return; }
@@ -708,6 +873,10 @@ document.addEventListener("click", e => {
     return;
   }
   if(t.dataset.open){ S.openId = t.dataset.open; save(); go("read"); return; }
+  if(t.dataset.exchip){
+    if(S.explore){ S.explore.d.rule = t.dataset.exchip; save(); renderExplore(); }
+    return;
+  }
   if(t.dataset.correct){
     const en = S.entries.find(x => x.key === S.lastId);
     if(en){ en.id = t.dataset.correct; en.corrected = true; save(); renderResult(); }
@@ -716,6 +885,38 @@ document.addEventListener("click", e => {
 
   const a = t.dataset.act;
   if(a === "identify"){ identify(); return; }
+  if(a === "explore-new"){ startExplore(el("box") ? el("box").value : S.draft, null); return; }
+  if(a === "explore-entry"){
+    const en = S.entries.find(x => x.key === S.lastId);
+    startExplore(en ? en.text : "", en ? en.key : null);
+    return;
+  }
+  if(a === "explore-quit"){ S.explore = null; save(); go("type"); return; }
+  if(a === "ex-back"){ if(S.explore && S.explore.step > 0){ S.explore.step--; save(); renderExplore(); } return; }
+  if(a === "ex-next"){
+    if(!S.explore || !exOk()) return;
+    if(S.explore.step === EX_STEPS.length - 1) finishExplore();
+    else { S.explore.step++; save(); renderExplore(); }
+    return;
+  }
+  if(a === "claude-copy"){
+    const cp = byId(S.openId);
+    if(cp && navigator.clipboard){
+      navigator.clipboard.writeText(claudePrompt(cp))
+        .then(() => { t.textContent = "Copied — paste it into Claude"; })
+        .catch(() => { t.textContent = "Copy blocked here"; });
+    }
+    return;
+  }
+  if(a === "delete-custom"){
+    if(confirm("Delete this paradigm? Entries logged to it keep their text but lose the label.")){
+      S.custom = S.custom.filter(x => x.id !== S.openId);
+      S.entries.forEach(x => { if(x.id === S.openId) x.id = null; });
+      delete PATCACHE[S.openId];
+      S.openId = null; save(); go("pattern");
+    }
+    return;
+  }
   if(a === "new"){ S.draft = ""; save(); go("type"); setTimeout(() => { const b = el("box"); if(b) b.focus(); }, 60); return; }
   if(a === "back"){ go(S.entries.length ? "pattern" : "type"); return; }
   if(a === "delete-last"){
@@ -729,8 +930,17 @@ document.addEventListener("click", e => {
 });
 
 document.addEventListener("input", e => {
-  if(e.target.id !== "box") return;
-  S.draft = e.target.value;
+  const tgt = e.target;
+  if(tgt.dataset && tgt.dataset.ex){
+    if(!S.explore) return;
+    S.explore.d[tgt.dataset.ex] = tgt.value;
+    save();
+    const nx = el("ex-next");
+    if(nx) nx.disabled = !exOk();
+    return;
+  }
+  if(tgt.id !== "box") return;
+  S.draft = tgt.value;
   save();
   const btn = el("go");
   if(btn) btn.disabled = words(S.draft).length < 3;
@@ -744,6 +954,7 @@ document.addEventListener("keydown", e => {
   if(!VIEWS.includes(S.view) || S.view === "about") S.view = "type";
   if(S.view === "result" && !S.entries.some(x => x.key === S.lastId)) S.view = "type";
   if(S.view === "read" && !S.openId) S.view = "type";
+  if(S.view === "explore" && !S.explore) S.view = "type";
   /* The box is always the first thing. No explainer, no gate, nothing to get
      past before you can type. The About tab is there if it is ever wanted. */
   go(S.view);
