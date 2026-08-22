@@ -4,7 +4,7 @@ Type what is actually happening, in your own words, and it names the paradigm un
 
 That last part is the whole app. A paradigm is only ever visible in the language it produces, so seeing your own phrasing highlighted back at you *is* the awareness. The reading then tells you what it costs, the exact moment you can catch it next time, and the one move that changes it.
 
-No quiz, no program, no streak. Open it whenever something is happening.
+No quiz, no program, no streak, and nothing to get past first. It opens straight onto the box with the cursor already in it — you can start typing the second it loads.
 
 ## How to use it
 

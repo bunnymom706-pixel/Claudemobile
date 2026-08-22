@@ -479,17 +479,13 @@ function highlight(text, hits){
 }
 
 /* ── State ─────────────────────────────────────────────────────────────── */
-const BLANK = { v:2, entries:[], draft:"", view:"type", openId:null, lastId:null, seenAbout:false };
+const BLANK = { v:2, entries:[], draft:"", view:"type", openId:null, lastId:null };
 let S = load();
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
     if(raw) return Object.assign(JSON.parse(JSON.stringify(BLANK)), JSON.parse(raw));
-    /* Carry the catch counts over from the quiz version if it is there. */
-    const old = localStorage.getItem("paradigm-mirror.v1");
-    const seed = JSON.parse(JSON.stringify(BLANK));
-    if(old){ try{ seed.seenAbout = !!JSON.parse(old).scanned; }catch(e){} }
-    return seed;
+    return JSON.parse(JSON.stringify(BLANK));
   }catch(e){ return JSON.parse(JSON.stringify(BLANK)); }
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -527,11 +523,12 @@ function renderType(){
   el("type-meta").textContent = S.entries.length ? S.entries.length + " logged" : "";
   el("type-body").innerHTML = `
     <h2 class="head big">What's happening?</h2>
-    <p class="lede">Type it however it comes out — messy, mid-thought, one line or ten. It reads your actual words and names the paradigm underneath, then shows you which words gave it away.</p>
+    <p class="lede">Type it however it comes out. It names the paradigm underneath and shows you which of your words gave it away.</p>
     <textarea class="box" id="box" placeholder="I keep rewriting this message to the leasing office and I still haven't sent it…">${esc(S.draft||"")}</textarea>
-    <div class="hintrow">${PROMPTS.map(t => `<button type="button" class="hint" data-prompt="${esc(t)}">${esc(t)}</button>`).join("")}</div>
-    <button class="btn primary wide" data-act="identify" id="go" ${words(S.draft).length >= 3 ? "" : "disabled"}>Identify it</button>
+    <button class="btn primary wide" data-act="identify" id="go" style="margin-top:.8rem" ${words(S.draft).length >= 3 ? "" : "disabled"}>Identify it</button>
     <p class="small">Nothing leaves this device. It works with no signal.</p>
+    <p class="small" style="margin-top:1.6rem">Or start from one of these:</p>
+    <div class="hintrow">${PROMPTS.map(t => `<button type="button" class="hint" data-prompt="${esc(t)}">${esc(t)}</button>`).join("")}</div>
     ${recent.length ? `<div style="margin-top:2.2rem">
       <h4 class="lbl">Recent</h4>
       ${recent.map(e => `<div class="entry"><span class="when">${esc(pretty(e.on))} ${esc(e.at)} · <span class="tag">${esc(byId(e.id) ? byId(e.id).name : "—")}</span></span>
@@ -744,11 +741,13 @@ document.addEventListener("keydown", e => {
 });
 
 (function boot(){
-  if(!VIEWS.includes(S.view)) S.view = "type";
+  if(!VIEWS.includes(S.view) || S.view === "about") S.view = "type";
   if(S.view === "result" && !S.entries.some(x => x.key === S.lastId)) S.view = "type";
   if(S.view === "read" && !S.openId) S.view = "type";
-  if(!S.seenAbout && !S.entries.length){ S.view = "about"; S.seenAbout = true; save(); }
+  /* The box is always the first thing. No explainer, no gate, nothing to get
+     past before you can type. The About tab is there if it is ever wanted. */
   go(S.view);
+  if(S.view === "type") setTimeout(() => { const b = el("box"); if(b) b.focus(); }, 80);
   const secure = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
   if("serviceWorker" in navigator && secure) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
